@@ -167,7 +167,7 @@ Labels: chore, status: todo
 ## 목적
 - AI에게 Android 작업을 맡길 때 확인해야 할 프로젝트 규칙을 문서화합니다.
 - 이슈, 브랜치, 커밋, PR 규칙을 프롬프트에 포함해 협업 흐름을 일관되게 유지합니다.
-- 기존 android/AGENTS.md, docs/*, .github/* 템플릿과 CI 규칙을 참고합니다.
+- 기존 `android/AGENTS.md`, `docs/*`, `.github/*` 템플릿과 CI 규칙을 참고합니다.
 
 ## 작업 리스트
 - [ ] 기존 프로젝트 지침과 문서 확인
@@ -180,7 +180,7 @@ Labels: chore, status: todo
 - Android 앱 동작과 빌드 설정에는 영향을 주지 않습니다.
 
 ## 완료 조건
-- [ ] docs/ai-collaboration-prompt.md 문서 추가
-- [ ] 기존 지침 파일과 GitHub 규칙을 반영
+- [ ] `docs/ai-collaboration-prompt.md` 문서 추가
+- [ ] 기존 지침 파일과 GitHub 규칙 반영
 - [ ] PR 본문에 관련 이슈와 검증 결과 포함
 ```
