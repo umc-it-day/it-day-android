@@ -1,0 +1,7 @@
+# Copy this file to android/itday.properties and fill local values.
+# Do not commit android/itday.properties.
+
+ITDAY_DEBUG_API_BASE_URL=http://10.0.2.2:8080/
+ITDAY_DEBUG_USE_MOCK_DATA=true
+ITDAY_RELEASE_API_BASE_URL=
+ITDAY_RELEASE_USE_MOCK_DATA=false
