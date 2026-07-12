@@ -31,6 +31,6 @@ Do not read `BuildConfig.USE_MOCK_DATA` directly from feature code. Use
 
 ## Follow-up work
 
-- `#14` defines mock data and MockDataSource implementations.
+- `#14` defines mock data and MockDataSource implementations. See `docs/mock-data.md`.
 - `#16` defines repository and DataSource contracts.
 - `#11` can wire concrete implementations through dependency injection.
