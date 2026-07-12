@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -5,6 +7,28 @@ plugins {
     alias(libs.plugins.ktlint)
     alias(libs.plugins.detekt)
 }
+
+val localProperties =
+    Properties().apply {
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.isFile) {
+            localPropertiesFile.inputStream().use { inputStream ->
+                load(inputStream)
+            }
+        }
+    }
+
+fun configValue(
+    name: String,
+    defaultValue: String = "",
+): String =
+    providers.gradleProperty(name)
+        .orElse(providers.environmentVariable(name))
+        .orElse(localProperties.getProperty(name) ?: defaultValue)
+        .get()
+
+fun String.asBuildConfigString(): String =
+    "\"${replace("\\", "\\\\").replace("\"", "\\\"")}\""
 
 detekt {
     config.setFrom(rootProject.files("config/detekt/detekt.yml"))
@@ -31,8 +55,17 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "BASE_URL", configValue("SERVER_BASE_URL").asBuildConfigString())
+            buildConfigField("Boolean", "USE_MOCK", configValue("USE_MOCK", "true"))
+            buildConfigField("String", "APP_ENV", "debug".asBuildConfigString())
+        }
+
         release {
             isMinifyEnabled = false
+            buildConfigField("String", "BASE_URL", configValue("SERVER_BASE_URL").asBuildConfigString())
+            buildConfigField("Boolean", "USE_MOCK", configValue("USE_MOCK", "false"))
+            buildConfigField("String", "APP_ENV", "release".asBuildConfigString())
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -44,6 +77,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
     buildFeatures {
+        buildConfig = true
         compose = true
     }
 }
