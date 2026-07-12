@@ -1,5 +1,8 @@
 # API integration
 
+See `docs/environment.md` for `BuildConfig` environment values such as
+`API_BASE_URL` and `USE_MOCK_DATA`.
+
 ```text
 core/network/                 Retrofit, OkHttp, auth, common errors
 feature/<name>/data/remote/   API interface
