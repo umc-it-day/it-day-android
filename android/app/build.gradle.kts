@@ -8,11 +8,11 @@ plugins {
     alias(libs.plugins.detekt)
 }
 
-val localProperties =
+val itdayProperties =
     Properties().apply {
-        val localPropertiesFile = rootProject.file("local.properties")
-        if (localPropertiesFile.isFile) {
-            localPropertiesFile.inputStream().use { inputStream ->
+        val file = rootProject.file("itday.properties")
+        if (file.isFile) {
+            file.inputStream().use { inputStream ->
                 load(inputStream)
             }
         }
@@ -22,13 +22,22 @@ fun configValue(
     name: String,
     defaultValue: String = "",
 ): String =
-    providers.gradleProperty(name)
+    providers
+        .gradleProperty(name)
         .orElse(providers.environmentVariable(name))
-        .orElse(localProperties.getProperty(name) ?: defaultValue)
+        .orElse(itdayProperties.getProperty(name) ?: defaultValue)
         .get()
 
-fun String.asBuildConfigString(): String =
-    "\"${replace("\\", "\\\\").replace("\"", "\\\"")}\""
+fun String.asBuildConfigString(): String = "\"${replace("\\", "\\\\").replace("\"", "\\\"")}\""
+
+fun configBoolean(
+    name: String,
+    defaultValue: Boolean,
+): String {
+    val value = configValue(name, defaultValue.toString())
+    return value.toBooleanStrictOrNull()?.toString()
+        ?: error("It-Day property '$name' must be true or false.")
+}
 
 detekt {
     config.setFrom(rootProject.files("config/detekt/detekt.yml"))
@@ -56,16 +65,31 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField("String", "BASE_URL", configValue("SERVER_BASE_URL").asBuildConfigString())
-            buildConfigField("Boolean", "USE_MOCK", configValue("USE_MOCK", "true"))
+            buildConfigField(
+                "String",
+                "API_BASE_URL",
+                configValue("ITDAY_DEBUG_API_BASE_URL", "http://10.0.2.2:8080/").asBuildConfigString(),
+            )
+            buildConfigField(
+                "boolean",
+                "USE_MOCK_DATA",
+                configBoolean("ITDAY_DEBUG_USE_MOCK_DATA", true),
+            )
             buildConfigField("String", "APP_ENV", "debug".asBuildConfigString())
         }
-
         release {
-            isMinifyEnabled = false
-            buildConfigField("String", "BASE_URL", configValue("SERVER_BASE_URL").asBuildConfigString())
-            buildConfigField("Boolean", "USE_MOCK", configValue("USE_MOCK", "false"))
+            buildConfigField(
+                "String",
+                "API_BASE_URL",
+                configValue("ITDAY_RELEASE_API_BASE_URL").asBuildConfigString(),
+            )
+            buildConfigField(
+                "boolean",
+                "USE_MOCK_DATA",
+                configBoolean("ITDAY_RELEASE_USE_MOCK_DATA", false),
+            )
             buildConfigField("String", "APP_ENV", "release".asBuildConfigString())
+            isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -81,7 +105,6 @@ android {
         compose = true
     }
 }
-
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
