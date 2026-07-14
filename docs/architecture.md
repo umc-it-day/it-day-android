@@ -50,7 +50,8 @@ feature/home/
 ```
 
 - `presentation` depends on domain contracts, never Retrofit DTOs.
-- `data` implements domain repository contracts and owns DTO mapping.
+- data implements domain repository contracts and owns DTO mapping. See
+  docs/repository-datasource.md for Mock/Remote/Local boundaries.
 - `domain` contains business rules and no Android dependencies.
 - `core` contains only shared, feature-neutral code.
 - A `BenefitCard` remains in `feature/home` unless another feature genuinely shares it.

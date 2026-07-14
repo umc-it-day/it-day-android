@@ -2,7 +2,8 @@
 
 See `docs/environment.md` for `BuildConfig` environment values such as
 `API_BASE_URL` and `USE_MOCK_DATA`.
-See `docs/data-source-switching.md` for the Mock/Remote selection rule.
+See docs/data-source-switching.md for the Mock/Remote selection rule.
+See docs/repository-datasource.md for repository and data source boundaries.
 
 ```text
 core/network/                 Retrofit, OkHttp, auth, common errors

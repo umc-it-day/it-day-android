@@ -15,7 +15,9 @@ AppConfig.appEnv
 
 The underlying `BuildConfig` values are configured in `app/build.gradle.kts` and
 can be overridden with Gradle `-P`, environment variables, or
-`android/itday.properties`. See `docs/environment.md` for setup details.
+ndroid/itday.properties. See docs/environment.md for setup details.
+See docs/repository-datasource.md for feature-level repository and data
+source policies.
 
 ## Selection rule
 
