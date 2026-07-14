@@ -45,7 +45,7 @@ be replaced by repository and remote data source implementations.
 
 ## Follow-up work
 
-- `#16` should define repository and data source contracts.
+- `#16` defines repository and data source contracts. See `docs/repository-datasource.md`.
 - `#11` should inject mock or remote implementations using
   `AppConfig.useMockData`.
 - Feature UI issues can import these samples for previews while the API is not
