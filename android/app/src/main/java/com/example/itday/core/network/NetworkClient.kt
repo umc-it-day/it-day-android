@@ -27,10 +27,10 @@ object NetworkClient {
             .build()
 
     fun createRetrofit(
-        baseUrl: String = BuildConfig.BASE_URL,
+        baseUrl: String = BuildConfig.API_BASE_URL,
         okHttpClient: OkHttpClient = createOkHttpClient(),
     ): Retrofit {
-        require(baseUrl.isNotBlank()) { "BuildConfig.BASE_URL must not be blank." }
+        require(baseUrl.isNotBlank()) { "BuildConfig.API_BASE_URL must not be blank." }
 
         return Retrofit.Builder()
             .baseUrl(baseUrl)
