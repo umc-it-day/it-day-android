@@ -31,9 +31,13 @@ Screen -> ViewModel -> Repository -> DataSource
 - Server DTOs should stay outside these contracts. Map DTOs to UI-facing or
   domain models before returning data from a repository.
 
+## Current implementations
+
+Repository implementations currently delegate to `ItDayMockDataSource` so
+feature ViewModels can depend on repository interfaces before server APIs are
+ready.
+
 ## Follow-up work
 
-- Add mock-backed repository implementations that delegate to
-  `ItDayMockDataSource`.
 - Use `AppConfig.useMockData` when selecting mock or remote implementations.
 - Add remote data sources and DTO mappers when server API contracts are ready.
