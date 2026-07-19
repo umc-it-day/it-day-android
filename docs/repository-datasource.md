@@ -93,7 +93,8 @@ DI selection once server APIs become available.
 
 ## Follow-up work
 
-- `#11` should wire repository implementations with dependency injection.
+- `#11` wires repository implementations with dependency injection. See
+  `docs/dependency-injection.md`.
 - `#12` should add Retrofit/OkHttp remote client setup.
 - `#15` should define API response and error handling.
 - UI issues can add feature repositories only when a screen actually needs data.

@@ -77,8 +77,7 @@ fun ItDayButton(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
                     onClick = onClick,
-                )
-                .padding(horizontal = horizontalPadding),
+                ).padding(horizontal = horizontalPadding),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {

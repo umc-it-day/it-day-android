@@ -9,15 +9,19 @@ The current base package is `com.example.itday`.
 
 ```text
 com.example.itday/
+|-- ItDayApplication.kt
 |-- MainActivity.kt
 |-- core/
 |   |-- config/        BuildConfig-backed app configuration
 |   |-- data/          shared data source contracts and starter repositories
 |   |   |-- mock/      Figma-based mock data source
 |   |   `-- repository/feature repository contracts
+|   |-- di/            manual app dependency container
 |   |-- model/         UI-facing starter models used by mock data
 |   `-- network/       network client setup
 `-- ui/
+    |-- component/     shared Compose components
+    |-- navigation/    app navigation structure
     |-- state/         shared UI state model
     `-- theme/         Compose theme, colors, dimensions, radius, typography
 ```
@@ -54,9 +58,10 @@ Add `data` or `domain` later when real behavior requires them.
 
 ## Placement rules
 
-- `core` contains shared, feature-neutral code only.
-- `ui/theme` and `ui/state` contain app-wide Compose styling and shared UI
-  state helpers.
+- `core` contains shared, feature-neutral code only. See
+  `docs/dependency-injection.md` for app-wide dependency wiring.
+- `ui/component`, `ui/navigation`, `ui/theme`, and `ui/state` contain app-wide
+  Compose UI building blocks.
 - `presentation` depends on repository/domain contracts, never Retrofit DTOs.
 - `data` implements repository contracts and owns DTO mapping. See
   `docs/repository-datasource.md` for Mock/Remote/Local boundaries.
@@ -85,7 +90,5 @@ separate from persistent state.
 
 The following packages are expected but should be added by their owning issues:
 
-- `navigation/`: `#7` app navigation structure
-- `di/`: `#11` dependency injection setup
 - `feature/*`: `#19` to `#28` screen UI work
 - `core/designsystem` or shared UI components: `#8` common Compose components

@@ -40,6 +40,7 @@ interfaces before server APIs are ready.
 
 ## Follow-up work
 
-- Use `AppConfig.useMockData` when selecting mock or remote implementations.
+- Use `AppConfig.useMockData` when selecting mock or remote implementations in
+  `DefaultAppContainer`. See `docs/dependency-injection.md`.
 - Add remote data sources and DTO mappers when server API contracts are ready.
 - See `docs/api-result-error-handling.md` for result and error rules.
