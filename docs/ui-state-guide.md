@@ -91,3 +91,9 @@ sealed interface HomeUiEvent {
 In Compose, collect events from the ViewModel and handle them in `LaunchedEffect`.
 
 Persistent screen information stays in `UiState`; actions that should happen once stay in `UiEvent`.
+
+## Repository results
+
+Use `ApiResult<T>.toUiState()` when converting repository results into screen
+state. See `docs/api-result-error-handling.md` for the common error model and
+message mapping rules.

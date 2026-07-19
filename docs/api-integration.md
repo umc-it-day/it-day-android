@@ -2,8 +2,9 @@
 
 See `docs/environment.md` for `BuildConfig` environment values such as
 `API_BASE_URL` and `USE_MOCK_DATA`.
-See docs/data-source-switching.md for the Mock/Remote selection rule.
-See docs/repository-datasource.md for repository and data source boundaries.
+See `docs/data-source-switching.md` for the Mock/Remote selection rule.
+See `docs/repository-datasource.md` for repository and data source boundaries.
+See `docs/api-result-error-handling.md` for common result and error handling.
 
 ```text
 core/network/                 Retrofit, OkHttp, auth, common errors
@@ -16,8 +17,8 @@ feature/<name>/domain/        contracts and business models
 
 - Keep base URLs and secrets outside source control.
 - Use one OkHttp/Retrofit setup unless an API needs different authentication or timeouts.
-- Map transport errors at the repository boundary.
-- Never expose Retrofit `Response`, DTOs, or HTTP handling to composables.
+- Map transport errors to `AppError` and return them through `ApiResult.Failure`.
+- Never expose Retrofit `Response`, DTOs, `ApiResult`, or HTTP handling to composables.
 - Never log tokens, barcodes, location, or personal information.
 - Use `suspend` for one-shot results and `Flow` for streams.
 - Make retry explicit; do not automatically retry non-idempotent calls.

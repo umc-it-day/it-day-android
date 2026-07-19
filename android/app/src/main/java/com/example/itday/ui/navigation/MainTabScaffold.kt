@@ -9,7 +9,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -23,61 +25,85 @@ fun MainTabScaffold() {
     val currentRoute = currentDestination?.route
 
     BackHandler(enabled = currentRoute != null && currentRoute != AppRoute.HOME.route) {
-        tabNavController.navigate(AppRoute.HOME.route) {
-            popUpTo(AppRoute.HOME.route) {
-                saveState = true
-            }
-            launchSingleTop = true
-            restoreState = true
-        }
+        tabNavController.navigateToHome()
     }
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
-                bottomTabItems.forEach { item ->
-                    NavigationBarItem(
-                        selected =
-                            currentDestination
-                                ?.hierarchy
-                                ?.any { destination -> destination.route == item.route.route } == true,
-                        onClick = {
-                            tabNavController.navigate(item.route.route) {
-                                popUpTo(AppRoute.HOME.route) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        icon = {
-                            Text(text = item.iconKey)
-                        },
-                        label = {
-                            Text(text = item.label)
-                        },
-                    )
-                }
-            }
+            MainBottomNavigationBar(
+                currentDestination = currentDestination,
+                onTabClick = { route -> tabNavController.navigateToTopLevelRoute(route) },
+            )
         },
     ) { innerPadding ->
-        NavHost(
+        MainTabNavHost(
             navController = tabNavController,
-            startDestination = AppRoute.HOME.route,
             modifier = Modifier.padding(innerPadding),
-        ) {
-            composable(AppRoute.HOME.route) {
-                HomePlaceholderScreen()
-            }
-            composable(AppRoute.MAP.route) {
-                MapPlaceholderScreen()
-            }
-            composable(AppRoute.REPORT.route) {
-                ReportPlaceholderScreen()
-            }
-            composable(AppRoute.SETTINGS.route) {
-                SettingsPlaceholderScreen()
-            }
+        )
+    }
+}
+
+@Composable
+private fun MainBottomNavigationBar(
+    currentDestination: NavDestination?,
+    onTabClick: (AppRoute) -> Unit,
+) {
+    NavigationBar {
+        bottomTabItems.forEach { item ->
+            NavigationBarItem(
+                selected = currentDestination.isRouteInHierarchy(item.route),
+                onClick = { onTabClick(item.route) },
+                icon = {
+                    Text(text = item.iconKey)
+                },
+                label = {
+                    Text(text = item.label)
+                },
+            )
         }
     }
 }
+
+@Composable
+private fun MainTabNavHost(
+    navController: NavHostController,
+    modifier: Modifier = Modifier,
+) {
+    NavHost(
+        navController = navController,
+        startDestination = AppRoute.HOME.route,
+        modifier = modifier,
+    ) {
+        composable(AppRoute.HOME.route) {
+            HomePlaceholderScreen()
+        }
+        composable(AppRoute.MAP.route) {
+            MapPlaceholderScreen()
+        }
+        composable(AppRoute.REPORT.route) {
+            ReportPlaceholderScreen()
+        }
+        composable(AppRoute.SETTINGS.route) {
+            SettingsPlaceholderScreen()
+        }
+    }
+}
+
+private fun NavHostController.navigateToHome() {
+    navigateToTopLevelRoute(AppRoute.HOME)
+}
+
+private fun NavHostController.navigateToTopLevelRoute(route: AppRoute) {
+    navigate(route.route) {
+        popUpTo(AppRoute.HOME.route) {
+            saveState = true
+        }
+        launchSingleTop = true
+        restoreState = true
+    }
+}
+
+private fun NavDestination?.isRouteInHierarchy(route: AppRoute): Boolean =
+    this
+        ?.hierarchy
+        ?.any { destination -> destination.route == route.route } == true
