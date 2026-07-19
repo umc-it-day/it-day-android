@@ -1,6 +1,8 @@
 package com.example.itday.ui.navigation
 
-enum class AppRoute(val route: String) {
+enum class AppRoute(
+    val route: String,
+) {
     SPLASH("splash"),
     LOGIN("login"),
     ONBOARDING("onboarding"),
