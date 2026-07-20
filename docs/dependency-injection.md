@@ -41,6 +41,7 @@ The default container currently provides:
 - `OkHttpClient`
 - `Retrofit`
 - `ItDayMockDataSource`
+- `LocalPreferencesDataSource`
 - `HomeRepository`
 - `MapRepository`
 - `BarcodeRepository`
