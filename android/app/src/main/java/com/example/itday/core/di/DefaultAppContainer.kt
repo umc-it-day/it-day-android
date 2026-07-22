@@ -1,5 +1,6 @@
 package com.example.itday.core.di
 
+import android.content.Context
 import com.example.itday.core.config.AppConfig
 import com.example.itday.core.data.mock.ItDayMockDataSource
 import com.example.itday.core.data.repository.BarcodeRepository
@@ -16,11 +17,17 @@ import com.example.itday.core.data.repository.ReportRepository
 import com.example.itday.core.data.repository.ReportRepositoryImpl
 import com.example.itday.core.data.repository.SettingsRepository
 import com.example.itday.core.data.repository.SettingsRepositoryImpl
+import com.example.itday.core.local.DataStoreLocalPreferencesDataSource
+import com.example.itday.core.local.LocalPreferencesDataSource
+import com.example.itday.core.local.itDayPreferencesDataStore
 import com.example.itday.core.network.NetworkClient
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 
-class DefaultAppContainer : AppContainer {
+class DefaultAppContainer(
+    context: Context,
+) : AppContainer {
+    private val appContext = context.applicationContext
     override val okHttpClient: OkHttpClient by lazy {
         NetworkClient.createOkHttpClient()
     }
@@ -34,6 +41,10 @@ class DefaultAppContainer : AppContainer {
 
     override val mockDataSource: ItDayMockDataSource by lazy {
         ItDayMockDataSource()
+    }
+
+    override val localPreferencesDataSource: LocalPreferencesDataSource by lazy {
+        DataStoreLocalPreferencesDataSource(appContext.itDayPreferencesDataStore)
     }
 
     override val homeRepository: HomeRepository by lazy {
