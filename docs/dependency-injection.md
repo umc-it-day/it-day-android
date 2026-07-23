@@ -42,6 +42,7 @@ The default container currently provides:
 - `Retrofit`
 - `ItDayMockDataSource`
 - `LocalPreferencesDataSource`
+- `AuthTokenStorage`, `AuthRemoteDataSource`, and `TokenRefresher`
 - `HomeRepository`
 - `MapRepository`
 - `BarcodeRepository`

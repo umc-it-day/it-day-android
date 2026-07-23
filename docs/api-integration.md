@@ -5,6 +5,7 @@ See `docs/environment.md` for `BuildConfig` environment values such as
 See `docs/data-source-switching.md` for the Mock/Remote selection rule.
 See `docs/repository-datasource.md` for repository and data source boundaries.
 See `docs/api-result-error-handling.md` for common result and error handling.
+See `docs/auth-token-storage.md` for Bearer-token storage and refresh behavior.
 
 ```text
 core/network/                 Retrofit, OkHttp, auth, common errors
