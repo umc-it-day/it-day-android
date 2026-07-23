@@ -16,6 +16,7 @@ okhttp = "5.3.0"
 kotlinxSerialization = "1.9.0"
 coil = "3.3.0"
 kakaoMaps = "2.13.5"
+kakaoSdk = "2.24.0"
 playServicesLocation = "21.4.0"
 ktlintPlugin = "14.2.0"
 detektPlugin = "2.0.0-alpha.5"
@@ -40,6 +41,7 @@ okhttp-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-i
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
 kakao-maps = { group = "com.kakao.maps.open", name = "android", version.ref = "kakaoMaps" }
+kakao-user = { group = "com.kakao.sdk", name = "v2-user", version.ref = "kakaoSdk" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }

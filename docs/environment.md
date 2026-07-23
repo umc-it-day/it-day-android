@@ -12,6 +12,7 @@ The app module exposes these values through `BuildConfig`:
 | `API_BASE_URL` | `String` | `http://10.0.2.2:8080/` | empty string | Server API base URL |
 | `USE_MOCK_DATA` | `Boolean` | `true` | `false` | Select mock or remote data source |
 | `APP_ENV` | `String` | `debug` | `release` | Build environment label |
+| `KAKAO_NATIVE_APP_KEY` | `String` | empty string | empty string | Kakao SDK initialization and OAuth redirect |
 
 ## Local setup
 
@@ -29,6 +30,7 @@ ITDAY_DEBUG_API_BASE_URL=http://10.0.2.2:8080/
 ITDAY_DEBUG_USE_MOCK_DATA=true
 ITDAY_RELEASE_API_BASE_URL=
 ITDAY_RELEASE_USE_MOCK_DATA=false
+ITDAY_KAKAO_NATIVE_APP_KEY=
 ```
 
 ## Property priority

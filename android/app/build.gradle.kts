@@ -61,6 +61,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders["KAKAO_NATIVE_APP_KEY"] =
+            configValue("ITDAY_KAKAO_NATIVE_APP_KEY")
     }
 
     buildTypes {
@@ -75,6 +77,11 @@ android {
                 "USE_MOCK_DATA",
                 configBoolean("ITDAY_DEBUG_USE_MOCK_DATA", true),
             )
+            buildConfigField(
+                "String",
+                "KAKAO_NATIVE_APP_KEY",
+                configValue("ITDAY_KAKAO_NATIVE_APP_KEY").asBuildConfigString(),
+            )
             buildConfigField("String", "APP_ENV", "debug".asBuildConfigString())
         }
         release {
@@ -87,6 +94,11 @@ android {
                 "boolean",
                 "USE_MOCK_DATA",
                 configBoolean("ITDAY_RELEASE_USE_MOCK_DATA", false),
+            )
+            buildConfigField(
+                "String",
+                "KAKAO_NATIVE_APP_KEY",
+                configValue("ITDAY_KAKAO_NATIVE_APP_KEY").asBuildConfigString(),
             )
             buildConfigField("String", "APP_ENV", "release".asBuildConfigString())
             isMinifyEnabled = false
@@ -121,6 +133,7 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
     implementation(libs.kakao.maps)
+    implementation(libs.kakao.user)
     implementation(libs.play.services.location)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
