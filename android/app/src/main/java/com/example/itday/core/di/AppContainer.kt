@@ -1,5 +1,8 @@
 package com.example.itday.core.di
 
+import com.example.itday.core.auth.AuthRemoteDataSource
+import com.example.itday.core.auth.AuthTokenStorage
+import com.example.itday.core.auth.TokenRefresher
 import com.example.itday.core.data.mock.ItDayMockDataSource
 import com.example.itday.core.data.repository.BarcodeRepository
 import com.example.itday.core.data.repository.HomeRepository
@@ -17,6 +20,9 @@ interface AppContainer {
     val retrofit: Retrofit
     val mockDataSource: ItDayMockDataSource
     val localPreferencesDataSource: LocalPreferencesDataSource
+    val authTokenStorage: AuthTokenStorage
+    val authRemoteDataSource: AuthRemoteDataSource
+    val tokenRefresher: TokenRefresher
     val homeRepository: HomeRepository
     val mapRepository: MapRepository
     val barcodeRepository: BarcodeRepository
