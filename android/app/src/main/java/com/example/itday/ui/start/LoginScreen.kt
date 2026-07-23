@@ -32,6 +32,8 @@ fun LoginScreen(
     onKakaoLoginClick: () -> Unit,
     onGuestClick: () -> Unit,
     modifier: Modifier = Modifier,
+    isLoading: Boolean = false,
+    errorMessage: String? = null,
 ) {
     Box(
         modifier = modifier.fillMaxSize().background(Color.White).statusBarsPadding(),
@@ -51,12 +53,21 @@ fun LoginScreen(
                 fontWeight = FontWeight.Medium,
             )
             Spacer(modifier = Modifier.weight(1f))
+            if (errorMessage != null) {
+                Text(
+                    text = errorMessage,
+                    modifier = Modifier.padding(bottom = 12.dp),
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
             ItDayButton(
-                text = "카카오로 시작하기",
+                text = if (isLoading) "로그인 중..." else "카카오로 시작하기",
                 onClick = onKakaoLoginClick,
                 modifier = Modifier.fillMaxWidth(),
                 variant = ItDayButtonVariant.Kakao,
                 size = ItDayButtonSize.Medium,
+                enabled = !isLoading,
             )
             Spacer(modifier = Modifier.height(28.dp))
             Text(
