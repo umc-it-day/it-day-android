@@ -4,6 +4,9 @@ import android.content.Context
 import com.example.itday.core.auth.AuthRemoteDataSource
 import com.example.itday.core.auth.AuthTokenStorage
 import com.example.itday.core.auth.DataStoreAuthTokenStorage
+import com.example.itday.core.auth.KakaoLoginClient
+import com.example.itday.core.auth.KakaoSdkLoginClient
+import com.example.itday.core.auth.MockKakaoLoginClient
 import com.example.itday.core.auth.PendingAuthRemoteDataSource
 import com.example.itday.core.auth.TokenRefresher
 import com.example.itday.core.config.AppConfig
@@ -47,6 +50,10 @@ class DefaultAppContainer(
 
     override val tokenRefresher: TokenRefresher by lazy {
         TokenRefresher(authTokenStorage, authRemoteDataSource)
+    }
+
+    override val kakaoLoginClient: KakaoLoginClient by lazy {
+        if (AppConfig.useMockKakaoLogin) MockKakaoLoginClient() else KakaoSdkLoginClient()
     }
 
     override val okHttpClient: OkHttpClient by lazy {
