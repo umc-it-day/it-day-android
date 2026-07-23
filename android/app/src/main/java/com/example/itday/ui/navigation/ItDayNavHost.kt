@@ -5,6 +5,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.itday.ui.start.LoginScreen
+import com.example.itday.ui.start.SplashScreen
 
 @Composable
 fun ItDayNavHost(navController: NavHostController = rememberNavController()) {
@@ -13,7 +15,7 @@ fun ItDayNavHost(navController: NavHostController = rememberNavController()) {
         startDestination = AppRoute.SPLASH.route,
     ) {
         composable(AppRoute.SPLASH.route) {
-            SplashPlaceholderScreen(
+            SplashScreen(
                 onNavigateNext = {
                     navController.navigate(AppRoute.LOGIN.route) {
                         popUpTo(AppRoute.SPLASH.route) {
@@ -24,9 +26,14 @@ fun ItDayNavHost(navController: NavHostController = rememberNavController()) {
             )
         }
         composable(AppRoute.LOGIN.route) {
-            LoginPlaceholderScreen(
-                onLoginClick = {
+            LoginScreen(
+                onKakaoLoginClick = {
                     navController.navigate(AppRoute.ONBOARDING.route)
+                },
+                onGuestClick = {
+                    navController.navigate(AppRoute.MAIN.route) {
+                        popUpTo(AppRoute.LOGIN.route) { inclusive = true }
+                    }
                 },
             )
         }

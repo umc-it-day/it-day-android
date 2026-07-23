@@ -1,5 +1,6 @@
 package com.example.itday.ui.component
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -19,15 +20,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.example.itday.ui.theme.ItDayBlue
 import com.example.itday.ui.theme.ItDayDimens
 import com.example.itday.ui.theme.ItDayGray100
 import com.example.itday.ui.theme.ItDayRadius
 import com.example.itday.ui.theme.ItDayTheme
 import com.example.itday.ui.theme.ItDayWhite
+import com.example.itday.ui.theme.KakaoContainer
+import com.example.itday.ui.theme.KakaoLabel
+import com.example.itday.ui.theme.KakaoSymbol
 
 enum class ItDayButtonVariant {
     Primary,
@@ -56,14 +62,7 @@ fun ItDayButton(
     val colors = variant.colors(enabled)
     val height = size.height
     val horizontalPadding = size.horizontalPadding
-    val shape =
-        RoundedCornerShape(
-            if (size == ItDayButtonSize.Small) {
-                ItDayRadius.ButtonRadiusSmall
-            } else {
-                ItDayRadius.ButtonRadius
-            },
-        )
+    val shape = RoundedCornerShape(variant.cornerRadius(size))
 
     Row(
         modifier =
@@ -81,8 +80,14 @@ fun ItDayButton(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (leadingIcon != null) {
-            leadingIcon()
+        val resolvedLeadingIcon =
+            leadingIcon ?: if (variant == ItDayButtonVariant.Kakao) {
+                { KakaoSymbolIcon() }
+            } else {
+                null
+            }
+        if (resolvedLeadingIcon != null) {
+            resolvedLeadingIcon()
             Spacer(modifier = Modifier.width(ItDayDimens.ButtonContentGap))
         }
         Text(
@@ -98,6 +103,13 @@ private data class ItDayButtonColors(
     val containerColor: Color,
     val contentColor: Color,
 )
+
+private fun ItDayButtonVariant.cornerRadius(size: ItDayButtonSize): Dp =
+    when {
+        this == ItDayButtonVariant.Kakao -> ItDayRadius.KakaoButtonRadius
+        size == ItDayButtonSize.Small -> ItDayRadius.ButtonRadiusSmall
+        else -> ItDayRadius.ButtonRadius
+    }
 
 private val ItDayButtonSize.height: Dp
     get() =
@@ -128,6 +140,10 @@ private val ItDayButtonSize.minWidth: Dp
 private fun ItDayButtonVariant.colors(enabled: Boolean): ItDayButtonColors {
     val colorScheme = MaterialTheme.colorScheme
 
+    if (this == ItDayButtonVariant.Kakao) {
+        return ItDayButtonColors(KakaoContainer, KakaoLabel)
+    }
+
     if (!enabled) {
         return ItDayButtonColors(
             containerColor = ItDayGray100,
@@ -142,10 +158,63 @@ private fun ItDayButtonVariant.colors(enabled: Boolean): ItDayButtonColors {
             ItDayButtonColors(ItDayGray100, colorScheme.onSurfaceVariant)
         ItDayButtonVariant.Destructive ->
             ItDayButtonColors(colorScheme.error, colorScheme.onError)
-        ItDayButtonVariant.Kakao ->
-            ItDayButtonColors(colorScheme.tertiary, colorScheme.onTertiary)
+        ItDayButtonVariant.Kakao -> error("Kakao colors are handled above")
         ItDayButtonVariant.Text ->
             ItDayButtonColors(Color.Transparent, ItDayBlue)
+    }
+}
+
+@Composable
+private fun KakaoSymbolIcon() {
+    Canvas(modifier = Modifier.width(18.dp).height(18.dp)) {
+        val path =
+            Path().apply {
+                moveTo(size.width * 0.5f, size.height * 0.08f)
+                cubicTo(
+                    size.width * 0.20f,
+                    size.height * 0.08f,
+                    size.width * 0.04f,
+                    size.height * 0.28f,
+                    size.width * 0.04f,
+                    size.height * 0.51f,
+                )
+                cubicTo(
+                    size.width * 0.04f,
+                    size.height * 0.68f,
+                    size.width * 0.14f,
+                    size.height * 0.83f,
+                    size.width * 0.31f,
+                    size.height * 0.91f,
+                )
+                lineTo(size.width * 0.25f, size.height)
+                lineTo(size.width * 0.43f, size.height * 0.94f)
+                cubicTo(
+                    size.width * 0.45f,
+                    size.height * 0.94f,
+                    size.width * 0.48f,
+                    size.height * 0.95f,
+                    size.width * 0.5f,
+                    size.height * 0.95f,
+                )
+                cubicTo(
+                    size.width * 0.80f,
+                    size.height * 0.95f,
+                    size.width * 0.96f,
+                    size.height * 0.74f,
+                    size.width * 0.96f,
+                    size.height * 0.51f,
+                )
+                cubicTo(
+                    size.width * 0.96f,
+                    size.height * 0.28f,
+                    size.width * 0.80f,
+                    size.height * 0.08f,
+                    size.width * 0.5f,
+                    size.height * 0.08f,
+                )
+                close()
+            }
+        drawPath(path = path, color = KakaoSymbol)
     }
 }
 
