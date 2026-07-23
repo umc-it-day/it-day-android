@@ -2,6 +2,7 @@ package com.example.itday.core.di
 
 import com.example.itday.core.auth.AuthRemoteDataSource
 import com.example.itday.core.auth.AuthTokenStorage
+import com.example.itday.core.auth.KakaoLoginClient
 import com.example.itday.core.auth.TokenRefresher
 import com.example.itday.core.data.mock.ItDayMockDataSource
 import com.example.itday.core.data.repository.BarcodeRepository
@@ -23,6 +24,7 @@ interface AppContainer {
     val authTokenStorage: AuthTokenStorage
     val authRemoteDataSource: AuthRemoteDataSource
     val tokenRefresher: TokenRefresher
+    val kakaoLoginClient: KakaoLoginClient
     val homeRepository: HomeRepository
     val mapRepository: MapRepository
     val barcodeRepository: BarcodeRepository

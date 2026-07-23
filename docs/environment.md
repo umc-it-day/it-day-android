@@ -11,6 +11,7 @@ The app module exposes these values through `BuildConfig`:
 | --- | --- | --- | --- | --- |
 | `API_BASE_URL` | `String` | `http://10.0.2.2:8080/` | empty string | Server API base URL |
 | `USE_MOCK_DATA` | `Boolean` | `true` | `false` | Select mock or remote data source |
+| `USE_MOCK_KAKAO_LOGIN` | `Boolean` | `true` | `false` | Select mock or Kakao SDK login |
 | `APP_ENV` | `String` | `debug` | `release` | Build environment label |
 | `KAKAO_NATIVE_APP_KEY` | `String` | empty string | empty string | Kakao SDK initialization and OAuth redirect |
 
@@ -28,8 +29,10 @@ copy android\itday.properties.example android\itday.properties
 ```properties
 ITDAY_DEBUG_API_BASE_URL=http://10.0.2.2:8080/
 ITDAY_DEBUG_USE_MOCK_DATA=true
+ITDAY_DEBUG_USE_MOCK_KAKAO_LOGIN=true
 ITDAY_RELEASE_API_BASE_URL=
 ITDAY_RELEASE_USE_MOCK_DATA=false
+ITDAY_RELEASE_USE_MOCK_KAKAO_LOGIN=false
 ITDAY_KAKAO_NATIVE_APP_KEY=
 ```
 
@@ -45,13 +48,15 @@ Values are resolved in this order:
 Command-line example:
 
 ```text
-gradlew.bat assembleDebug -PITDAY_DEBUG_USE_MOCK_DATA=false -PITDAY_DEBUG_API_BASE_URL=http://10.0.2.2:8080/
+gradlew.bat assembleDebug -PITDAY_DEBUG_USE_MOCK_KAKAO_LOGIN=false
 ```
 
 ## Current policy
 
 - Server APIs are still being prepared, so debug builds use mock data by
   default.
+- Kakao login can use the real SDK while other data sources remain in mock
+  mode by setting `ITDAY_DEBUG_USE_MOCK_KAKAO_LOGIN=false`.
 - Release builds default to remote data, but the release API URL must be
   provided before release distribution.
 - Secrets must come from `android/itday.properties`, Gradle `-P` properties,
