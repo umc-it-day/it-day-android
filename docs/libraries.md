@@ -23,6 +23,7 @@ Add and verify these dependencies before using them in application code.
 | Navigation | Navigation Compose | Screen navigation and bottom navigation. |
 | UI state | Lifecycle ViewModel Compose | Connect Compose screens to ViewModels. |
 | Async | Kotlin Coroutines, Flow | Asynchronous work and `StateFlow`-based UI state. |
+| Local storage | Preferences DataStore | Small key-value app state such as onboarding and guest mode. |
 | Network | Retrofit, OkHttp | Server APIs and shared HTTP configuration. |
 | Serialization | Kotlin Serialization | JSON and DTO conversion. |
 | Image loading | Coil Compose | Remote images in Compose UI. |
@@ -43,7 +44,6 @@ condition is met. This keeps compatibility failures isolated and avoids unused d
 | Firebase | A specific product such as FCM, Crashlytics, or Analytics is approved. |
 | Lottie | An approved Lottie animation asset is ready for use. |
 | Room | Structured offline data or caching is required. |
-| DataStore | Persisting simple values such as login state or user settings. |
 
 Select versions when implementing the relevant change. Use current stable versions that are
 compatible with the project's AGP, Kotlin, and Compose versions. Do not downgrade the versions

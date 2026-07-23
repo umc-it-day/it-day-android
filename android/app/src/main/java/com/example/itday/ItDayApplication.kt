@@ -10,6 +10,6 @@ class ItDayApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        appContainer = DefaultAppContainer()
+        appContainer = DefaultAppContainer(applicationContext)
     }
 }

@@ -41,6 +41,8 @@ The default container currently provides:
 - `OkHttpClient`
 - `Retrofit`
 - `ItDayMockDataSource`
+- `LocalPreferencesDataSource`
+- `AuthTokenStorage`, `AuthRemoteDataSource`, and `TokenRefresher`
 - `HomeRepository`
 - `MapRepository`
 - `BarcodeRepository`

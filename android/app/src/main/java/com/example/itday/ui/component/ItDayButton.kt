@@ -1,7 +1,7 @@
 package com.example.itday.ui.component
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -82,7 +83,7 @@ fun ItDayButton(
     ) {
         val resolvedLeadingIcon =
             leadingIcon ?: if (variant == ItDayButtonVariant.Kakao) {
-                { KakaoSymbolIcon() }
+                { KakaoSymbol() }
             } else {
                 null
             }
@@ -164,58 +165,63 @@ private fun ItDayButtonVariant.colors(enabled: Boolean): ItDayButtonColors {
     }
 }
 
+/** Kakao Sync speech-bubble symbol. Its color is fixed by the Kakao design guide. */
 @Composable
-private fun KakaoSymbolIcon() {
+private fun KakaoSymbol() {
     Canvas(modifier = Modifier.width(18.dp).height(18.dp)) {
-        val path =
-            Path().apply {
-                moveTo(size.width * 0.5f, size.height * 0.08f)
-                cubicTo(
-                    size.width * 0.20f,
-                    size.height * 0.08f,
-                    size.width * 0.04f,
-                    size.height * 0.28f,
-                    size.width * 0.04f,
-                    size.height * 0.51f,
-                )
-                cubicTo(
-                    size.width * 0.04f,
-                    size.height * 0.68f,
-                    size.width * 0.14f,
-                    size.height * 0.83f,
-                    size.width * 0.31f,
-                    size.height * 0.91f,
-                )
-                lineTo(size.width * 0.25f, size.height)
-                lineTo(size.width * 0.43f, size.height * 0.94f)
-                cubicTo(
-                    size.width * 0.45f,
-                    size.height * 0.94f,
-                    size.width * 0.48f,
-                    size.height * 0.95f,
-                    size.width * 0.5f,
-                    size.height * 0.95f,
-                )
-                cubicTo(
-                    size.width * 0.80f,
-                    size.height * 0.95f,
-                    size.width * 0.96f,
-                    size.height * 0.74f,
-                    size.width * 0.96f,
-                    size.height * 0.51f,
-                )
-                cubicTo(
-                    size.width * 0.96f,
-                    size.height * 0.28f,
-                    size.width * 0.80f,
-                    size.height * 0.08f,
-                    size.width * 0.5f,
-                    size.height * 0.08f,
-                )
-                close()
-            }
-        drawPath(path = path, color = KakaoSymbol)
+        drawKakaoSymbol()
     }
+}
+
+private fun DrawScope.drawKakaoSymbol() {
+    val path =
+        Path().apply {
+            moveTo(size.width * 0.5f, size.height * 0.08f)
+            cubicTo(
+                size.width * 0.20f,
+                size.height * 0.08f,
+                size.width * 0.04f,
+                size.height * 0.28f,
+                size.width * 0.04f,
+                size.height * 0.51f,
+            )
+            cubicTo(
+                size.width * 0.04f,
+                size.height * 0.68f,
+                size.width * 0.14f,
+                size.height * 0.83f,
+                size.width * 0.31f,
+                size.height * 0.91f,
+            )
+            lineTo(size.width * 0.25f, size.height)
+            lineTo(size.width * 0.43f, size.height * 0.94f)
+            cubicTo(
+                size.width * 0.45f,
+                size.height * 0.94f,
+                size.width * 0.48f,
+                size.height * 0.95f,
+                size.width * 0.5f,
+                size.height * 0.95f,
+            )
+            cubicTo(
+                size.width * 0.80f,
+                size.height * 0.95f,
+                size.width * 0.96f,
+                size.height * 0.74f,
+                size.width * 0.96f,
+                size.height * 0.51f,
+            )
+            cubicTo(
+                size.width * 0.96f,
+                size.height * 0.28f,
+                size.width * 0.80f,
+                size.height * 0.08f,
+                size.width * 0.5f,
+                size.height * 0.08f,
+            )
+            close()
+        }
+    drawPath(path = path, color = KakaoSymbol)
 }
 
 @Preview(showBackground = true)
@@ -225,6 +231,11 @@ private fun ItDayButtonPreview() {
         Row(horizontalArrangement = Arrangement.spacedBy(ItDayDimens.Space8)) {
             ItDayButton(text = "Next", onClick = {})
             ItDayButton(text = "Move", size = ItDayButtonSize.Small, onClick = {})
+            ItDayButton(
+                text = "카카오로 시작하기",
+                variant = ItDayButtonVariant.Kakao,
+                onClick = {},
+            )
         }
     }
 }
