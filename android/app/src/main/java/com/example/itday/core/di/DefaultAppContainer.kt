@@ -1,6 +1,11 @@
 package com.example.itday.core.di
 
 import android.content.Context
+import com.example.itday.core.auth.AuthRemoteDataSource
+import com.example.itday.core.auth.AuthTokenStorage
+import com.example.itday.core.auth.DataStoreAuthTokenStorage
+import com.example.itday.core.auth.PendingAuthRemoteDataSource
+import com.example.itday.core.auth.TokenRefresher
 import com.example.itday.core.config.AppConfig
 import com.example.itday.core.data.mock.ItDayMockDataSource
 import com.example.itday.core.data.repository.BarcodeRepository
@@ -20,7 +25,10 @@ import com.example.itday.core.data.repository.SettingsRepositoryImpl
 import com.example.itday.core.local.DataStoreLocalPreferencesDataSource
 import com.example.itday.core.local.LocalPreferencesDataSource
 import com.example.itday.core.local.itDayPreferencesDataStore
+import com.example.itday.core.network.AuthHeaderInterceptor
+import com.example.itday.core.network.AuthTokenAuthenticator
 import com.example.itday.core.network.NetworkClient
+import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 
@@ -28,8 +36,27 @@ class DefaultAppContainer(
     context: Context,
 ) : AppContainer {
     private val appContext = context.applicationContext
+
+    override val authTokenStorage: AuthTokenStorage by lazy {
+        DataStoreAuthTokenStorage(appContext.itDayPreferencesDataStore)
+    }
+
+    override val authRemoteDataSource: AuthRemoteDataSource by lazy {
+        PendingAuthRemoteDataSource()
+    }
+
+    override val tokenRefresher: TokenRefresher by lazy {
+        TokenRefresher(authTokenStorage, authRemoteDataSource)
+    }
+
     override val okHttpClient: OkHttpClient by lazy {
-        NetworkClient.createOkHttpClient()
+        NetworkClient.createOkHttpClient(
+            authInterceptor =
+                AuthHeaderInterceptor {
+                    runBlocking { authTokenStorage.getTokens()?.accessToken }
+                },
+            authenticator = AuthTokenAuthenticator(tokenRefresher::refreshAccessToken),
+        )
     }
 
     override val retrofit: Retrofit by lazy {

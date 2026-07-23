@@ -2,6 +2,7 @@ package com.example.itday.core.network
 
 import com.example.itday.BuildConfig
 import kotlinx.serialization.json.Json
+import okhttp3.Authenticator
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -18,14 +19,20 @@ object NetworkClient {
             isLenient = true
         }
 
-    fun createOkHttpClient(): OkHttpClient =
+    fun createOkHttpClient(
+        authInterceptor: Interceptor? = null,
+        authenticator: Authenticator? = null,
+    ): OkHttpClient =
         OkHttpClient
             .Builder()
             .connectTimeout(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .readTimeout(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .writeTimeout(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .addInterceptor(defaultHeadersInterceptor)
-            .build()
+            .apply {
+                authInterceptor?.let(::addInterceptor)
+                authenticator?.let(::authenticator)
+            }.build()
 
     fun createRetrofit(
         baseUrl: String = BuildConfig.API_BASE_URL,
