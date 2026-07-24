@@ -12,11 +12,20 @@ import java.io.IOException
 class DataStoreLocalPreferencesDataSource(
     private val dataStore: DataStore<Preferences>,
 ) : LocalPreferencesDataSource {
+    override val isLoggedIn: Flow<Boolean> =
+        dataStore.booleanValue(LocalPreferenceKeys.IsLoggedIn, defaultValue = false)
+
     override val isOnboardingCompleted: Flow<Boolean> =
         dataStore.booleanValue(LocalPreferenceKeys.IsOnboardingCompleted, defaultValue = false)
 
     override val isGuestMode: Flow<Boolean> =
         dataStore.booleanValue(LocalPreferenceKeys.IsGuestMode, defaultValue = false)
+
+    override suspend fun setLoggedIn(loggedIn: Boolean) {
+        dataStore.edit { preferences ->
+            preferences.setLoggedInPreference(loggedIn)
+        }
+    }
 
     override suspend fun setOnboardingCompleted(completed: Boolean) {
         dataStore.edit { preferences ->
