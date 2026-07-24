@@ -17,5 +17,4 @@ internal fun MutablePreferences.setGuestModePreference(enabled: Boolean) {
 internal fun MutablePreferences.clearUserSessionPreferences() {
     this[LocalPreferenceKeys.IsLoggedIn] = false
     this[LocalPreferenceKeys.IsGuestMode] = false
-    this[LocalPreferenceKeys.IsOnboardingCompleted] = false
 }

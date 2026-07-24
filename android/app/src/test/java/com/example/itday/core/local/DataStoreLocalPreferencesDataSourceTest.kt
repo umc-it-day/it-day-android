@@ -50,12 +50,14 @@ class DataStoreLocalPreferencesDataSourceTest {
     fun `clears user session preferences while keeping onboarding completed`() {
         val preferences =
             mutablePreferencesOf(
+                LocalPreferenceKeys.IsLoggedIn to true,
                 LocalPreferenceKeys.IsOnboardingCompleted to true,
                 LocalPreferenceKeys.IsGuestMode to true,
             )
 
         preferences.clearUserSessionPreferences()
 
+        assertFalse(preferences[LocalPreferenceKeys.IsLoggedIn] ?: true)
         assertTrue(preferences[LocalPreferenceKeys.IsOnboardingCompleted] ?: false)
         assertFalse(preferences[LocalPreferenceKeys.IsGuestMode] ?: true)
     }
