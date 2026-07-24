@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.itday.core.auth.KakaoLoginClient
 import com.example.itday.core.auth.KakaoLoginResult
+import com.example.itday.core.local.LocalPreferencesDataSource
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +26,7 @@ sealed interface LoginEvent {
 
 class LoginViewModel(
     private val kakaoLoginClient: KakaoLoginClient,
+    private val localPreferencesDataSource: LocalPreferencesDataSource,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
@@ -39,6 +41,9 @@ class LoginViewModel(
             _uiState.value = LoginUiState(isLoading = true)
             when (val result = kakaoLoginClient.login(context)) {
                 is KakaoLoginResult.Success -> {
+                    localPreferencesDataSource.setGuestMode(false)
+                    localPreferencesDataSource.setOnboardingCompleted(false)
+                    localPreferencesDataSource.setLoggedIn(true)
                     _uiState.value = LoginUiState()
                     _events.send(LoginEvent.Authenticated)
                 }
@@ -56,9 +61,10 @@ class LoginViewModel(
 
     class Factory(
         private val kakaoLoginClient: KakaoLoginClient,
+        private val localPreferencesDataSource: LocalPreferencesDataSource,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            LoginViewModel(kakaoLoginClient) as T
+            LoginViewModel(kakaoLoginClient, localPreferencesDataSource) as T
     }
 }
