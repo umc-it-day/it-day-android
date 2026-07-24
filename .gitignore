@@ -1,0 +1,23 @@
+# IDE
+.idea/
+*.iml
+
+# Gradle / Kotlin
+.gradle/
+.kotlin/
+**/build/
+
+# Local Android configuration and secrets
+local.properties
+itday.properties
+*.jks
+*.keystore
+
+# Android native build output
+.externalNativeBuild/
+.cxx/
+captures/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
