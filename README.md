@@ -1,4 +1,4 @@
-﻿# It-Day
+# It-Day
 
 <p align="center">
   <img src="assets/logo.png" width="120" alt="It-Day 로고" />
@@ -175,43 +175,43 @@ Android Studio를 기준으로 앱을 빌드하고 실행합니다.
 
 ### 화면 목록
 
-| 화면 이름 | 스크린 ID | 진입 경로 | 담당자 |
-| --- | --- | --- | --- |
-| 스플래시 화면 | SplashScreen | 앱 최초 실행 | Android 파트 공동 |
-| 네트워크 오류 화면 | NetworkErrorScreen | 앱 실행 중 네트워크 연결 실패 | Android 파트 공동 |
-| 로그인 화면 | LoginScreen | 스플래시 이후 | Android 파트 공동 |
-| 카카오 로그인 오류 화면 | KakaoLoginErrorScreen | 카카오 로그인 실패 시 | Android 파트 공동 |
-| 이메일 추가 입력 화면 | EmailInputScreen | 카카오 계정 이메일 미동의 시 | Android 파트 공동 |
-| 회원가입 화면 | SignUpScreen | 로그인 화면 > 회원가입 | Android 파트 공동 |
-| 탈퇴 대기 화면 | WithdrawPendingScreen | 탈퇴 대기 계정 로그인 시 | Android 파트 공동 |
-| 게스트 안내 화면 | GuestGuideScreen | 로그인 화면 > 게스트로 둘러보기 | Android 파트 공동 |
-| 약관 동의 화면 | TermsAgreementScreen | 회원가입 이후 | Android 파트 공동 |
-| 위치 권한 요청 화면 | LocationPermissionScreen | 약관 동의 이후 | Android 파트 공동 |
-| 통신사 선택 화면 | CarrierSelectScreen | 온보딩 중 통신사 선택 단계 | Android 파트 공동 |
-| 멤버십 등급 선택 화면 | MembershipGradeScreen | 통신사 선택 이후 | Android 파트 공동 |
-| 선호 브랜드 선택 화면 | FavoriteBrandScreen | 멤버십 등급 선택 이후 | Android 파트 공동 |
-| 멤버십 카드 등록 방법 화면 | CardRegisterMethodScreen | 회원 온보딩 중 바코드 등록 단계 | Android 파트 공동 |
-| 바코드 번호 입력 화면 | BarcodeInputScreen | 카드 등록 방법 > 직접 입력 | Android 파트 공동 |
-| 중복 바코드 오류 팝업 | DuplicateBarcodeDialog | 바코드 등록 중 중복 번호 감지 | Android 파트 공동 |
-| 등록 완료 화면 | RegisterCompleteScreen | 온보딩 완료 후 | Android 파트 공동 |
-| 메인 화면 | MainScreen | 온보딩 완료 후 | Android 파트 공동 |
-| 홈 화면 | HomeScreen | 하단 탭 > 홈 | Android 파트 공동 |
-| 캐릭터 화면 | CharacterScreen | 하단 탭 > 캐릭터 | Android 파트 공동 |
-| 리포트 화면 | ReportScreen | 하단 탭 > 리포트 | Android 파트 공동 |
-| 지도 화면 | MapScreen | 하단 탭 > 지도 | Android 파트 공동 |
-| 설정 화면 | SettingScreen | 하단 탭 > 설정 | Android 파트 공동 |
-| 혜택 비교 화면 | BenefitCompareScreen | 홈 > 통신사별 혜택 비교 | Android 파트 공동 |
-| 바코드 화면 | BarcodeScreen | 홈 > 바코드 또는 근처 매장 팝업 | Android 파트 공동 |
-| 바코드 사용 확인 팝업 | BarcodeUseConfirmDialog | 바코드 표시 후 사용 여부 확인 | Android 파트 공동 |
-| 제휴 매장 카테고리 화면 | StoreCategoryScreen | 홈 > 주변 매장 또는 카테고리 | Android 파트 공동 |
-| 제휴 매장 목록 화면 | StoreListScreen | 제휴 매장 카테고리 선택 후 | Android 파트 공동 |
-| 매장 상세 화면 | StoreDetailScreen | 매장 목록 또는 지도 > 매장 선택 | Android 파트 공동 |
-| 프로필 설정 화면 | ProfileSettingScreen | 설정 > 프로필 설정 | Android 파트 공동 |
-| 멤버십 정보 화면 | MembershipInfoScreen | 설정 > 멤버십 정보 | Android 파트 공동 |
-| 알림 설정 화면 | NotificationSettingScreen | 설정 > 알림 설정 | Android 파트 공동 |
-| 개인정보 및 보안 화면 | PrivacySecurityScreen | 설정 > 개인정보 및 보안 | Android 파트 공동 |
-| 고객센터 화면 | CustomerCenterScreen | 설정 > 고객센터 | Android 파트 공동 |
-| 로그아웃 확인 팝업 | LogoutConfirmDialog | 설정 > 로그아웃 | Android 파트 공동 |
+| 화면 이름 | 스크린 ID | 진입 경로 | 담당자 | 완료 여부 |
+| --- | --- | --- | --- | --- |
+| 스플래시 화면 | SplashScreen | 앱 최초 실행 | Android 파트 공동 | ✅ 완료 |
+| 네트워크 오류 화면 | NetworkErrorScreen | 앱 실행 중 네트워크 연결 실패 | Android 파트 공동 | ⬜ 미완료 |
+| 로그인 화면 | LoginScreen | 스플래시 이후 | Android 파트 공동 | ✅ 완료 |
+| 카카오 로그인 오류 화면 | KakaoLoginErrorScreen | 카카오 로그인 실패 시 | Android 파트 공동 | ⬜ 미완료 |
+| 이메일 추가 입력 화면 | EmailInputScreen | 카카오 계정 이메일 미동의 시 | Android 파트 공동 | ⬜ 미완료 |
+| 회원가입 화면 | SignUpScreen | 로그인 화면 > 회원가입 | Android 파트 공동 | ⬜ 미완료 |
+| 탈퇴 대기 화면 | WithdrawPendingScreen | 탈퇴 대기 계정 로그인 시 | Android 파트 공동 | ⬜ 미완료 |
+| 게스트 안내 화면 | GuestGuideScreen | 로그인 화면 > 게스트로 둘러보기 | Android 파트 공동 | ⬜ 미완료 |
+| 약관 동의 화면 | TermsAgreementScreen | 회원가입 이후 | Android 파트 공동 | ⬜ 미완료 |
+| 위치 권한 요청 화면 | LocationPermissionScreen | 약관 동의 이후 | Android 파트 공동 | ⬜ 미완료 |
+| 통신사 선택 화면 | CarrierSelectScreen | 온보딩 중 통신사 선택 단계 | Android 파트 공동 | ⬜ 미완료 |
+| 멤버십 등급 선택 화면 | MembershipGradeScreen | 통신사 선택 이후 | Android 파트 공동 | ⬜ 미완료 |
+| 선호 브랜드 선택 화면 | FavoriteBrandScreen | 멤버십 등급 선택 이후 | Android 파트 공동 | ⬜ 미완료 |
+| 멤버십 카드 등록 방법 화면 | CardRegisterMethodScreen | 회원 온보딩 중 바코드 등록 단계 | Android 파트 공동 | ⬜ 미완료 |
+| 바코드 번호 입력 화면 | BarcodeInputScreen | 카드 등록 방법 > 직접 입력 | Android 파트 공동 | ⬜ 미완료 |
+| 중복 바코드 오류 팝업 | DuplicateBarcodeDialog | 바코드 등록 중 중복 번호 감지 | Android 파트 공동 | ⬜ 미완료 |
+| 등록 완료 화면 | RegisterCompleteScreen | 온보딩 완료 후 | Android 파트 공동 | ⬜ 미완료 |
+| 메인 화면 | MainScreen | 온보딩 완료 후 | Android 파트 공동 | ⬜ 미완료 |
+| 홈 화면 | HomeScreen | 하단 탭 > 홈 | Android 파트 공동 | ⬜ 미완료 |
+| 캐릭터 화면 | CharacterScreen | 하단 탭 > 캐릭터 | Android 파트 공동 | ⬜ 미완료 |
+| 리포트 화면 | ReportScreen | 하단 탭 > 리포트 | Android 파트 공동 | ⬜ 미완료 |
+| 지도 화면 | MapScreen | 하단 탭 > 지도 | Android 파트 공동 | ⬜ 미완료 |
+| 설정 화면 | SettingScreen | 하단 탭 > 설정 | Android 파트 공동 | ⬜ 미완료 |
+| 혜택 비교 화면(제휴 혜택 탐색 UI) | BenefitCompareScreen | 홈 > 통신사별 혜택 비교 | Android 파트 공동 | ✅ 완료 |
+| 바코드 화면 | BarcodeScreen | 홈 > 바코드 또는 근처 매장 팝업 | Android 파트 공동 | ⬜ 미완료 |
+| 바코드 사용 확인 팝업 | BarcodeUseConfirmDialog | 바코드 표시 후 사용 여부 확인 | Android 파트 공동 | ⬜ 미완료 |
+| 제휴 매장 카테고리 화면 | StoreCategoryScreen | 홈 > 주변 매장 또는 카테고리 | Android 파트 공동 | ⬜ 미완료 |
+| 제휴 매장 목록 화면 | StoreListScreen | 제휴 매장 카테고리 선택 후 | Android 파트 공동 | ⬜ 미완료 |
+| 매장 상세 화면 | StoreDetailScreen | 매장 목록 또는 지도 > 매장 선택 | Android 파트 공동 | ⬜ 미완료 |
+| 프로필 설정 화면 | ProfileSettingScreen | 설정 > 프로필 설정 | Android 파트 공동 | ⬜ 미완료 |
+| 멤버십 정보 화면 | MembershipInfoScreen | 설정 > 멤버십 정보 | Android 파트 공동 | ⬜ 미완료 |
+| 알림 설정 화면 | NotificationSettingScreen | 설정 > 알림 설정 | Android 파트 공동 | ⬜ 미완료 |
+| 개인정보 및 보안 화면 | PrivacySecurityScreen | 설정 > 개인정보 및 보안 | Android 파트 공동 | ⬜ 미완료 |
+| 고객센터 화면 | CustomerCenterScreen | 설정 > 고객센터 | Android 파트 공동 | ⬜ 미완료 |
+| 로그아웃 확인 팝업 | LogoutConfirmDialog | 설정 > 로그아웃 | Android 파트 공동 | ⬜ 미완료 |
 
 ### 사용자 플로우 (메인 진입 전)
 
