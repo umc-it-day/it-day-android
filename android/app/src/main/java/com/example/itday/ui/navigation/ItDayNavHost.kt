@@ -134,6 +134,9 @@ private fun OnboardingDestination(navController: NavHostController) {
         onBack = onboardingViewModel::back,
         onNext = onboardingViewModel::next,
         onLocationResult = onboardingViewModel::onLocationResult,
+        onCarrierSelect = onboardingViewModel::selectCarrier,
+        onMembershipSelect = onboardingViewModel::selectMembership,
+        onBrandToggle = onboardingViewModel::toggleBrand,
         onComplete = {
             coroutineScope.launch {
                 sessionViewModel.completeOnboarding()

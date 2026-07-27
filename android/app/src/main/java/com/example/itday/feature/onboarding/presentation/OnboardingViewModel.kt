@@ -28,22 +28,34 @@ class OnboardingViewModel : ViewModel() {
     }
 
     fun next() {
-        if (_uiState.value.step == TERMS_STEP) {
-            _uiState.update { it.copy(step = LOCATION_STEP) }
-        } else {
-            _events.trySend(OnboardingUiEvent.RequestLocationPermission)
+        when (_uiState.value.step) {
+            TERMS_STEP -> _uiState.update { it.copy(step = LOCATION_STEP) }
+            LOCATION_STEP -> _events.trySend(OnboardingUiEvent.RequestLocationPermission)
+            BRAND_STEP -> _events.trySend(OnboardingUiEvent.Complete)
+            else -> _uiState.update { it.copy(step = it.step + 1) }
         }
     }
 
-    fun back() = _uiState.update { it.copy(step = TERMS_STEP, locationError = false) }
+    fun back() = _uiState.update { it.copy(step = (it.step - 1).coerceAtLeast(TERMS_STEP), locationError = false) }
 
     fun onLocationResult(granted: Boolean) {
         if (granted) {
-            _events.trySend(OnboardingUiEvent.Complete)
+            _uiState.update { it.copy(step = CARRIER_STEP, locationError = false) }
         } else {
             _uiState.update { it.copy(locationError = true) }
         }
     }
+
+    fun selectCarrier(value: String) = _uiState.update { it.copy(carrier = value, membership = null) }
+    fun selectMembership(value: String) = _uiState.update { it.copy(membership = value) }
+    fun toggleBrand(value: String) =
+        _uiState.update {
+            val brands =
+                if (value in it.preferredBrands) it.preferredBrands - value
+                else if (it.preferredBrands.size < 3) it.preferredBrands + value
+                else it.preferredBrands
+            it.copy(preferredBrands = brands)
+        }
 
     private companion object {
         const val TERMS_STEP = 0
