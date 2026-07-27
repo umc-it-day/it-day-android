@@ -35,6 +35,9 @@ fun OnboardingScreen(
     onBack: () -> Unit,
     onNext: () -> Unit,
     onLocationResult: (Boolean) -> Unit,
+    onCarrierSelect: (String) -> Unit,
+    onMembershipSelect: (String) -> Unit,
+    onBrandToggle: (String) -> Unit,
     onComplete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -64,7 +67,7 @@ fun OnboardingScreen(
                 onNext = onNext,
                 modifier = Modifier.weight(1f),
             )
-        } else {
+        } else if (state.step == LOCATION_STEP) {
             LocationPermissionStep(
                 showError = state.locationError,
                 onSettingsClick = onNext,
@@ -72,6 +75,15 @@ fun OnboardingScreen(
                     Modifier
                         .weight(1f)
                         .padding(horizontal = ItDayDimens.ScreenHorizontalPadding),
+            )
+        } else {
+            SelectionSteps(
+                state = state,
+                onCarrierSelect = onCarrierSelect,
+                onMembershipSelect = onMembershipSelect,
+                onBrandToggle = onBrandToggle,
+                onNext = onNext,
+                modifier = Modifier.weight(1f),
             )
         }
     }
@@ -162,9 +174,13 @@ private fun OnboardingScreenPreview() {
             onBack = {},
             onNext = {},
             onLocationResult = {},
+            onCarrierSelect = {},
+            onMembershipSelect = {},
+            onBrandToggle = {},
             onComplete = {},
         )
     }
 }
 
 private const val TERMS_STEP = 0
+private const val LOCATION_STEP = 1
