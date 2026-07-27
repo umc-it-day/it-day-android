@@ -1,5 +1,8 @@
 package com.example.itday.feature.onboarding.presentation
 
+import android.Manifest
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +13,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -20,26 +24,72 @@ import com.example.itday.ui.component.ItDayButton
 import com.example.itday.ui.component.ItDayFlowTopBar
 import com.example.itday.ui.theme.ItDayDimens
 import com.example.itday.ui.theme.ItDayTheme
+import kotlinx.coroutines.flow.Flow
 
 @Composable
 fun OnboardingScreen(
     state: OnboardingUiState,
+    events: Flow<OnboardingUiEvent>,
     onAgreementChange: (AgreementType, Boolean) -> Unit,
     onClose: () -> Unit,
+    onBack: () -> Unit,
+    onNext: () -> Unit,
+    onLocationResult: (Boolean) -> Unit,
+    onComplete: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val permissionLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+            onLocationResult(it)
+        }
+    LaunchedEffect(events) {
+        events.collect { event ->
+            when (event) {
+                OnboardingUiEvent.RequestLocationPermission ->
+                    permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                OnboardingUiEvent.Complete -> onComplete()
+            }
+        }
+    }
+
+    Column(modifier = modifier.fillMaxSize()) {
+        ItDayFlowTopBar(
+            onBackClick = if (state.step == TERMS_STEP) onClose else onBack,
+            navigationText = if (state.step == TERMS_STEP) "×" else "<",
+        )
+        if (state.step == TERMS_STEP) {
+            TermsContent(
+                state = state,
+                onAgreementChange = onAgreementChange,
+                onNext = onNext,
+                modifier = Modifier.weight(1f),
+            )
+        } else {
+            LocationPermissionStep(
+                showError = state.locationError,
+                onSettingsClick = onNext,
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .padding(horizontal = ItDayDimens.ScreenHorizontalPadding),
+            )
+        }
+    }
+}
+
+@Composable
+private fun TermsContent(
+    state: OnboardingUiState,
+    onAgreementChange: (AgreementType, Boolean) -> Unit,
     onNext: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier.fillMaxSize()) {
-        ItDayFlowTopBar(
-            onBackClick = onClose,
-            navigationText = "×",
-        )
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = ItDayDimens.ScreenHorizontalPadding),
-        ) {
+    Column(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(horizontal = ItDayDimens.ScreenHorizontalPadding),
+    ) {
             Text(
                 text = stringResource(R.string.onboarding_terms_title),
                 style = MaterialTheme.typography.titleLarge,
@@ -78,7 +128,6 @@ fun OnboardingScreen(
                         .fillMaxWidth()
                         .padding(bottom = ItDayDimens.Space24),
             )
-        }
     }
 }
 
@@ -107,9 +156,15 @@ private fun OnboardingScreenPreview() {
     ItDayTheme {
         OnboardingScreen(
             state = OnboardingUiState(locationAgreed = true),
+            events = kotlinx.coroutines.flow.emptyFlow(),
             onAgreementChange = { _, _ -> },
             onClose = {},
+            onBack = {},
             onNext = {},
+            onLocationResult = {},
+            onComplete = {},
         )
     }
 }
+
+private const val TERMS_STEP = 0
