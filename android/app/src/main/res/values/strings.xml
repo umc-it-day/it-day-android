@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">ItDay</string>
+    <string name="onboarding_next">다음</string>
+    <string name="onboarding_terms_title">약관 동의</string>
+    <string name="onboarding_terms_description">서비스 이용을 위해 동의가 필요합니다.</string>
+    <string name="onboarding_location_terms">위치 정보 이용 동의 (필수)</string>
+    <string name="onboarding_location_terms_description">주변 할인 매장 찾기</string>
+    <string name="onboarding_privacy_terms">개인정보 제공 동의 (필수)</string>
+    <string name="onboarding_privacy_terms_description">할인 혜택 제공</string>
+    <string name="onboarding_notification_terms">알림 권한 (선택)</string>
+    <string name="onboarding_notification_terms_description">할인 정보 알림</string>
 </resources>

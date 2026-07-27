@@ -12,6 +12,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.itday.core.di.appContainer
+import com.example.itday.feature.onboarding.presentation.OnboardingScreen
+import com.example.itday.feature.onboarding.presentation.OnboardingViewModel
 import com.example.itday.ui.start.LoginEvent
 import com.example.itday.ui.start.LoginScreen
 import com.example.itday.ui.start.LoginViewModel
@@ -121,13 +123,18 @@ private fun OnboardingDestination(navController: NavHostController) {
         viewModel(
             factory = SessionViewModel.Factory(context.appContainer.localPreferencesDataSource),
         )
+    val onboardingViewModel: OnboardingViewModel = viewModel()
+    val uiState by onboardingViewModel.uiState.collectAsState()
 
-    OnboardingPlaceholderScreen(
-        onStartClick = {
+    OnboardingScreen(
+        state = uiState,
+        onAgreementChange = onboardingViewModel::setAgreement,
+        onClose = { navController.popBackStack() },
+        onNext = {
             coroutineScope.launch {
                 sessionViewModel.completeOnboarding()
                 navController.navigate(AppRoute.MAIN.route) {
-                    popUpTo(AppRoute.LOGIN.route) { inclusive = true }
+                    popUpTo(AppRoute.ONBOARDING.route) { inclusive = true }
                 }
             }
         },
