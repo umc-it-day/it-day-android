@@ -22,6 +22,7 @@ fun ItDayFlowTopBar(
     modifier: Modifier = Modifier,
     title: String? = null,
     onBackClick: (() -> Unit)? = null,
+    navigationText: String = "<",
     actionText: String? = null,
     onActionClick: (() -> Unit)? = null,
 ) {
@@ -34,7 +35,7 @@ fun ItDayFlowTopBar(
     ) {
         if (onBackClick != null) {
             Text(
-                text = "<",
+                text = navigationText,
                 color = ItDayGray500,
                 style = MaterialTheme.typography.titleLarge,
                 modifier =
