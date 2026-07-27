@@ -128,9 +128,13 @@ private fun OnboardingDestination(navController: NavHostController) {
 
     OnboardingScreen(
         state = uiState,
+        events = onboardingViewModel.events,
         onAgreementChange = onboardingViewModel::setAgreement,
         onClose = { navController.popBackStack() },
-        onNext = {
+        onBack = onboardingViewModel::back,
+        onNext = onboardingViewModel::next,
+        onLocationResult = onboardingViewModel::onLocationResult,
+        onComplete = {
             coroutineScope.launch {
                 sessionViewModel.completeOnboarding()
                 navController.navigate(AppRoute.MAIN.route) {

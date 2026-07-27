@@ -9,4 +9,10 @@
     <string name="onboarding_privacy_terms_description">할인 혜택 제공</string>
     <string name="onboarding_notification_terms">알림 권한 (선택)</string>
     <string name="onboarding_notification_terms_description">할인 정보 알림</string>
+    <string name="onboarding_location_title">위치 권한이 필요합니다.</string>
+    <string name="onboarding_location_description_prefix">잇-데이는 매장 근처에서\n자동으로 멤버십을 띄워드립니다.\n위치 권한을 </string>
+    <string name="onboarding_location_always_allow">항상 허용</string>
+    <string name="onboarding_location_description_suffix">으로\n설정해주세요.</string>
+    <string name="onboarding_location_error">위치 권한을 허용해주세요.</string>
+    <string name="onboarding_location_settings">⚙ 설정 열기</string>
 </resources>
