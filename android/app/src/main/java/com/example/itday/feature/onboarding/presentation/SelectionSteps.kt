@@ -1,20 +1,32 @@
 package com.example.itday.feature.onboarding.presentation
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import com.example.itday.ui.component.ItDayButton
+import com.example.itday.ui.component.ItDayButtonSize
+import com.example.itday.ui.component.ItDayButtonVariant
 import com.example.itday.ui.component.ItDaySelectableCard
 import com.example.itday.ui.theme.ItDayDimens
+import com.example.itday.ui.theme.ItDayMint
 
 @Composable
 fun SelectionSteps(
@@ -37,18 +49,39 @@ fun SelectionSteps(
     ) {
         Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Text(description(state.step), style = MaterialTheme.typography.bodyMedium)
-        when (state.step) {
-            CARRIER_STEP -> Cards(CARRIERS, state.carrier, onCarrierSelect)
-            MEMBERSHIP_STEP -> Cards(memberships(state.carrier), state.membership, onMembershipSelect)
-            else -> BrandGrid(state.preferredBrands, onBrandToggle)
+        Column(
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(ItDayDimens.Space12),
+        ) {
+            when (state.step) {
+                CARRIER_STEP -> Cards(CARRIERS, state.carrier, onCarrierSelect)
+                MEMBERSHIP_STEP -> Cards(memberships(state.carrier), state.membership, onMembershipSelect)
+                else -> BrandSections(state.preferredBrands, onBrandToggle)
+            }
         }
-        Spacer(modifier = Modifier.weight(1f))
         ItDayButton(
-            text = if (state.step == BRAND_STEP) "${state.preferredBrands.size}개 선택하기" else "다음",
+            text = "다음",
             enabled = state.canContinue,
             onClick = onNext,
-            modifier = Modifier.fillMaxWidth().padding(bottom = ItDayDimens.Space24),
+            modifier = Modifier.fillMaxWidth(),
         )
+        if (state.step == BRAND_STEP) {
+            ItDayButton(
+                text = "건너뛰기",
+                variant = ItDayButtonVariant.Text,
+                size = ItDayButtonSize.Small,
+                onClick = onNext,
+                modifier =
+                    Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(bottom = ItDayDimens.Space12),
+            )
+        } else {
+            Spacer(modifier = Modifier.padding(bottom = ItDayDimens.Space12))
+        }
     }
 }
 
@@ -74,20 +107,90 @@ private fun Cards(options: List<String>, selected: String?, onSelect: (String) -
 }
 
 @Composable
-private fun BrandGrid(selected: Set<String>, onSelect: (String) -> Unit) {
-    BRANDS.chunked(3).forEach { brands ->
+private fun BrandSections(selected: Set<String>, onSelect: (String) -> Unit) {
+    var cafeExpanded by rememberSaveable { mutableStateOf(true) }
+    var convenienceExpanded by rememberSaveable { mutableStateOf(true) }
+
+    BrandSection(
+        title = "카페",
+        brands = CAFE_BRANDS,
+        selected = selected,
+        expanded = cafeExpanded,
+        onExpandedChange = { cafeExpanded = !cafeExpanded },
+        onSelect = onSelect,
+    )
+    BrandSection(
+        title = "편의점",
+        brands = CONVENIENCE_BRANDS.toList(),
+        selected = selected,
+        expanded = convenienceExpanded,
+        onExpandedChange = { convenienceExpanded = !convenienceExpanded },
+        onSelect = onSelect,
+    )
+}
+
+@Composable
+private fun BrandSection(
+    title: String,
+    brands: List<String>,
+    selected: Set<String>,
+    expanded: Boolean,
+    onExpandedChange: () -> Unit,
+    onSelect: (String) -> Unit,
+) {
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onExpandedChange)
+                .padding(vertical = ItDayDimens.Space8),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(1f),
+        )
+        Text(
+            text = if (expanded) "⌃" else "⌄",
+            style = MaterialTheme.typography.titleMedium,
+        )
+    }
+    if (expanded) {
+        BrandGrid(brands, selected, onSelect)
+    }
+}
+
+@Composable
+private fun BrandGrid(
+    brands: List<String>,
+    selected: Set<String>,
+    onSelect: (String) -> Unit,
+) {
+    brands.chunked(3).forEach { rowBrands ->
         Row(modifier = Modifier.fillMaxWidth()) {
-            brands.forEach { brand ->
+            rowBrands.forEach { brand ->
                 val icon = if (brand in CONVENIENCE_BRANDS) "🏪" else "☕"
                 ItDaySelectableCard(
                     selected = brand in selected,
                     onClick = { onSelect(brand) },
                     modifier = Modifier.weight(1f).padding(ItDayDimens.Space4),
                 ) {
-                    Text("$icon\n$brand", style = MaterialTheme.typography.bodySmall)
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        Text("$icon\n$brand", style = MaterialTheme.typography.bodySmall)
+                        if (brand in selected) {
+                            Text(
+                                text = "✓",
+                                color = ItDayMint,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.align(Alignment.TopEnd),
+                            )
+                        }
+                    }
                 }
             }
-            repeat(3 - brands.size) { Spacer(Modifier.weight(1f)) }
+            repeat(3 - rowBrands.size) { Spacer(Modifier.weight(1f)) }
         }
     }
 }
@@ -108,9 +211,8 @@ private fun memberships(carrier: String?) =
 
 private val CARRIERS = listOf("SKT", "KT", "LG U+")
 private val CONVENIENCE_BRANDS = setOf("CU", "GS25", "세븐일레븐", "이마트24", "미니스톱")
-private val BRANDS =
-    listOf("스타벅스", "투썸", "메가커피", "컴포즈", "파스쿠찌", "이디야", "할리스", "폴 바셋") +
-        CONVENIENCE_BRANDS
+private val CAFE_BRANDS =
+    listOf("스타벅스", "투썸", "메가커피", "컴포즈", "파스쿠찌", "이디야", "할리스", "폴 바셋")
 internal const val CARRIER_STEP = 2
 internal const val MEMBERSHIP_STEP = 3
 internal const val BRAND_STEP = 4
