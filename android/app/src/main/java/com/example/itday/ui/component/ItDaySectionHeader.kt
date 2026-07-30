@@ -10,7 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.itday.ui.theme.ItDayTheme
+import com.example.itday.ui.preview.ItDayComponentPreview
 
 @Composable
 fun ItDaySectionHeader(
@@ -37,7 +37,7 @@ fun ItDaySectionHeader(
 @Preview(showBackground = true)
 @Composable
 private fun ItDaySectionHeaderPreview() {
-    ItDayTheme {
+    ItDayComponentPreview {
         ItDaySectionHeader(title = "내 멤버십 혜택")
     }
 }

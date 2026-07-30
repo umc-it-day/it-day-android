@@ -3,6 +3,7 @@ package com.example.itday.feature.onboarding.presentation
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,6 +23,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.itday.R
 import com.example.itday.ui.component.ItDayButton
 import com.example.itday.ui.component.ItDayFlowTopBar
+import com.example.itday.ui.component.ItDayStepIndicator
 import com.example.itday.ui.theme.ItDayDimens
 import com.example.itday.ui.theme.ItDayTheme
 import kotlinx.coroutines.flow.Flow
@@ -56,10 +58,19 @@ fun OnboardingScreen(
     }
 
     Column(modifier = modifier.fillMaxSize()) {
-        ItDayFlowTopBar(
-            onBackClick = if (state.step == TERMS_STEP) onClose else onBack,
-            navigationText = if (state.step == TERMS_STEP) "×" else "<",
-        )
+        Box(modifier = Modifier.fillMaxWidth()) {
+            ItDayFlowTopBar(
+                onBackClick = if (state.step == TERMS_STEP) onClose else onBack,
+                navigationText = if (state.step == TERMS_STEP) "×" else "<",
+            )
+            if (state.step != TERMS_STEP) {
+                ItDayStepIndicator(
+                    currentStep = state.step - LOCATION_STEP,
+                    totalSteps = ONBOARDING_STEP_COUNT,
+                    modifier = Modifier.align(Alignment.Center),
+                )
+            }
+        }
         if (state.step == TERMS_STEP) {
             TermsContent(
                 state = state,
@@ -184,3 +195,4 @@ private fun OnboardingScreenPreview() {
 
 private const val TERMS_STEP = 0
 private const val LOCATION_STEP = 1
+private const val ONBOARDING_STEP_COUNT = 4

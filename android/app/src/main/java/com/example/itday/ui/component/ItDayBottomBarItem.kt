@@ -6,7 +6,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.itday.ui.theme.ItDayTheme
+import com.example.itday.ui.preview.ItDayComponentPreview
 
 data class ItDayBottomBarItem(
     val route: String,
@@ -36,7 +36,7 @@ fun ItDayBottomBar(
 @Preview(showBackground = true)
 @Composable
 private fun ItDayBottomBarPreview() {
-    ItDayTheme {
+    ItDayComponentPreview {
         ItDayBottomBar(
             items =
                 listOf(

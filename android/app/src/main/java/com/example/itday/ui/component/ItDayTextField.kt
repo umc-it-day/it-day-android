@@ -20,7 +20,7 @@ import com.example.itday.ui.theme.ItDayDimens
 import com.example.itday.ui.theme.ItDayGray100
 import com.example.itday.ui.theme.ItDayGray500
 import com.example.itday.ui.theme.ItDayRadius
-import com.example.itday.ui.theme.ItDayTheme
+import com.example.itday.ui.preview.ItDayComponentPreview
 
 @Composable
 fun ItDayTextField(
@@ -80,7 +80,7 @@ fun ItDayTextField(
 @Preview(showBackground = true)
 @Composable
 private fun ItDayTextFieldPreview() {
-    ItDayTheme {
+    ItDayComponentPreview {
         ItDayTextField(
             value = "",
             onValueChange = {},

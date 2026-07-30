@@ -15,7 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.itday.ui.theme.ItDayBlue
 import com.example.itday.ui.theme.ItDayDimens
 import com.example.itday.ui.theme.ItDayGray500
-import com.example.itday.ui.theme.ItDayTheme
+import com.example.itday.ui.preview.ItDayComponentPreview
 
 @Composable
 fun ItDayFlowTopBar(
@@ -70,7 +70,7 @@ fun ItDayFlowTopBar(
 @Preview(showBackground = true)
 @Composable
 private fun ItDayFlowTopBarPreview() {
-    ItDayTheme {
+    ItDayComponentPreview {
         ItDayFlowTopBar(
             title = "프로필 설정",
             onBackClick = {},
