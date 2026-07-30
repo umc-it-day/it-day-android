@@ -20,7 +20,7 @@ import com.example.itday.ui.theme.ItDayDimens
 import com.example.itday.ui.theme.ItDayGray100
 import com.example.itday.ui.theme.ItDayMint
 import com.example.itday.ui.theme.ItDayRadius
-import com.example.itday.ui.theme.ItDayTheme
+import com.example.itday.ui.preview.ItDayComponentPreview
 import com.example.itday.ui.theme.ItDayWhite
 
 @Composable
@@ -85,7 +85,7 @@ fun ItDaySelectableCard(
 @Preview(showBackground = true)
 @Composable
 private fun ItDayCardPreview() {
-    ItDayTheme {
+    ItDayComponentPreview {
         ItDaySelectableCard(selected = true, onClick = {}) {
             androidx.compose.material3.Text(text = "VIP")
         }

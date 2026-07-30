@@ -21,7 +21,7 @@ import com.example.itday.ui.theme.ItDayGray100
 import com.example.itday.ui.theme.ItDayGray500
 import com.example.itday.ui.theme.ItDayMint
 import com.example.itday.ui.theme.ItDayRadius
-import com.example.itday.ui.theme.ItDayTheme
+import com.example.itday.ui.preview.ItDayComponentPreview
 
 enum class ItDayBadgeVariant {
     Primary,
@@ -74,7 +74,7 @@ private fun ItDayBadgeVariant.colors(): ItDayBadgeColors =
 @Preview(showBackground = true)
 @Composable
 private fun ItDayBadgePreview() {
-    ItDayTheme {
+    ItDayComponentPreview {
         ItDayBadge(text = "VIP 할인")
     }
 }
