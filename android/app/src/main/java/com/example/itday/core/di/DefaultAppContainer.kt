@@ -30,7 +30,9 @@ import com.example.itday.core.local.LocalPreferencesDataSource
 import com.example.itday.core.local.itDayPreferencesDataStore
 import com.example.itday.core.network.AuthHeaderInterceptor
 import com.example.itday.core.network.AuthTokenAuthenticator
+import com.example.itday.core.network.AndroidNetworkMonitor
 import com.example.itday.core.network.NetworkClient
+import com.example.itday.core.network.NetworkMonitor
 import com.example.itday.core.permission.AndroidPermissionManager
 import com.example.itday.core.permission.PermissionManager
 import kotlinx.coroutines.runBlocking
@@ -60,6 +62,10 @@ class DefaultAppContainer(
 
     override val permissionManager: PermissionManager by lazy {
         AndroidPermissionManager(appContext)
+    }
+
+    override val networkMonitor: NetworkMonitor by lazy {
+        AndroidNetworkMonitor(appContext)
     }
 
     override val okHttpClient: OkHttpClient by lazy {
