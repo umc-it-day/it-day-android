@@ -1,6 +1,5 @@
 package com.example.itday.feature.onboarding.presentation
 
-import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
@@ -17,10 +16,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.itday.R
+import com.example.itday.core.permission.AndroidPermissionManager
+import com.example.itday.core.permission.AppPermission
+import com.example.itday.core.permission.PermissionManager
 import com.example.itday.ui.component.ItDayButton
 import com.example.itday.ui.component.ItDayFlowTopBar
 import com.example.itday.ui.component.ItDayStepIndicator
@@ -41,17 +44,25 @@ fun OnboardingScreen(
     onMembershipSelect: (String) -> Unit,
     onBrandToggle: (String) -> Unit,
     onComplete: () -> Unit,
+    permissionManager: PermissionManager,
     modifier: Modifier = Modifier,
 ) {
     val permissionLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
-            onLocationResult(it)
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+            onLocationResult(permissionManager.isGranted(AppPermission.Location))
         }
     LaunchedEffect(events) {
         events.collect { event ->
             when (event) {
-                OnboardingUiEvent.RequestLocationPermission ->
-                    permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                OnboardingUiEvent.RequestLocationPermission -> {
+                    if (permissionManager.isGranted(AppPermission.Location)) {
+                        onLocationResult(true)
+                    } else {
+                        permissionLauncher.launch(
+                            permissionManager.permissionsFor(AppPermission.Location).toTypedArray(),
+                        )
+                    }
+                }
                 OnboardingUiEvent.Complete -> onComplete()
             }
         }
@@ -189,6 +200,7 @@ private fun OnboardingScreenPreview() {
             onMembershipSelect = {},
             onBrandToggle = {},
             onComplete = {},
+            permissionManager = AndroidPermissionManager(LocalContext.current),
         )
     }
 }
