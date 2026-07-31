@@ -12,4 +12,5 @@ enum class AppRoute(
     BARCODE("barcode"),
     REPORT("report"),
     SETTINGS("settings"),
+    PAYMENT("payment"),
 }
