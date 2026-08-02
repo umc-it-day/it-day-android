@@ -18,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -92,7 +93,10 @@ fun GuestReportContent(
 }
 
 @Composable
-internal fun ReportHeader() {
+internal fun ReportHeader(
+    onAttendanceClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {},
+) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(top = ItDayDimens.Space16),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -103,9 +107,23 @@ internal fun ReportHeader() {
             contentDescription = stringResource(R.string.app_name),
             modifier = Modifier.size(32.dp),
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(ItDayDimens.Space16)) {
-            Text(text = "▣", color = ItDayGray500, style = MaterialTheme.typography.titleLarge)
-            Text(text = "●", color = ItDayGray500, style = MaterialTheme.typography.titleLarge)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onAttendanceClick) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_calendar_outline),
+                    contentDescription = stringResource(R.string.report_calendar),
+                    modifier = Modifier.size(26.dp),
+                    tint = ItDayGray500,
+                )
+            }
+            IconButton(onClick = onProfileClick) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_person),
+                    contentDescription = stringResource(R.string.report_profile),
+                    modifier = Modifier.size(26.dp),
+                    tint = ItDayGray500,
+                )
+            }
         }
     }
 }
