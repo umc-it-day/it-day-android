@@ -53,7 +53,7 @@ fun GuestReportContent(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = ItDayDimens.ScreenHorizontalPadding),
     ) {
-        ReportGuestHeader()
+        ReportHeader()
         Row(
             modifier = Modifier.padding(top = ItDayDimens.Space16),
             verticalAlignment = Alignment.CenterVertically,
@@ -92,7 +92,7 @@ fun GuestReportContent(
 }
 
 @Composable
-private fun ReportGuestHeader() {
+internal fun ReportHeader() {
     Row(
         modifier = Modifier.fillMaxWidth().padding(top = ItDayDimens.Space16),
         horizontalArrangement = Arrangement.SpaceBetween,

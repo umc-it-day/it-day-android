@@ -1,5 +1,12 @@
 package com.example.itday.feature.report.presentation
 
-data class ReportUiState(val access: ReportAccess = ReportAccess.Guest)
+import com.example.itday.feature.report.presentation.component.ReportCategoryItem
+import com.example.itday.feature.report.presentation.component.ReportTopStoreItem
 
-enum class ReportAccess { Guest }
+data class ReportUiState(
+    val access: ReportAccess = ReportAccess.Guest,
+    val categories: List<ReportCategoryItem> = emptyList(),
+    val topStores: List<ReportTopStoreItem> = emptyList(),
+)
+
+enum class ReportAccess { Guest, Free }
