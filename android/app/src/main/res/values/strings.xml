@@ -1,5 +1,10 @@
 <resources>
     <string name="app_name">ItDay</string>
+    <string name="report_guest_title">월간 사용 리포트</string>
+    <string name="report_guest_members_only">회원 전용 기능</string>
+    <string name="report_guest_preview">리포트 미리보기</string>
+    <string name="report_guest_monthly_usage">이번 달 멤버십 사용</string>
+    <string name="report_guest_sign_up">회원가입으로 잠금해제</string>
     <string name="onboarding_next">다음</string>
     <string name="onboarding_terms_title">약관 동의</string>
     <string name="onboarding_terms_description">서비스 이용을 위해 동의가 필요합니다.</string>
