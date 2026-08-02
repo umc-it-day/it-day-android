@@ -16,6 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.itday.feature.report.presentation.ReportScreen
 
 @Composable
 fun MainTabScaffold() {
@@ -81,7 +82,7 @@ private fun MainTabNavHost(
             MapPlaceholderScreen()
         }
         composable(AppRoute.REPORT.route) {
-            ReportPlaceholderScreen()
+            ReportScreen()
         }
         composable(AppRoute.SETTINGS.route) {
             SettingsPlaceholderScreen()
