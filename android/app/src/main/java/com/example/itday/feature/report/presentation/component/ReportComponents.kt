@@ -130,6 +130,8 @@ fun ReportAchievementRow(
     description: String,
     rewardText: String,
     progress: Float,
+    iconText: String? = null,
+    rewardEnabled: Boolean = progress < 1f,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -137,6 +139,7 @@ fun ReportAchievementRow(
         horizontalArrangement = Arrangement.spacedBy(ItDayDimens.Space12),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        iconText?.let { Text(text = it, style = MaterialTheme.typography.titleLarge) }
         Column(modifier = Modifier.weight(1f)) {
             Text(text = title, fontWeight = FontWeight.Bold)
             Text(
@@ -170,9 +173,9 @@ fun ReportAchievementRow(
             modifier =
                 Modifier
                     .clip(RoundedCornerShape(12.dp))
-                    .background(if (progress >= 1f) ItDayGray100 else ItDayBlue)
+                    .background(if (rewardEnabled) ItDayBlue else ItDayGray100)
                     .padding(horizontal = ItDayDimens.Space12, vertical = ItDayDimens.Space8),
-            color = if (progress >= 1f) ItDayGray500 else Color.White,
+            color = if (rewardEnabled) Color.White else ItDayGray500,
             fontWeight = FontWeight.Bold,
         )
     }
