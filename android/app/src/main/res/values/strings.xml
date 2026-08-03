@@ -6,7 +6,10 @@
     <string name="report_guest_monthly_usage">이번 달 멤버십 사용</string>
     <string name="report_guest_sign_up">회원가입으로 잠금해제</string>
     <string name="report_free_tower">카피바라 탑</string>
-    <string name="report_free_floor">3층</string>
+    <string name="report_calendar">달력</string>
+    <string name="report_profile">프로필</string>
+    <string name="report_free_point_balance">%1$dP</string>
+    <string name="report_free_floor">%1$d층</string>
     <string name="report_free_shop">상점 이용하기</string>
     <string name="report_free_category_title">가장 많은 할인을 받은 카테고리</string>
     <string name="report_free_category_description">최근 6개월간의 활동을 바탕으로 분석했어요</string>
