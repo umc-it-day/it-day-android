@@ -130,6 +130,7 @@ fun ReportAchievementRow(
     description: String,
     rewardText: String,
     progress: Float,
+    progressText: String? = null,
     iconText: String? = null,
     rewardEnabled: Boolean = progress < 1f,
     modifier: Modifier = Modifier,
@@ -142,17 +143,12 @@ fun ReportAchievementRow(
         iconText?.let { Text(text = it, style = MaterialTheme.typography.titleLarge) }
         Column(modifier = Modifier.weight(1f)) {
             Text(text = title, fontWeight = FontWeight.Bold)
-            Text(
-                text = description,
-                color = ItDayBlue,
-                style = MaterialTheme.typography.bodySmall,
-            )
-            Box(
-                modifier = Modifier.padding(top = ItDayDimens.Space8),
-            ) {
+            Text(text = description, color = ItDayBlue, style = MaterialTheme.typography.bodySmall)
+            if (progress > 0f) {
                 Box(
                     modifier =
                         Modifier
+                            .padding(top = ItDayDimens.Space8)
                             .width(182.dp)
                             .height(4.dp)
                             .clip(RoundedCornerShape(2.dp))
@@ -162,9 +158,12 @@ fun ReportAchievementRow(
                         modifier =
                             Modifier
                                 .fillMaxWidth(progress.coerceIn(0f, 1f))
-                                .background(ItDayBlue)
-                                .height(4.dp),
+                                .height(4.dp)
+                                .background(ItDayBlue),
                     )
+                }
+                progressText?.let {
+                    Text(text = it, color = ItDayGray500, style = MaterialTheme.typography.labelSmall)
                 }
             }
         }
