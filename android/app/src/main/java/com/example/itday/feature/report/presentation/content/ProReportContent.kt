@@ -44,6 +44,7 @@ fun ProReportContent(
     modifier: Modifier = Modifier,
     onAttendanceClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
+    discountUseCount: Int = 15,
 ) {
     Column(
         modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).background(ItDayWhite),
@@ -57,7 +58,10 @@ fun ProReportContent(
                     .padding(horizontal = ItDayDimens.Space24, vertical = ItDayDimens.Space24),
         ) {
             ProHero(onAttendanceClick = onAttendanceClick, onProfileClick = onProfileClick)
-            ProAchievementCard(modifier = Modifier.padding(top = ItDayDimens.Space4))
+            ProAchievementCard(
+                currentCount = discountUseCount,
+                modifier = Modifier.padding(top = ItDayDimens.Space4),
+            )
         }
         ProNotice(modifier = Modifier.padding(ItDayDimens.Space24))
     }
@@ -119,28 +123,34 @@ private fun ProStat(icon: String, label: String, value: Int) {
 }
 
 @Composable
-private fun ProAchievementCard(modifier: Modifier = Modifier) {
+private fun ProAchievementCard(currentCount: Int, modifier: Modifier = Modifier) {
+    val nextTarget = listOf(5, 10, 15, 20).firstOrNull { it > currentCount } ?: 20
+    val remainingCount = (nextTarget - currentCount).coerceAtLeast(0)
     ItDayCard(modifier = modifier.fillMaxWidth()) {
         Text(
-            text = stringResource(R.string.report_pro_next_reward),
+            text = stringResource(R.string.report_pro_next_reward, remainingCount),
             modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(4.dp)).background(ProBanner).padding(4.dp),
             color = ItDayBlue,
             style = MaterialTheme.typography.bodySmall,
         )
-        Achievement("🏆", 5, "+100", 1f, false)
-        Achievement("🥈", 10, "+100", 1f, false)
-        Achievement("🥇", 15, "P 400", 1f, true)
-        Achievement("🏅", 20, "P 1,000", 0.75f, false)
+        Achievement("🏆", currentCount, 5, "+100", false)
+        Achievement("🥈", currentCount, 10, "+100", false)
+        Achievement("🥇", currentCount, 15, "P 400", currentCount >= 15)
+        Achievement("🏅", currentCount, 20, "P 1,000", false)
     }
 }
 
 @Composable
-private fun Achievement(icon: String, count: Int, reward: String, progress: Float, enabled: Boolean) {
+private fun Achievement(icon: String, currentCount: Int, targetCount: Int, reward: String, enabled: Boolean) {
+    val achievedCount = currentCount.coerceIn(0, targetCount)
+    val progress = achievedCount.toFloat() / targetCount
+    val status = if (achievedCount >= targetCount) R.string.report_pro_progress_complete else R.string.report_pro_progress_active
     ReportAchievementRow(
-        title = stringResource(R.string.report_pro_achievement_title, count),
-        description = stringResource(R.string.report_pro_achievement_description, count),
+        title = stringResource(R.string.report_pro_achievement_title, targetCount),
+        description = stringResource(R.string.report_pro_achievement_description, targetCount),
         rewardText = reward,
         progress = progress,
+        progressText = stringResource(R.string.report_pro_progress, achievedCount, targetCount, stringResource(status)),
         iconText = icon,
         rewardEnabled = enabled,
     )
