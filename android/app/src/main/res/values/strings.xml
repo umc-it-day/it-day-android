@@ -18,6 +18,17 @@
     <string name="report_free_top_empty_title">사용 TOP 매장</string>
     <string name="report_free_top_title">사용 TOP3 매장</string>
     <string name="report_free_top_empty">아직 사용 기록이 없습니다.</string>
+    <string name="report_pro_month">2025년 6월</string>
+    <string name="report_pro_badge">PRO 멤버십</string>
+    <string name="report_pro_monthly_use">6월 이용</string>
+    <string name="report_pro_monthly_point">6월 포인트</string>
+    <string name="report_pro_total_use">총 이용</string>
+    <string name="report_pro_next_reward">다음 보상까지 5번 남았어요!</string>
+    <string name="report_pro_achievement_title">할인 총 %1$d회 달성</string>
+    <string name="report_pro_achievement_description">이번달 할인을 %1$d번 이용하세요</string>
+    <string name="report_pro_notice">안내사항</string>
+    <string name="report_pro_notice_discount">· 멤버십 사용은 바코드 제시 후 실제 할인 적용 기준입니다</string>
+    <string name="report_pro_notice_expiry">· 프로 구독 해지 시 미지급 포인트는 소멸됩니다</string>
     <string name="onboarding_next">다음</string>
     <string name="onboarding_terms_title">약관 동의</string>
     <string name="onboarding_terms_description">서비스 이용을 위해 동의가 필요합니다.</string>

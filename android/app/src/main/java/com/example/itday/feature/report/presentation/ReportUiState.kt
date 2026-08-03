@@ -9,4 +9,4 @@ data class ReportUiState(
     val topStores: List<ReportTopStoreItem> = emptyList(),
 )
 
-enum class ReportAccess { Guest, Free }
+enum class ReportAccess { Guest, Free, Pro }

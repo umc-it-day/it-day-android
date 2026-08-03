@@ -5,12 +5,13 @@ import com.example.itday.R
 import com.example.itday.feature.report.presentation.component.ReportCategoryItem
 import com.example.itday.feature.report.presentation.content.GuestReportContent
 import com.example.itday.feature.report.presentation.content.FreeReportContent
+import com.example.itday.feature.report.presentation.content.ProReportContent
 
 @Composable
 fun ReportScreen(
     uiState: ReportUiState =
         ReportUiState(
-            access = ReportAccess.Free,
+            access = ReportAccess.Pro,
             categories =
                 listOf(
                     ReportCategoryItem("카페", 1, R.drawable.report_category_cafe),
@@ -32,5 +33,6 @@ fun ReportScreen(
                 onShopClick = onShopClick,
                 onPointHistoryClick = onPointHistoryClick,
             )
+        ReportAccess.Pro -> ProReportContent()
     }
 }
