@@ -5,7 +5,7 @@ import com.example.itday.R
 import com.example.itday.feature.report.presentation.component.ReportCategoryItem
 import com.example.itday.feature.report.presentation.content.GuestReportContent
 import com.example.itday.feature.report.presentation.content.FreeReportContent
-import com.example.itday.feature.report.presentation.content.ProReportContent
+import com.example.itday.feature.report.presentation.content.StoreContent
 
 @Composable
 fun ReportScreen(
@@ -33,6 +33,6 @@ fun ReportScreen(
                 onShopClick = onShopClick,
                 onPointHistoryClick = onPointHistoryClick,
             )
-        ReportAccess.Pro -> ProReportContent()
+        ReportAccess.Pro -> StoreContent()
     }
 }
