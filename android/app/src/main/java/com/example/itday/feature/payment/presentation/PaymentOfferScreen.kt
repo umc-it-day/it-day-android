@@ -4,6 +4,7 @@ package com.example.itday.feature.payment.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -59,38 +60,19 @@ fun PaymentOfferScreen(
                     .padding(horizontal = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(modifier = Modifier.height(10.dp))
-            RoyalCharacterPlaceholder()
-            Spacer(modifier = Modifier.height(18.dp))
-            Text(
-                text = "\uD83C\uDF3F  " + stringResource(R.string.payment_trial_title) + "  \uD83C\uDF3F",
-                color = Color.White,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.ExtraBold,
-                textAlign = TextAlign.Center,
-            )
+            Spacer(modifier = Modifier.height(51.dp))
+            RoyalCharacter()
             Spacer(modifier = Modifier.height(8.dp))
+            TrialTitle()
             Text(
                 text = stringResource(R.string.payment_trial_subtitle),
                 color = Color.White.copy(alpha = 0.86f),
                 style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center,
             )
-            Spacer(modifier = Modifier.height(38.dp))
-            PlanHeader()
-            BenefitComparisonRow(
-                title = stringResource(R.string.payment_benefit_ad_free),
-                description = stringResource(R.string.payment_benefit_ad_free_description),
-            )
-            BenefitComparisonRow(
-                title = stringResource(R.string.payment_benefit_challenge),
-                description = stringResource(R.string.payment_benefit_challenge_description),
-            )
-            BenefitComparisonRow(
-                title = stringResource(R.string.payment_benefit_report),
-                description = stringResource(R.string.payment_benefit_report_description),
-                showDivider = false,
-            )
-            Spacer(modifier = Modifier.height(26.dp))
+            Spacer(modifier = Modifier.height(32.dp))
+            PlanComparisonTable()
+            Spacer(modifier = Modifier.height(22.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End,
@@ -134,13 +116,19 @@ fun PaymentOfferScreen(
                         contentColor = Color.Black,
                     ),
             ) {
-                Text(
-                    text = stringResource(R.string.payment_start_trial),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                Text(text = "\u2192", style = MaterialTheme.typography.headlineSmall)
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = stringResource(R.string.payment_start_trial),
+                        modifier = Modifier.align(Alignment.Center),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        text = "\u2192",
+                        modifier = Modifier.align(Alignment.CenterEnd),
+                        style = MaterialTheme.typography.headlineSmall,
+                    )
+                }
             }
         }
     }

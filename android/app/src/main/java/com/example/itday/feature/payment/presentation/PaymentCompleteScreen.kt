@@ -73,8 +73,9 @@ fun PaymentCompleteScreen(
                         .weight(1f)
                         .verticalScroll(rememberScrollState())
                         .padding(horizontal = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Spacer(modifier = Modifier.height(46.dp))
+                Spacer(modifier = Modifier.height(106.dp))
                 Text(
                     text = stringResource(R.string.payment_complete_title),
                     color = Color.White,

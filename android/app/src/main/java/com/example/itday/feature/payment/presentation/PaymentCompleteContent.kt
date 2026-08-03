@@ -2,6 +2,8 @@
 
 package com.example.itday.feature.payment.presentation
 
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -48,7 +51,7 @@ internal fun BenefitCard() {
             Modifier
                 .fillMaxWidth()
                 .background(Color(0xFF49699D).copy(alpha = 0.65f), RoundedCornerShape(24.dp))
-                .padding(24.dp),
+                .padding(horizontal = 24.dp, vertical = 22.dp),
     ) {
         Text(
             text = stringResource(R.string.payment_active_benefits),
@@ -56,36 +59,40 @@ internal fun BenefitCard() {
             fontWeight = FontWeight.Bold,
         )
         CompleteBenefitRow(
-            symbol = "\uD83D\uDEE1",
+            iconRes = R.drawable.payment_shield,
             title = stringResource(R.string.payment_benefit_ad_free),
-            description = stringResource(R.string.payment_benefit_ad_free_description),
+            description = stringResource(R.string.payment_complete_ad_description),
         )
         HorizontalDivider(color = Color.White.copy(alpha = 0.65f))
         CompleteBenefitRow(
-            symbol = "\uD83C\uDFC6",
+            iconRes = R.drawable.payment_award,
             title = stringResource(R.string.payment_benefit_challenge),
-            description = stringResource(R.string.payment_benefit_challenge_description),
+            description = stringResource(R.string.payment_complete_challenge_description),
         )
         HorizontalDivider(color = Color.White.copy(alpha = 0.65f))
         CompleteBenefitRow(
-            symbol = "\uD83D\uDCCA",
+            iconRes = R.drawable.payment_graph,
             title = stringResource(R.string.payment_benefit_report_complete),
-            description = stringResource(R.string.payment_benefit_report_description),
+            description = stringResource(R.string.payment_complete_report_description),
         )
     }
 }
 
 @Composable
 private fun CompleteBenefitRow(
-    symbol: String,
+    @DrawableRes iconRes: Int,
     title: String,
     description: String,
 ) {
     Row(
-        modifier = Modifier.padding(vertical = 16.dp),
+        modifier = Modifier.padding(vertical = 18.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        BenefitIcon(symbol = symbol, tint = Color(0xFF8CC4FF), modifier = Modifier.size(48.dp))
+        Image(
+            painter = painterResource(iconRes),
+            contentDescription = null,
+            modifier = Modifier.size(50.dp),
+        )
         Spacer(modifier = Modifier.size(16.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(text = title, color = Color.White, fontWeight = FontWeight.Bold)
@@ -95,6 +102,11 @@ private fun CompleteBenefitRow(
                 style = MaterialTheme.typography.bodySmall,
             )
         }
-        Text(text = "\u25CF", color = Color.White)
+        Spacer(modifier = Modifier.size(8.dp))
+        Image(
+            painter = painterResource(R.drawable.payment_check),
+            contentDescription = null,
+            modifier = Modifier.size(20.dp),
+        )
     }
 }

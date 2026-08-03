@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -27,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.example.itday.R
 
@@ -63,12 +65,7 @@ fun PaymentFailureScreen(
     onDemoComplete: () -> Unit,
 ) {
     PaymentProviderFrame(onBack = onBack) {
-        Text(
-            text = "\u00D7",
-            color = Color.White,
-            style = MaterialTheme.typography.displayLarge,
-            fontWeight = FontWeight.ExtraLight,
-        )
+        PaymentFailureMark()
         Spacer(modifier = Modifier.height(24.dp))
         StatusMessage(
             title = stringResource(R.string.payment_failure_title),
@@ -134,6 +131,7 @@ private fun PaymentProviderFrame(
                 modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 70.dp),
                 color = Color(0xFF657080),
                 style = MaterialTheme.typography.bodyMedium,
+                textDecoration = TextDecoration.Underline,
             )
         }
     }
@@ -170,7 +168,8 @@ private fun StatusButton(
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier.height(46.dp),
+        modifier = modifier.height(38.dp),
+        shape = RoundedCornerShape(9.dp),
         colors =
             ButtonDefaults.buttonColors(
                 containerColor = containerColor,

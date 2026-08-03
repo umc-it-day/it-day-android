@@ -48,6 +48,9 @@
     <string name="payment_amount_label">&#xACB0;&#xC81C; &#xAE08;&#xC561;</string>
     <string name="payment_next_date_label">&#xB2E4;&#xC74C; &#xACB0;&#xC81C;&#xC77C;</string>
     <string name="payment_active_benefits">&#xD65C;&#xC131;&#xD654;&#xB41C; PRO &#xD61C;&#xD0DD;</string>
+    <string name="payment_complete_ad_description">&#xC571; &#xC774;&#xC6A9; &#xC911; &#xBD88;&#xD544;&#xC694;&#xD55C; &#xAD11;&#xACE0; &#xC5C6;&#xC774; &#xCF8C;&#xC801;&#xD558;&#xAC8C; &#xC0AC;&#xC6A9;&#xD558;&#xC138;&#xC694;</string>
+    <string name="payment_complete_challenge_description">&#xB3C4;&#xC804;&#xACFC;&#xC81C;&#xB97C; &#xB2EC;&#xC131;&#xD558;&#xBA74; &#xD3EC;&#xC778;&#xD2B8;&#xB97C; &#xD68D;&#xB4DD;&#xD574; &#xB2E4;&#xC591;&#xD55C; &#xD61C;&#xD0DD;&#xC73C;&#xB85C; &#xAD50;&#xD658;&#xD558;&#xC138;&#xC694;</string>
+    <string name="payment_complete_report_description">&#xC18C;&#xBE44; &#xD328;&#xD134;&#xC744; &#xC0C1;&#xC138;&#xD788; &#xBD84;&#xC11D;&#xD574; &#xB9DE;&#xCDA4;&#xD615; &#xC808;&#xC57D; &#xC804;&#xB7B5;&#xC744; &#xC81C;&#xC548;&#xD574;&#xB4DC;&#xB824;&#xC694;</string>
     <string name="payment_go_home">&#xD648;&#xC73C;&#xB85C; &#xC774;&#xB3D9;</string>
     <string name="payment_view_challenges">PRO &#xB3C4;&#xC804;&#xACFC;&#xC81C; &#xD655;&#xC778;&#xD558;&#xAE30;</string>
 </resources>
