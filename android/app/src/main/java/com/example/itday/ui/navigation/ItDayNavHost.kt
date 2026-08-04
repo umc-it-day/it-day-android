@@ -22,6 +22,8 @@ import com.example.itday.ui.start.SessionViewModel
 import com.example.itday.ui.start.SplashScreen
 import kotlinx.coroutines.launch
 
+import com.example.itday.feature.barcode.presentation.BarcodeRegistrationRoute
+
 @Composable
 fun ItDayNavHost(navController: NavHostController = rememberNavController()) {
     NavHost(
@@ -41,7 +43,14 @@ fun ItDayNavHost(navController: NavHostController = rememberNavController()) {
             MainTabScaffold()
         }
         composable(AppRoute.BARCODE.route) {
-            BarcodePlaceholderScreen()
+            BarcodeRegistrationRoute(
+                onBackClick = { navController.popBackStack() },
+                onHomeClick = {
+                    navController.navigate(AppRoute.MAIN.route) {
+                        popUpTo(AppRoute.MAIN.route) { inclusive = true }
+                    }
+                },
+            )
         }
     }
 }
