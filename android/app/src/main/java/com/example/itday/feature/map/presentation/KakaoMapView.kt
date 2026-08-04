@@ -1,14 +1,21 @@
 package com.example.itday.feature.map.presentation
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -17,13 +24,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.itday.R
 import com.example.itday.core.map.KakaoMapEnvironment
+import com.example.itday.ui.component.ItDayButton
 import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
@@ -31,16 +41,36 @@ import com.kakao.vectormap.MapLifeCycleCallback
 import com.kakao.vectormap.MapView
 
 @Composable
-fun KakaoMapView(modifier: Modifier = Modifier) {
+fun KakaoMapView(
+    isOnline: Boolean,
+    reloadKey: Int,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     if (!KakaoMapEnvironment.isSupportedDevice) {
         MapStatusText(R.string.map_device_not_supported)
         return
     }
+    var isWaitingForNetwork by remember { mutableStateOf(false) }
+    LaunchedEffect(isOnline) {
+        if (isOnline) isWaitingForNetwork = false
+    }
+    if (!isOnline) {
+        MapErrorState(
+            textRes = R.string.map_network_error,
+            isRetrying = isWaitingForNetwork,
+            onRetry = {
+                isWaitingForNetwork = true
+                onRetry()
+            },
+        )
+        return
+    }
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
-    var isLoading by remember { mutableStateOf(true) }
-    var hasError by remember { mutableStateOf(false) }
-    val mapView = remember(context) { MapView(context) }
+    var isLoading by remember(reloadKey) { mutableStateOf(true) }
+    var hasError by remember(reloadKey) { mutableStateOf(false) }
+    val mapView = remember(context, reloadKey) { MapView(context) }
 
     DisposableEffect(lifecycleOwner, mapView) {
         val observer =
@@ -89,9 +119,61 @@ fun KakaoMapView(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxSize(),
         )
         when {
-            hasError -> MapStatusText(R.string.map_load_error)
-            isLoading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            hasError -> MapErrorState(R.string.map_load_error, false, onRetry)
+            isLoading -> MapLoadingOverlay()
         }
+    }
+}
+
+@Composable
+private fun MapLoadingOverlay() {
+    Column(
+        modifier = Modifier.fillMaxSize().background(Color.White),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Image(
+            painter = painterResource(R.drawable.itday_logo),
+            contentDescription = null,
+            modifier = Modifier.size(72.dp),
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+private fun MapErrorState(
+    textRes: Int,
+    isRetrying: Boolean,
+    onRetry: () -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxSize().background(Color.White),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(text = stringResource(textRes), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(modifier = Modifier.height(16.dp))
+        ItDayButton(
+            text =
+                stringResource(
+                    if (isRetrying) R.string.map_checking_network else R.string.map_retry,
+                ),
+            onClick = onRetry,
+            enabled = !isRetrying,
+            leadingIcon =
+                if (isRetrying) {
+                    {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp,
+                        )
+                    }
+                } else {
+                    null
+                },
+        )
     }
 }
 
