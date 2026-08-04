@@ -15,7 +15,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -156,14 +159,17 @@ private fun ComparisonRow(
                 color = Color(0xFF80649E),
                 textAlign = TextAlign.Center,
             )
-            Text(
-                text = "\u2713",
+            Box(
                 modifier = Modifier.width(76.dp),
-                color = Color.White,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Light,
-                textAlign = TextAlign.Center,
-            )
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp),
+                )
+            }
         }
         if (showDivider) {
             HorizontalDivider(color = Color.White.copy(alpha = 0.48f))
