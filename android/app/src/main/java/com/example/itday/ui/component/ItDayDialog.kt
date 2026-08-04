@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.itday.ui.theme.ItDayDimens
-import com.example.itday.ui.theme.ItDayTheme
+import com.example.itday.ui.preview.ItDayComponentPreview
 
 @Composable
 fun ItDayDialog(
@@ -65,7 +65,7 @@ fun ItDayDialog(
 @Preview(showBackground = true)
 @Composable
 private fun ItDayDialogPreview() {
-    ItDayTheme {
+    ItDayComponentPreview {
         ItDayDialog(
             title = "로그아웃 하시겠습니까?",
             description = "로그아웃하면 다시 로그인해야 서비스를 이용할 수 있습니다.",

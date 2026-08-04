@@ -11,7 +11,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.itday.ui.theme.ItDayDimens
 import com.example.itday.ui.theme.ItDayGray100
 import com.example.itday.ui.theme.ItDayMint
-import com.example.itday.ui.theme.ItDayTheme
+import com.example.itday.ui.preview.ItDayComponentPreview
 
 @Composable
 fun ItDayStepIndicator(
@@ -40,7 +40,7 @@ fun ItDayStepIndicator(
 @Preview(showBackground = true)
 @Composable
 private fun ItDayStepIndicatorPreview() {
-    ItDayTheme {
-        ItDayStepIndicator(currentStep = 1, totalSteps = 3)
+    ItDayComponentPreview {
+        ItDayStepIndicator(currentStep = 1, totalSteps = 4)
     }
 }

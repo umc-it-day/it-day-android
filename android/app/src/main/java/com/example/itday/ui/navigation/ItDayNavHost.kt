@@ -137,6 +137,7 @@ private fun OnboardingDestination(navController: NavHostController) {
         onCarrierSelect = onboardingViewModel::selectCarrier,
         onMembershipSelect = onboardingViewModel::selectMembership,
         onBrandToggle = onboardingViewModel::toggleBrand,
+        permissionManager = context.appContainer.permissionManager,
         onComplete = {
             coroutineScope.launch {
                 sessionViewModel.completeOnboarding()

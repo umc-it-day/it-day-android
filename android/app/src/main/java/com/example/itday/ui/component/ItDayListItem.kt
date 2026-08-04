@@ -16,7 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.itday.ui.theme.ItDayDimens
 import com.example.itday.ui.theme.ItDayGray500
-import com.example.itday.ui.theme.ItDayTheme
+import com.example.itday.ui.preview.ItDayComponentPreview
 
 @Composable
 fun ItDayListItem(
@@ -63,7 +63,7 @@ fun ItDayListItem(
 @Preview(showBackground = true)
 @Composable
 private fun ItDayListItemPreview() {
-    ItDayTheme {
+    ItDayComponentPreview {
         ItDayListItem(
             title = "알림 설정",
             description = "신규 제휴 매장 및 이벤트 소식을 받습니다.",

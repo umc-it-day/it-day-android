@@ -1,9 +1,12 @@
 package com.example.itday.ui.navigation
 
+import androidx.annotation.DrawableRes
+import com.example.itday.R
+
 data class BottomTabItem(
     val route: AppRoute,
     val label: String,
-    val iconKey: String,
+    @DrawableRes val iconRes: Int,
 )
 
 val bottomTabItems =
@@ -11,21 +14,21 @@ val bottomTabItems =
         BottomTabItem(
             route = AppRoute.HOME,
             label = "홈",
-            iconKey = "home",
+            iconRes = R.drawable.ic_nav_home,
         ),
         BottomTabItem(
             route = AppRoute.MAP,
             label = "지도",
-            iconKey = "map",
+            iconRes = R.drawable.ic_nav_map,
         ),
         BottomTabItem(
             route = AppRoute.REPORT,
             label = "리포트",
-            iconKey = "report",
+            iconRes = R.drawable.ic_nav_report,
         ),
         BottomTabItem(
             route = AppRoute.SETTINGS,
             label = "설정",
-            iconKey = "settings",
+            iconRes = R.drawable.ic_nav_settings,
         ),
     )

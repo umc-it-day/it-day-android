@@ -5,9 +5,11 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -30,7 +32,7 @@ import com.example.itday.ui.theme.ItDayBlue
 import com.example.itday.ui.theme.ItDayDimens
 import com.example.itday.ui.theme.ItDayGray100
 import com.example.itday.ui.theme.ItDayRadius
-import com.example.itday.ui.theme.ItDayTheme
+import com.example.itday.ui.preview.ItDayComponentPreview
 import com.example.itday.ui.theme.ItDayWhite
 import com.example.itday.ui.theme.KakaoContainer
 import com.example.itday.ui.theme.KakaoLabel
@@ -227,14 +229,19 @@ private fun DrawScope.drawKakaoSymbol() {
 @Preview(showBackground = true)
 @Composable
 private fun ItDayButtonPreview() {
-    ItDayTheme {
-        Row(horizontalArrangement = Arrangement.spacedBy(ItDayDimens.Space8)) {
-            ItDayButton(text = "Next", onClick = {})
+    ItDayComponentPreview {
+        Column(verticalArrangement = Arrangement.spacedBy(ItDayDimens.Space12)) {
+            ItDayButton(
+                text = "Next",
+                onClick = {},
+                modifier = Modifier.fillMaxWidth(),
+            )
             ItDayButton(text = "Move", size = ItDayButtonSize.Small, onClick = {})
             ItDayButton(
                 text = "카카오로 시작하기",
                 variant = ItDayButtonVariant.Kakao,
                 onClick = {},
+                modifier = Modifier.fillMaxWidth(),
             )
         }
     }

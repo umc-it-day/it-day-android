@@ -30,7 +30,11 @@ import com.example.itday.core.local.LocalPreferencesDataSource
 import com.example.itday.core.local.itDayPreferencesDataStore
 import com.example.itday.core.network.AuthHeaderInterceptor
 import com.example.itday.core.network.AuthTokenAuthenticator
+import com.example.itday.core.network.AndroidNetworkMonitor
 import com.example.itday.core.network.NetworkClient
+import com.example.itday.core.network.NetworkMonitor
+import com.example.itday.core.permission.AndroidPermissionManager
+import com.example.itday.core.permission.PermissionManager
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -54,6 +58,14 @@ class DefaultAppContainer(
 
     override val kakaoLoginClient: KakaoLoginClient by lazy {
         if (AppConfig.useMockKakaoLogin) MockKakaoLoginClient() else KakaoSdkLoginClient()
+    }
+
+    override val permissionManager: PermissionManager by lazy {
+        AndroidPermissionManager(appContext)
+    }
+
+    override val networkMonitor: NetworkMonitor by lazy {
+        AndroidNetworkMonitor(appContext)
     }
 
     override val okHttpClient: OkHttpClient by lazy {
