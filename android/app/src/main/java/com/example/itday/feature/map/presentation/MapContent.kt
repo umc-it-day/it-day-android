@@ -50,11 +50,7 @@ fun MapContent(
 ) {
     Column(modifier = modifier.fillMaxSize().background(MapBackground)) {
         Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
-            Text(
-                text = stringResource(R.string.map_placeholder),
-                modifier = Modifier.align(Alignment.Center),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            KakaoMapView(modifier = Modifier.fillMaxSize())
             SearchBar(onClick = onSearchClick)
         }
         StoreSheet(

@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">ItDay</string>
     <string name="map_placeholder">카카오맵 연결 예정</string>
+    <string name="map_load_error">지도를 불러오지 못했습니다.</string>
+    <string name="map_device_not_supported">카카오맵은 ARM 기기에서 확인할 수 있습니다.</string>
     <string name="map_search_hint">검색을 통해 주변 혜택 알아보기</string>
     <string name="map_sort_distance">거리순</string>
     <string name="map_sort_discount">할인율순</string>
