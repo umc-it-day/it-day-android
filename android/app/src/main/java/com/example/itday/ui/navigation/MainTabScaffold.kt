@@ -25,6 +25,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.itday.feature.map.presentation.MapScreen
 import com.example.itday.BuildConfig
 import com.example.itday.core.di.appContainer
 import com.example.itday.feature.payment.presentation.DemoPaymentGateway
@@ -128,7 +129,7 @@ private fun MainTabNavHost(
             HomeRoute(isGuestMode = isGuestMode)
         }
         composable(AppRoute.MAP.route) {
-            MapPlaceholderScreen()
+            MapScreen()
         }
         composable(AppRoute.REPORT.route) {
             ReportScreen()

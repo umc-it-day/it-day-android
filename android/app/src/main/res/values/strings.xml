@@ -1,5 +1,11 @@
 <resources>
     <string name="app_name">ItDay</string>
+    <string name="map_placeholder">카카오맵 연결 예정</string>
+    <string name="map_search_hint">검색을 통해 주변 혜택 알아보기</string>
+    <string name="map_sort_distance">거리순</string>
+    <string name="map_sort_discount">할인율순</string>
+    <string name="map_store_empty">주변 매장 정보를 불러올 예정입니다.</string>
+    <string name="map_directions">길찾기</string>
     <string name="report_guest_title">월간 사용 리포트</string>
     <string name="report_guest_members_only">회원 전용 기능</string>
     <string name="report_guest_preview">리포트 미리보기</string>
