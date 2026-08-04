@@ -31,6 +31,7 @@ import com.example.itday.feature.payment.presentation.DemoPaymentGateway
 import com.example.itday.feature.payment.presentation.PaymentFlowScreen
 import com.example.itday.feature.payment.presentation.PaymentViewModel
 import com.example.itday.feature.report.presentation.ReportScreen
+import com.example.itday.feature.settings.presentation.SettingsMainRoute
 import com.example.itday.ui.home.HomeRoute
 import com.example.itday.ui.theme.HomeNavigationMuted
 import com.example.itday.ui.theme.HomeNavigationSelected
@@ -134,18 +135,7 @@ private fun MainTabNavHost(
             ReportScreen()
         }
         composable(AppRoute.SETTINGS.route) {
-            SettingsPlaceholderScreen(
-                onPaymentClick =
-                    if (BuildConfig.DEBUG) {
-                        {
-                            navController.navigate(AppRoute.PAYMENT.route) {
-                                launchSingleTop = true
-                            }
-                        }
-                    } else {
-                        null
-                    },
-            )
+            SettingsMainRoute()
         }
         if (BuildConfig.DEBUG) {
             composable(AppRoute.PAYMENT.route) {
