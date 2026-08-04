@@ -144,6 +144,7 @@ dependencies {
     implementation(libs.coil.network.okhttp)
     implementation(libs.kakao.maps)
     implementation(libs.kakao.user)
+    implementation(libs.konfetti.compose)
     implementation(libs.play.services.location)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)

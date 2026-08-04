@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
@@ -24,7 +25,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.itday.BuildConfig
 import com.example.itday.core.di.appContainer
+import com.example.itday.feature.payment.presentation.DemoPaymentGateway
+import com.example.itday.feature.payment.presentation.PaymentFlowScreen
+import com.example.itday.feature.payment.presentation.PaymentViewModel
 import com.example.itday.feature.report.presentation.ReportScreen
 import com.example.itday.ui.home.HomeRoute
 import com.example.itday.ui.theme.HomeNavigationMuted
@@ -42,23 +47,35 @@ fun MainTabScaffold() {
     val currentDestination = navBackStackEntry?.destination
     val currentRoute = currentDestination?.route
 
-    BackHandler(enabled = currentRoute != null && currentRoute != AppRoute.HOME.route) {
+    BackHandler(
+        enabled =
+            currentRoute != null &&
+                currentRoute != AppRoute.HOME.route &&
+                currentRoute != AppRoute.PAYMENT.route,
+    ) {
         tabNavController.navigateToHome()
     }
 
     Scaffold(
         containerColor = ItDayWhite,
         bottomBar = {
-            MainBottomNavigationBar(
-                currentDestination = currentDestination,
-                onTabClick = { route -> tabNavController.navigateToTopLevelRoute(route) },
-            )
+            if (currentRoute != AppRoute.PAYMENT.route) {
+                MainBottomNavigationBar(
+                    currentDestination = currentDestination,
+                    onTabClick = { route -> tabNavController.navigateToTopLevelRoute(route) },
+                )
+            }
         },
     ) { innerPadding ->
         MainTabNavHost(
             navController = tabNavController,
             isGuestMode = isGuestMode,
-            modifier = Modifier.padding(innerPadding),
+            modifier =
+                if (currentRoute == AppRoute.PAYMENT.route) {
+                    Modifier
+                } else {
+                    Modifier.padding(innerPadding)
+                },
         )
     }
 }
@@ -117,7 +134,32 @@ private fun MainTabNavHost(
             ReportScreen()
         }
         composable(AppRoute.SETTINGS.route) {
-            SettingsPlaceholderScreen()
+            SettingsPlaceholderScreen(
+                onPaymentClick =
+                    if (BuildConfig.DEBUG) {
+                        {
+                            navController.navigate(AppRoute.PAYMENT.route) {
+                                launchSingleTop = true
+                            }
+                        }
+                    } else {
+                        null
+                    },
+            )
+        }
+        if (BuildConfig.DEBUG) {
+            composable(AppRoute.PAYMENT.route) {
+                val paymentViewModel: PaymentViewModel =
+                    viewModel(
+                        factory = PaymentViewModel.factory(DemoPaymentGateway()),
+                    )
+                PaymentFlowScreen(
+                    viewModel = paymentViewModel,
+                    onExit = { navController.popBackStack() },
+                    onHome = { navController.navigateToHome() },
+                    onChallenges = {},
+                )
+            }
         }
     }
 }

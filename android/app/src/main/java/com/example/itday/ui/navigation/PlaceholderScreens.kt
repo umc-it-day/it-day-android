@@ -82,10 +82,12 @@ fun ReportPlaceholderScreen() {
 }
 
 @Composable
-fun SettingsPlaceholderScreen() {
+fun SettingsPlaceholderScreen(onPaymentClick: (() -> Unit)? = null) {
     NavigationPlaceholderScreen(
         title = "Settings",
         description = "설정 화면 자리",
+        buttonText = if (onPaymentClick != null) "\uC720\uB8CC\uACB0\uC81C \uB370\uBAA8" else null,
+        onButtonClick = onPaymentClick,
     )
 }
 
