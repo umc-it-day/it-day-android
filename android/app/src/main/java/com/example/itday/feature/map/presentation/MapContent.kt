@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -50,9 +51,22 @@ fun MapScreen() {
             initial = networkMonitor.isCurrentlyConnected(),
         )
     var reloadKey by remember { mutableIntStateOf(0) }
+    var mapCenter by remember { mutableStateOf(DefaultMapCoordinate) }
+    var isLocationUnavailable by remember { mutableStateOf(false) }
+
+    CurrentLocationEffect(
+        onLocationFound = { coordinate ->
+            isLocationUnavailable = false
+            mapCenter = coordinate
+            reloadKey++
+        },
+        onLocationUnavailable = { isLocationUnavailable = true },
+    )
 
     MapContent(
         isOnline = isOnline,
+        initialPosition = mapCenter,
+        showLocationUnavailable = isLocationUnavailable,
         mapReloadKey = reloadKey,
         onMapRetry = { reloadKey++ },
     )
@@ -63,6 +77,8 @@ fun MapContent(
     modifier: Modifier = Modifier,
     stores: List<MapStoreUiModel> = emptyList(),
     isOnline: Boolean = true,
+    initialPosition: MapCoordinate = DefaultMapCoordinate,
+    showLocationUnavailable: Boolean = false,
     mapReloadKey: Int = 0,
     onMapRetry: () -> Unit = {},
     onSearchClick: () -> Unit = {},
@@ -73,11 +89,25 @@ fun MapContent(
         Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
             KakaoMapView(
                 isOnline = isOnline,
+                initialPosition = initialPosition,
                 reloadKey = mapReloadKey,
                 onRetry = onMapRetry,
                 modifier = Modifier.fillMaxSize(),
             )
             SearchBar(onClick = onSearchClick)
+            if (showLocationUnavailable) {
+                Text(
+                    text = stringResource(R.string.map_location_unavailable),
+                    modifier =
+                        Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(12.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color.White)
+                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
         StoreSheet(
             stores = stores,

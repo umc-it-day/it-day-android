@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -28,6 +29,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.view.doOnAttach
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -43,6 +45,7 @@ import com.kakao.vectormap.MapView
 @Composable
 fun KakaoMapView(
     isOnline: Boolean,
+    initialPosition: MapCoordinate,
     reloadKey: Int,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
@@ -70,54 +73,62 @@ fun KakaoMapView(
     val context = LocalContext.current
     var isLoading by remember(reloadKey) { mutableStateOf(true) }
     var hasError by remember(reloadKey) { mutableStateOf(false) }
-    val mapView = remember(context, reloadKey) { MapView(context) }
+    val mapView = remember(context, reloadKey, initialPosition) { MapView(context) }
+    var isMapReady by remember(mapView) { mutableStateOf(false) }
+    val startMap =
+        remember(mapView, initialPosition) {
+            Runnable {
+                mapView.start(
+                    object : MapLifeCycleCallback() {
+                        override fun onMapDestroy() = Unit
+
+                        override fun onMapError(error: Exception) {
+                            isMapReady = false
+                            isLoading = false
+                            hasError = true
+                        }
+                    },
+                    object : KakaoMapReadyCallback() {
+                        override fun onMapReady(kakaoMap: KakaoMap) {
+                            isMapReady = true
+                            isLoading = false
+                        }
+
+                        override fun getPosition(): LatLng = initialPosition.toLatLng()
+
+                        override fun getZoomLevel(): Int = DEFAULT_ZOOM_LEVEL
+                    },
+                )
+            }
+        }
 
     DisposableEffect(lifecycleOwner, mapView) {
         val observer =
             LifecycleEventObserver { _, event ->
                 when (event) {
-                    Lifecycle.Event.ON_RESUME -> mapView.resume()
-                    Lifecycle.Event.ON_PAUSE -> mapView.pause()
+                    Lifecycle.Event.ON_RESUME -> if (isMapReady) mapView.resume()
+                    Lifecycle.Event.ON_PAUSE -> if (isMapReady) mapView.pause()
                     else -> Unit
                 }
             }
         lifecycleOwner.lifecycle.addObserver(observer)
-        if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
-            mapView.resume()
-        }
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
-            mapView.finish()
+            if (isMapReady) mapView.finish()
         }
     }
 
     Box(modifier = modifier) {
-        AndroidView(
-            factory = {
-                mapView.apply {
-                    start(
-                        object : MapLifeCycleCallback() {
-                            override fun onMapDestroy() = Unit
-
-                            override fun onMapError(error: Exception) {
-                                isLoading = false
-                                hasError = true
-                            }
-                        },
-                        object : KakaoMapReadyCallback() {
-                            override fun onMapReady(kakaoMap: KakaoMap) {
-                                isLoading = false
-                            }
-
-                            override fun getPosition(): LatLng = DEFAULT_POSITION
-
-                            override fun getZoomLevel(): Int = DEFAULT_ZOOM_LEVEL
-                        },
-                    )
-                }
-            },
-            modifier = Modifier.fillMaxSize(),
-        )
+        key(mapView) {
+            AndroidView(
+                factory = {
+                    mapView.apply {
+                        doOnAttach { startMap.run() }
+                    }
+                },
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
         when {
             hasError -> MapErrorState(R.string.map_load_error, false, onRetry)
             isLoading -> MapLoadingOverlay()
@@ -190,5 +201,13 @@ private fun MapStatusText(textRes: Int) {
     )
 }
 
-private val DEFAULT_POSITION = LatLng.from(37.385, 126.645)
+data class MapCoordinate(
+    val latitude: Double,
+    val longitude: Double,
+)
+
+val DefaultMapCoordinate = MapCoordinate(latitude = 37.385, longitude = 126.645)
+
+private fun MapCoordinate.toLatLng(): LatLng = LatLng.from(latitude, longitude)
+
 private const val DEFAULT_ZOOM_LEVEL = 15
