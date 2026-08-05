@@ -1,6 +1,7 @@
 package com.example.itday.feature.settings.presentation
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -40,6 +41,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -120,11 +122,10 @@ internal fun ProfileHeaderSection(
                         .clickable { onProfileEditClick() },
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
+                Image(
+                    painter = painterResource(com.example.itday.R.drawable.ic_settings_camera),
                     contentDescription = "사진 수정",
-                    tint = ItDayWhite,
-                    modifier = Modifier.size(13.dp),
+                    modifier = Modifier.size(14.dp),
                 )
             }
         }
@@ -216,12 +217,23 @@ internal fun MembershipInfoCard(membership: MembershipInfo) {
                                     .background(ItDayWhite)
                                     .padding(horizontal = 10.dp, vertical = 4.dp),
                         ) {
-                            Text(
-                                text = "✨ PRO",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = ItDayPrimary,
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            ) {
+                                Icon(
+                                    painter = painterResource(com.example.itday.R.drawable.ic_settings_pro_sparkle),
+                                    contentDescription = null,
+                                    tint = Color.Unspecified,
+                                    modifier = Modifier.size(13.dp),
+                                )
+                                Text(
+                                    text = "PRO",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = ItDayPrimary,
+                                )
+                            }
                         }
                     }
                 }
@@ -489,62 +501,20 @@ internal fun LogoutConfirmDialog(
 
 @Composable
 internal fun CrownGraphicIllustration() {
-    Canvas(modifier = Modifier.size(48.dp)) {
-        val path =
-            Path().apply {
-                moveTo(size.width * 0.1f, size.height * 0.7f)
-                lineTo(size.width * 0.2f, size.height * 0.3f)
-                lineTo(size.width * 0.4f, size.height * 0.5f)
-                lineTo(size.width * 0.5f, size.height * 0.2f)
-                lineTo(size.width * 0.6f, size.height * 0.5f)
-                lineTo(size.width * 0.8f, size.height * 0.3f)
-                lineTo(size.width * 0.9f, size.height * 0.7f)
-                close()
-            }
-        drawPath(path = path, color = Color(0xFF8AAEFF))
-    }
+    androidx.compose.foundation.Image(
+        painter = androidx.compose.ui.res.painterResource(com.example.itday.R.drawable.img_settings_crown),
+        contentDescription = "왕관",
+        modifier = Modifier.size(64.dp),
+    )
 }
 
 @Composable
 internal fun ShieldGraphicIllustration() {
-    Box(
+    androidx.compose.foundation.Image(
+        painter = androidx.compose.ui.res.painterResource(com.example.itday.R.drawable.img_settings_shield),
+        contentDescription = "보안 방패",
         modifier = Modifier.size(64.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Canvas(modifier = Modifier.size(56.dp)) {
-            val path =
-                Path().apply {
-                    moveTo(size.width * 0.5f, 0f)
-                    lineTo(size.width, size.height * 0.25f)
-                    lineTo(size.width, size.height * 0.65f)
-                    cubicTo(
-                        size.width,
-                        size.height * 0.9f,
-                        size.width * 0.5f,
-                        size.height,
-                        size.width * 0.5f,
-                        size.height,
-                    )
-                    cubicTo(
-                        size.width * 0.5f,
-                        size.height,
-                        0f,
-                        size.height * 0.9f,
-                        0f,
-                        size.height * 0.65f,
-                    )
-                    lineTo(0f, size.height * 0.25f)
-                    close()
-                }
-            drawPath(path = path, color = Color(0xFF8AAEFF))
-        }
-        Icon(
-            imageVector = Icons.Default.Check,
-            contentDescription = null,
-            tint = ItDayWhite,
-            modifier = Modifier.size(28.dp),
-        )
-    }
+    )
 }
 
 @Composable

@@ -347,3 +347,76 @@ private fun BarcodeDuplicateContent(
         }
     }
 }
+
+@androidx.compose.ui.tooling.preview.Preview(showBackground = true)
+@Composable
+private fun BarcodeIntroPreview() {
+    BarcodeRegistrationScreen(
+        uiState = BarcodeRegistrationUiState(step = BarcodeStep.Intro),
+        onCarrierSelect = {},
+        onGradeSelect = {},
+        onBarcodeChange = {},
+        onNavigateStep = {},
+        onSubmit = {},
+        onReenter = {},
+        onBackClick = {},
+        onHomeClick = {},
+    )
+}
+
+@androidx.compose.ui.tooling.preview.Preview(showBackground = true)
+@Composable
+private fun BarcodeFormPreview() {
+    BarcodeRegistrationScreen(
+        uiState = BarcodeRegistrationUiState(
+            step = BarcodeStep.Form,
+            barcodeNumber = "1234567890123456",
+        ),
+        onCarrierSelect = {},
+        onGradeSelect = {},
+        onBarcodeChange = {},
+        onNavigateStep = {},
+        onSubmit = {},
+        onReenter = {},
+        onBackClick = {},
+        onHomeClick = {},
+    )
+}
+
+@androidx.compose.ui.tooling.preview.Preview(showBackground = true)
+@Composable
+private fun BarcodeSuccessPreview() {
+    BarcodeRegistrationScreen(
+        uiState = BarcodeRegistrationUiState(
+            step = BarcodeStep.Success,
+            barcodeNumber = "1234567890123456",
+        ),
+        onCarrierSelect = {},
+        onGradeSelect = {},
+        onBarcodeChange = {},
+        onNavigateStep = {},
+        onSubmit = {},
+        onReenter = {},
+        onBackClick = {},
+        onHomeClick = {},
+    )
+}
+
+@androidx.compose.ui.tooling.preview.Preview(showBackground = true)
+@Composable
+private fun BarcodeDuplicatePreview() {
+    BarcodeRegistrationScreen(
+        uiState = BarcodeRegistrationUiState(
+            step = BarcodeStep.Duplicate,
+            barcodeNumber = "9999999999999999",
+        ),
+        onCarrierSelect = {},
+        onGradeSelect = {},
+        onBarcodeChange = {},
+        onNavigateStep = {},
+        onSubmit = {},
+        onReenter = {},
+        onBackClick = {},
+        onHomeClick = {},
+    )
+}

@@ -338,3 +338,57 @@ private fun CustomerServiceContent(
         }
     }
 }
+
+@androidx.compose.ui.tooling.preview.Preview(showBackground = true)
+@Composable
+private fun SettingsMainScreenPreview() {
+    SettingsMainScreen(
+        uiState = SettingsUiState(),
+        onNavigateScreen = {},
+        onPromotionToggle = {},
+        onCharacterToggle = {},
+        onShowLogoutDialog = {},
+        onDismissLogoutDialog = {},
+        onConfirmLogout = {},
+        onToggleFaq = {},
+    )
+}
+
+@androidx.compose.ui.tooling.preview.Preview(showBackground = true)
+@Composable
+private fun PrivacySecurityContentPreview() {
+    SettingsMainScreen(
+        uiState = SettingsUiState(currentScreen = SettingsScreenType.PrivacySecurity),
+        onNavigateScreen = {},
+        onPromotionToggle = {},
+        onCharacterToggle = {},
+        onShowLogoutDialog = {},
+        onDismissLogoutDialog = {},
+        onConfirmLogout = {},
+        onToggleFaq = {},
+    )
+}
+
+@androidx.compose.ui.tooling.preview.Preview(showBackground = true)
+@Composable
+private fun CustomerServiceContentPreview() {
+    SettingsMainScreen(
+        uiState = SettingsUiState(currentScreen = SettingsScreenType.CustomerService),
+        onNavigateScreen = {},
+        onPromotionToggle = {},
+        onCharacterToggle = {},
+        onShowLogoutDialog = {},
+        onDismissLogoutDialog = {},
+        onConfirmLogout = {},
+        onToggleFaq = {},
+    )
+}
+
+@androidx.compose.ui.tooling.preview.Preview(showBackground = true)
+@Composable
+private fun LogoutConfirmDialogPreview() {
+    LogoutConfirmDialog(
+        onLogout = {},
+        onDismiss = {},
+    )
+}
