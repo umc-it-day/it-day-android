@@ -2,6 +2,10 @@ package com.example.itday.feature.map.presentation
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color as AndroidColor
+import android.graphics.Paint
+import android.graphics.Typeface
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -46,6 +50,7 @@ import com.kakao.vectormap.LatLng
 import com.kakao.vectormap.MapLifeCycleCallback
 import com.kakao.vectormap.MapView
 import com.kakao.vectormap.label.LabelOptions
+import kotlin.math.hypot
 
 @Composable
 fun KakaoMapView(
@@ -98,11 +103,11 @@ fun KakaoMapView(
                     },
                     object : KakaoMapReadyCallback() {
                         override fun onMapReady(kakaoMap: KakaoMap) {
-                            kakaoMap.addMarkers(
+                            kakaoMap.startMarkerClustering(
                                 currentLocation = currentLocation,
                                 markers = markers,
                                 currentLocationIcon = context.markerBitmap(R.drawable.ic_home_location, 38),
-                                storeMarkerIcon = context.markerBitmap(R.drawable.ic_map_store_marker, 36),
+                                markerIcon = { count -> context.clusterMarkerBitmap(count) },
                                 onMarkerClick = onMarkerClick,
                             )
                             isMapReady = true
@@ -225,37 +230,42 @@ val DefaultMapCoordinate = MapCoordinate(latitude = 37.385, longitude = 126.645)
 
 private fun MapCoordinate.toLatLng(): LatLng = LatLng.from(latitude, longitude)
 
-private fun KakaoMap.addMarkers(
+private fun KakaoMap.startMarkerClustering(
     currentLocation: MapCoordinate?,
     markers: List<MapMarkerUiModel>,
     currentLocationIcon: Bitmap?,
-    storeMarkerIcon: Bitmap?,
+    markerIcon: (Int) -> Bitmap?,
     onMarkerClick: (String) -> Unit,
 ) {
     val manager = labelManager ?: return
     val layer = manager.layer ?: return
-    currentLocationIcon?.let { icon ->
-        val coordinate = currentLocation ?: return@let
-        layer.addLabel(
-            LabelOptions
-                .from(CURRENT_LOCATION_LABEL_ID, coordinate.toLatLng())
-                .setStyles(icon),
-        )
-    }
-    storeMarkerIcon?.let { icon ->
-        markers.forEach { marker ->
+    val iconCache = mutableMapOf<Int, Bitmap?>()
+    fun renderMarkers() {
+        layer.removeAll()
+        currentLocationIcon?.let { icon ->
+            val coordinate = currentLocation ?: return@let
             layer.addLabel(
                 LabelOptions
-                    .from(marker.id, marker.position.toLatLng())
+                    .from(CURRENT_LOCATION_LABEL_ID, coordinate.toLatLng())
+                    .setStyles(icon),
+            )
+        }
+        cluster(markers).forEach { cluster ->
+            val icon = iconCache.getOrPut(cluster.ids.size) { markerIcon(cluster.ids.size) } ?: return@forEach
+            layer.addLabel(
+                LabelOptions
+                    .from(cluster.id, cluster.position.toLatLng())
                     .setStyles(icon)
                     .setClickable(true)
-                    .setTag(marker.id),
+                    .setTag(cluster),
             )
         }
     }
+    renderMarkers()
+    setOnCameraMoveEndListener { _, _, _ -> renderMarkers() }
     setOnLabelClickListener { _, _, label ->
-        val markerId = label.tag as? String ?: return@setOnLabelClickListener false
-        onMarkerClick(markerId)
+        val cluster = label.tag as? MarkerCluster ?: return@setOnLabelClickListener false
+        if (cluster.ids.size == 1) onMarkerClick(cluster.ids.first())
         true
     }
 }
@@ -265,5 +275,57 @@ private fun Context.markerBitmap(resourceId: Int, sizeDp: Int): Bitmap? {
     return ContextCompat.getDrawable(this, resourceId)?.toBitmap(sizePx, sizePx)
 }
 
+private fun Context.clusterMarkerBitmap(count: Int): Bitmap? {
+    val density = resources.displayMetrics.density
+    val width = (36 * density).toInt()
+    val height = (42 * density).toInt()
+    val bitmap =
+        ContextCompat
+            .getDrawable(this, R.drawable.ic_map_store_marker)
+            ?.toBitmap(width, height)
+            ?: return null
+    return bitmap.copy(Bitmap.Config.ARGB_8888, true).also { result ->
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = AndroidColor.WHITE
+            textAlign = Paint.Align.CENTER
+            textSize = 16 * density
+            typeface = Typeface.DEFAULT_BOLD
+        }
+        val centerY = 18 * density - (paint.ascent() + paint.descent()) / 2
+        Canvas(result).drawText(count.toString(), width / 2f, centerY, paint)
+    }
+}
+
+private fun KakaoMap.cluster(markers: List<MapMarkerUiModel>): List<MarkerCluster> {
+    val groups = mutableListOf<MutableList<MapMarkerUiModel>>()
+    markers.forEach { marker ->
+        val point = toScreenPoint(marker.position.toLatLng()) ?: return@forEach
+        val group = groups.firstOrNull { existing ->
+            val anchor = toScreenPoint(existing.first().position.toLatLng()) ?: return@firstOrNull false
+            val distance = hypot((point.x - anchor.x).toDouble(), (point.y - anchor.y).toDouble())
+            distance <= CLUSTER_RADIUS_DP * mapDpScale
+        }
+        if (group == null) groups += mutableListOf(marker) else group += marker
+    }
+    return groups.map { group ->
+        MarkerCluster(
+            id = "cluster-${group.joinToString("-") { it.id }}",
+            ids = group.map { it.id },
+            position =
+                MapCoordinate(
+                    latitude = group.map { it.position.latitude }.average(),
+                    longitude = group.map { it.position.longitude }.average(),
+                ),
+        )
+    }
+}
+
+private data class MarkerCluster(
+    val id: String,
+    val ids: List<String>,
+    val position: MapCoordinate,
+)
+
 private const val DEFAULT_ZOOM_LEVEL = 15
 private const val CURRENT_LOCATION_LABEL_ID = "current-location"
+private const val CLUSTER_RADIUS_DP = 72.0
