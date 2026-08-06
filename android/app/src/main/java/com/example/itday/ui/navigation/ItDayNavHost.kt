@@ -144,7 +144,7 @@ private fun OnboardingDestination(navController: NavHostController) {
         onNext = onboardingViewModel::next,
         onLocationResult = onboardingViewModel::onLocationResult,
         onCarrierSelect = onboardingViewModel::selectCarrier,
-        onMembershipSelect = onboardingViewModel::selectMembership,
+        onMembershipGradeSelect = onboardingViewModel::selectMembershipGrade,
         onBrandToggle = onboardingViewModel::toggleBrand,
         permissionManager = context.appContainer.permissionManager,
         onComplete = {
