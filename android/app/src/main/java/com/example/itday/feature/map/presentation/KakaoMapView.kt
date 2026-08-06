@@ -49,7 +49,14 @@ import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
 import com.kakao.vectormap.MapLifeCycleCallback
 import com.kakao.vectormap.MapView
+import com.kakao.vectormap.camera.CameraAnimation
+import com.kakao.vectormap.camera.CameraUpdateFactory
 import com.kakao.vectormap.label.LabelOptions
+import com.kakao.vectormap.route.RouteLineOptions
+import com.kakao.vectormap.route.RouteLineSegment
+import com.kakao.vectormap.route.RouteLineStyle
+import com.kakao.vectormap.route.RouteLineStyles
+import com.kakao.vectormap.route.RouteLineStylesSet
 import kotlin.math.hypot
 
 @Composable
@@ -58,6 +65,7 @@ fun KakaoMapView(
     initialPosition: MapCoordinate,
     currentLocation: MapCoordinate?,
     markers: List<MapMarkerUiModel>,
+    routePoints: List<MapCoordinate>,
     onMarkerClick: (String) -> Unit,
     reloadKey: Int,
     onRetry: () -> Unit,
@@ -88,6 +96,7 @@ fun KakaoMapView(
     var hasError by remember(reloadKey) { mutableStateOf(false) }
     val mapView = remember(context, reloadKey, initialPosition) { MapView(context) }
     var isMapReady by remember(mapView) { mutableStateOf(false) }
+    var readyMap by remember(mapView) { mutableStateOf<KakaoMap?>(null) }
     val startMap =
         remember(mapView, initialPosition, currentLocation, markers, onMarkerClick) {
             Runnable {
@@ -103,6 +112,7 @@ fun KakaoMapView(
                     },
                     object : KakaoMapReadyCallback() {
                         override fun onMapReady(kakaoMap: KakaoMap) {
+                            readyMap = kakaoMap
                             kakaoMap.startMarkerClustering(
                                 currentLocation = currentLocation,
                                 markers = markers,
@@ -121,6 +131,10 @@ fun KakaoMapView(
                 )
             }
         }
+
+    LaunchedEffect(readyMap, routePoints) {
+        readyMap?.showRoute(routePoints)
+    }
 
     DisposableEffect(lifecycleOwner, mapView) {
         val observer =
@@ -296,6 +310,24 @@ private fun Context.clusterMarkerBitmap(count: Int): Bitmap? {
     }
 }
 
+private fun KakaoMap.showRoute(points: List<MapCoordinate>) {
+    val layer = routeLineManager?.layer ?: return
+    layer.removeAll()
+    if (points.size < 2) return
+    val styles =
+        RouteLineStylesSet.from(
+            RouteLineStyles.from(RouteLineStyle.from(12f, AndroidColor.rgb(99, 124, 246))),
+        )
+    val segment = RouteLineSegment.from(points.map { it.toLatLng() }, styles.getStyles(0))
+    layer.addRouteLine(RouteLineOptions.from(segment).setStylesSet(styles))
+    val mapPoints = points.map { it.toLatLng() }.toTypedArray()
+    val padding = (minOf(viewport.width(), viewport.height()) * ROUTE_CAMERA_PADDING_RATIO).toInt()
+    moveCamera(
+        CameraUpdateFactory.fitMapPoints(mapPoints, padding),
+        CameraAnimation.from(ROUTE_CAMERA_ANIMATION_MS),
+    )
+}
+
 private fun KakaoMap.cluster(markers: List<MapMarkerUiModel>): List<MarkerCluster> {
     val groups = mutableListOf<MutableList<MapMarkerUiModel>>()
     markers.forEach { marker ->
@@ -329,3 +361,5 @@ private data class MarkerCluster(
 private const val DEFAULT_ZOOM_LEVEL = 15
 private const val CURRENT_LOCATION_LABEL_ID = "current-location"
 private const val CLUSTER_RADIUS_DP = 72.0
+private const val ROUTE_CAMERA_PADDING_RATIO = 0.22f
+private const val ROUTE_CAMERA_ANIMATION_MS = 500

@@ -1,5 +1,6 @@
 package com.example.itday.feature.map.presentation
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -29,24 +30,29 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.itday.R
 import com.example.itday.core.di.appContainer
+import kotlinx.coroutines.launch
 
 data class MapStoreUiModel(
     val id: String,
     val name: String,
+    val position: MapCoordinate,
     val rating: Double = UNKNOWN_VALUE,
     val distanceMeters: Int = -1,
+    val discountPercent: Int = -1,
 )
 
 data class MapMarkerUiModel(
@@ -65,6 +71,7 @@ fun MapScreen() {
     var mapCenter by remember { mutableStateOf(DefaultMapCoordinate) }
     var currentLocation by remember { mutableStateOf<MapCoordinate?>(null) }
     var isLocationUnavailable by remember { mutableStateOf(false) }
+    var routePoints by remember { mutableStateOf(emptyList<MapCoordinate>()) }
 
     CurrentLocationEffect(
         onLocationFound = { coordinate ->
@@ -76,14 +83,23 @@ fun MapScreen() {
         onLocationUnavailable = { isLocationUnavailable = true },
     )
 
+    val stores = remember(mapCenter) { previewStoresAround(mapCenter) }
     MapContent(
+        stores = stores,
         isOnline = isOnline,
         initialPosition = mapCenter,
         currentLocation = currentLocation,
-        markers = remember(mapCenter) { previewMarkersAround(mapCenter) },
+        markers = stores.map { MapMarkerUiModel(it.id, it.position) },
+        routePoints = routePoints,
         showLocationUnavailable = isLocationUnavailable,
         mapReloadKey = reloadKey,
         onMapRetry = { reloadKey++ },
+        onDirectionsClick = { storeId ->
+            val start = currentLocation
+            val destination = stores.firstOrNull { it.id == storeId }?.position
+            if (start != null && destination != null) routePoints = listOf(start, destination)
+        },
+        onDirectionsCancel = { routePoints = emptyList() },
     )
 }
 
@@ -96,18 +112,21 @@ fun MapContent(
     initialPosition: MapCoordinate = DefaultMapCoordinate,
     currentLocation: MapCoordinate? = null,
     markers: List<MapMarkerUiModel> = emptyList(),
+    routePoints: List<MapCoordinate> = emptyList(),
     showLocationUnavailable: Boolean = false,
     mapReloadKey: Int = 0,
     onMapRetry: () -> Unit = {},
     onSearchClick: () -> Unit = {},
     onStoreClick: (String) -> Unit = {},
     onDirectionsClick: (String) -> Unit = {},
+    onDirectionsCancel: () -> Unit = {},
 ) {
     val sheetState =
         rememberStandardBottomSheetState(
             initialValue = SheetValue.PartiallyExpanded,
             skipHiddenState = true,
         )
+    val coroutineScope = rememberCoroutineScope()
     BottomSheetScaffold(
         modifier = modifier.fillMaxSize(),
         scaffoldState = rememberBottomSheetScaffoldState(sheetState),
@@ -119,7 +138,12 @@ fun MapContent(
             StoreSheet(
                 stores = stores,
                 onStoreClick = onStoreClick,
-                onDirectionsClick = onDirectionsClick,
+                onDirectionsClick = { storeId ->
+                    if (currentLocation != null) {
+                        onDirectionsClick(storeId)
+                        coroutineScope.launch { sheetState.partialExpand() }
+                    }
+                },
             )
         },
     ) {
@@ -129,12 +153,19 @@ fun MapContent(
                 initialPosition = initialPosition,
                 currentLocation = currentLocation,
                 markers = markers,
+                routePoints = routePoints,
                 onMarkerClick = onStoreClick,
                 reloadKey = mapReloadKey,
                 onRetry = onMapRetry,
                 modifier = Modifier.fillMaxSize(),
             )
             SearchBar(onClick = onSearchClick)
+            if (routePoints.isNotEmpty()) {
+                RouteCancelButton(
+                    modifier = Modifier.align(Alignment.TopEnd).padding(top = 84.dp, end = 20.dp),
+                    onClick = onDirectionsCancel,
+                )
+            }
             if (showLocationUnavailable) {
                 Text(
                     text = stringResource(R.string.map_location_unavailable),
@@ -150,6 +181,24 @@ fun MapContent(
             }
         }
     }
+}
+
+@Composable
+private fun RouteCancelButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    Text(
+        text = stringResource(R.string.map_directions_cancel),
+        modifier =
+            modifier
+                .clip(RoundedCornerShape(18.dp))
+                .background(MapPrimary)
+                .clickable(onClick = onClick)
+                .padding(horizontal = 14.dp, vertical = 10.dp),
+        color = Color.White,
+        fontWeight = FontWeight.Bold,
+    )
 }
 
 @Composable
@@ -244,13 +293,27 @@ private fun StoreRow(
         modifier = Modifier.fillMaxWidth().clickable { onStoreClick(store.id) }.padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(modifier = Modifier.size(56.dp).clip(CircleShape).background(MapPlaceholder))
+        Image(
+            painter = painterResource(R.drawable.map_store_placeholder),
+            contentDescription = null,
+            modifier = Modifier.size(56.dp).clip(CircleShape).background(MapPlaceholder),
+        )
         Column(modifier = Modifier.padding(start = 12.dp).weight(1f)) {
             Text(store.name, fontWeight = FontWeight.Bold)
             val details = store.detailText()
             if (details.isNotEmpty()) {
                 Text(details, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
+            Text(
+                text = store.discountText(),
+                modifier =
+                    Modifier
+                        .padding(top = 4.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(MapDiscountBackground)
+                        .padding(horizontal = 8.dp, vertical = 3.dp),
+                color = MapPrimary,
+            )
         }
         Text(
             text = stringResource(R.string.map_directions),
@@ -262,28 +325,40 @@ private fun StoreRow(
     }
 }
 
-private fun MapStoreUiModel.detailText(): String =
-    listOfNotNull(
-        rating.takeIf { it >= 0 }?.let { "★ $it" },
-        distanceMeters.takeIf { it >= 0 }?.let { "${it}m" },
-    ).joinToString(" · ")
+@Composable
+private fun MapStoreUiModel.detailText(): String {
+    val ratingText = rating.takeIf { it >= 0 }?.let { "★ $it" } ?: stringResource(R.string.map_value_unknown)
+    val distanceText =
+        distanceMeters.takeIf { it >= 0 }?.let { "${it}m 거리" }
+            ?: stringResource(R.string.map_distance_unknown)
+    return "$ratingText · $distanceText"
+}
+
+@Composable
+private fun MapStoreUiModel.discountText(): String =
+    if (discountPercent >= 0) {
+        stringResource(R.string.map_discount_percent, discountPercent)
+    } else {
+        stringResource(R.string.map_discount_unknown)
+    }
 
 @Preview(showBackground = true)
 @Composable
 private fun MapContentPreview() {
-    MapContent(stores = listOf(MapStoreUiModel(id = "preview", name = "스타벅스 송도 해수욕장점")))
+    MapContent(stores = previewStoresAround(DefaultMapCoordinate))
 }
 
 private const val UNKNOWN_VALUE = -1.0
 
-private fun previewMarkersAround(center: MapCoordinate): List<MapMarkerUiModel> =
+private fun previewStoresAround(center: MapCoordinate): List<MapStoreUiModel> =
     listOf(
-        MapMarkerUiModel("preview-1", MapCoordinate(center.latitude + 0.002, center.longitude - 0.001)),
-        MapMarkerUiModel("preview-2", MapCoordinate(center.latitude - 0.001, center.longitude + 0.002)),
-        MapMarkerUiModel("preview-3", MapCoordinate(center.latitude + 0.001, center.longitude + 0.003)),
+        MapStoreUiModel("preview-1", "임시 매장 1", MapCoordinate(center.latitude + 0.002, center.longitude - 0.001)),
+        MapStoreUiModel("preview-2", "임시 매장 2", MapCoordinate(center.latitude - 0.001, center.longitude + 0.002)),
+        MapStoreUiModel("preview-3", "임시 매장 3", MapCoordinate(center.latitude + 0.001, center.longitude + 0.003)),
     )
 
 private val MapBackground = Color(0xFFE5E8E7)
 private val MapHandle = Color(0xFFD7D9DC)
 private val MapPlaceholder = Color(0xFFF1F1F1)
 private val MapPrimary = Color(0xFF637CF6)
+private val MapDiscountBackground = Color(0xFFEEF2FF)
