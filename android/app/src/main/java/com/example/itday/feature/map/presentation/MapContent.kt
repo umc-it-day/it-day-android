@@ -11,12 +11,18 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,6 +49,11 @@ data class MapStoreUiModel(
     val distanceMeters: Int = -1,
 )
 
+data class MapMarkerUiModel(
+    val id: String,
+    val position: MapCoordinate,
+)
+
 @Composable
 fun MapScreen() {
     val networkMonitor = LocalContext.current.appContainer.networkMonitor
@@ -52,11 +63,13 @@ fun MapScreen() {
         )
     var reloadKey by remember { mutableIntStateOf(0) }
     var mapCenter by remember { mutableStateOf(DefaultMapCoordinate) }
+    var currentLocation by remember { mutableStateOf<MapCoordinate?>(null) }
     var isLocationUnavailable by remember { mutableStateOf(false) }
 
     CurrentLocationEffect(
         onLocationFound = { coordinate ->
             isLocationUnavailable = false
+            currentLocation = coordinate
             mapCenter = coordinate
             reloadKey++
         },
@@ -66,6 +79,8 @@ fun MapScreen() {
     MapContent(
         isOnline = isOnline,
         initialPosition = mapCenter,
+        currentLocation = currentLocation,
+        markers = remember(mapCenter) { previewMarkersAround(mapCenter) },
         showLocationUnavailable = isLocationUnavailable,
         mapReloadKey = reloadKey,
         onMapRetry = { reloadKey++ },
@@ -73,11 +88,14 @@ fun MapScreen() {
 }
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun MapContent(
     modifier: Modifier = Modifier,
     stores: List<MapStoreUiModel> = emptyList(),
     isOnline: Boolean = true,
     initialPosition: MapCoordinate = DefaultMapCoordinate,
+    currentLocation: MapCoordinate? = null,
+    markers: List<MapMarkerUiModel> = emptyList(),
     showLocationUnavailable: Boolean = false,
     mapReloadKey: Int = 0,
     onMapRetry: () -> Unit = {},
@@ -85,11 +103,33 @@ fun MapContent(
     onStoreClick: (String) -> Unit = {},
     onDirectionsClick: (String) -> Unit = {},
 ) {
-    Column(modifier = modifier.fillMaxSize().background(MapBackground)) {
-        Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
+    val sheetState =
+        rememberStandardBottomSheetState(
+            initialValue = SheetValue.PartiallyExpanded,
+            skipHiddenState = true,
+        )
+    BottomSheetScaffold(
+        modifier = modifier.fillMaxSize(),
+        scaffoldState = rememberBottomSheetScaffoldState(sheetState),
+        sheetPeekHeight = 112.dp,
+        sheetShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        sheetContainerColor = Color.White,
+        sheetDragHandle = { SheetDragHandle() },
+        sheetContent = {
+            StoreSheet(
+                stores = stores,
+                onStoreClick = onStoreClick,
+                onDirectionsClick = onDirectionsClick,
+            )
+        },
+    ) {
+        Box(modifier = Modifier.fillMaxSize().background(MapBackground)) {
             KakaoMapView(
                 isOnline = isOnline,
                 initialPosition = initialPosition,
+                currentLocation = currentLocation,
+                markers = markers,
+                onMarkerClick = onStoreClick,
                 reloadKey = mapReloadKey,
                 onRetry = onMapRetry,
                 modifier = Modifier.fillMaxSize(),
@@ -109,12 +149,19 @@ fun MapContent(
                 )
             }
         }
-        StoreSheet(
-            stores = stores,
-            onStoreClick = onStoreClick,
-            onDirectionsClick = onDirectionsClick,
-        )
     }
+}
+
+@Composable
+private fun SheetDragHandle() {
+    Box(
+        modifier =
+            Modifier
+                .padding(top = 12.dp)
+                .size(width = 40.dp, height = 4.dp)
+                .clip(CircleShape)
+                .background(MapHandle),
+    )
 }
 
 @Composable
@@ -149,19 +196,9 @@ private fun StoreSheet(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
-                .background(Color.White)
-                .padding(20.dp),
+                .heightIn(min = 420.dp)
+                .padding(horizontal = 20.dp, vertical = 12.dp),
     ) {
-        Box(
-            modifier =
-                Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .size(width = 40.dp, height = 4.dp)
-                    .clip(CircleShape)
-                    .background(MapHandle),
-        )
-        Spacer(modifier = Modifier.height(18.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FilterChip(text = stringResource(R.string.map_sort_distance), selected = true)
             FilterChip(text = stringResource(R.string.map_sort_discount), selected = false)
@@ -238,6 +275,14 @@ private fun MapContentPreview() {
 }
 
 private const val UNKNOWN_VALUE = -1.0
+
+private fun previewMarkersAround(center: MapCoordinate): List<MapMarkerUiModel> =
+    listOf(
+        MapMarkerUiModel("preview-1", MapCoordinate(center.latitude + 0.002, center.longitude - 0.001)),
+        MapMarkerUiModel("preview-2", MapCoordinate(center.latitude - 0.001, center.longitude + 0.002)),
+        MapMarkerUiModel("preview-3", MapCoordinate(center.latitude + 0.001, center.longitude + 0.003)),
+    )
+
 private val MapBackground = Color(0xFFE5E8E7)
 private val MapHandle = Color(0xFFD7D9DC)
 private val MapPlaceholder = Color(0xFFF1F1F1)

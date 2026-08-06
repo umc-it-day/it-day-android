@@ -1,5 +1,7 @@
 package com.example.itday.feature.map.presentation
 
+import android.content.Context
+import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -29,6 +31,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.doOnAttach
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -41,11 +45,15 @@ import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
 import com.kakao.vectormap.MapLifeCycleCallback
 import com.kakao.vectormap.MapView
+import com.kakao.vectormap.label.LabelOptions
 
 @Composable
 fun KakaoMapView(
     isOnline: Boolean,
     initialPosition: MapCoordinate,
+    currentLocation: MapCoordinate?,
+    markers: List<MapMarkerUiModel>,
+    onMarkerClick: (String) -> Unit,
     reloadKey: Int,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
@@ -76,7 +84,7 @@ fun KakaoMapView(
     val mapView = remember(context, reloadKey, initialPosition) { MapView(context) }
     var isMapReady by remember(mapView) { mutableStateOf(false) }
     val startMap =
-        remember(mapView, initialPosition) {
+        remember(mapView, initialPosition, currentLocation, markers, onMarkerClick) {
             Runnable {
                 mapView.start(
                     object : MapLifeCycleCallback() {
@@ -90,6 +98,13 @@ fun KakaoMapView(
                     },
                     object : KakaoMapReadyCallback() {
                         override fun onMapReady(kakaoMap: KakaoMap) {
+                            kakaoMap.addMarkers(
+                                currentLocation = currentLocation,
+                                markers = markers,
+                                currentLocationIcon = context.markerBitmap(R.drawable.ic_home_location, 38),
+                                storeMarkerIcon = context.markerBitmap(R.drawable.ic_map_store_marker, 36),
+                                onMarkerClick = onMarkerClick,
+                            )
                             isMapReady = true
                             isLoading = false
                         }
@@ -210,4 +225,45 @@ val DefaultMapCoordinate = MapCoordinate(latitude = 37.385, longitude = 126.645)
 
 private fun MapCoordinate.toLatLng(): LatLng = LatLng.from(latitude, longitude)
 
+private fun KakaoMap.addMarkers(
+    currentLocation: MapCoordinate?,
+    markers: List<MapMarkerUiModel>,
+    currentLocationIcon: Bitmap?,
+    storeMarkerIcon: Bitmap?,
+    onMarkerClick: (String) -> Unit,
+) {
+    val manager = labelManager ?: return
+    val layer = manager.layer ?: return
+    currentLocationIcon?.let { icon ->
+        val coordinate = currentLocation ?: return@let
+        layer.addLabel(
+            LabelOptions
+                .from(CURRENT_LOCATION_LABEL_ID, coordinate.toLatLng())
+                .setStyles(icon),
+        )
+    }
+    storeMarkerIcon?.let { icon ->
+        markers.forEach { marker ->
+            layer.addLabel(
+                LabelOptions
+                    .from(marker.id, marker.position.toLatLng())
+                    .setStyles(icon)
+                    .setClickable(true)
+                    .setTag(marker.id),
+            )
+        }
+    }
+    setOnLabelClickListener { _, _, label ->
+        val markerId = label.tag as? String ?: return@setOnLabelClickListener false
+        onMarkerClick(markerId)
+        true
+    }
+}
+
+private fun Context.markerBitmap(resourceId: Int, sizeDp: Int): Bitmap? {
+    val sizePx = (sizeDp * resources.displayMetrics.density).toInt()
+    return ContextCompat.getDrawable(this, resourceId)?.toBitmap(sizePx, sizePx)
+}
+
 private const val DEFAULT_ZOOM_LEVEL = 15
+private const val CURRENT_LOCATION_LABEL_ID = "current-location"
