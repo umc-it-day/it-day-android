@@ -1,15 +1,20 @@
 package com.example.itday.ui.home
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import com.example.itday.core.location.LocationRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class HomeViewModel(
     initialState: HomeUiState = HomePreviewData.barcodeDisabled,
+    private val locationRepository: LocationRepository? = null,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(initialState)
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
@@ -30,18 +35,43 @@ class HomeViewModel(
                 _uiState.update { state -> state.copy(isBenefitExpanded = !state.isBenefitExpanded) }
             HomeAction.AddBenefit -> addMockBenefits()
             is HomeAction.SelectPartnerBrand -> selectPartnerBrand(action.id)
-            HomeAction.RefreshLocation -> Unit
+            HomeAction.RefreshLocation -> refreshLocation(forceRefresh = true)
             else -> sendNavigationEvent(action)
+        }
+    }
+
+    fun loadLocation() {
+        refreshLocation(forceRefresh = false)
+    }
+
+    private fun refreshLocation(forceRefresh: Boolean) {
+        val repository = locationRepository ?: return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLocationRefreshing = true) }
+            val coordinate = repository.getCurrentLocation(forceRefresh)
+            _uiState.update {
+                it.copy(
+                    locationCoordinate = coordinate ?: it.locationCoordinate,
+                    isLocationRefreshing = false,
+                    isLocationUnavailable = coordinate == null,
+                )
+            }
         }
     }
 
     fun setGuestMode(isGuestMode: Boolean) {
         _uiState.update { state ->
-            when {
-                isGuestMode -> HomePreviewData.guest
-                state.membershipState == MembershipState.Guest -> HomePreviewData.barcodeDisabled
-                else -> state
-            }
+            val target =
+                when {
+                    isGuestMode -> HomePreviewData.guest
+                    state.membershipState == MembershipState.Guest -> HomePreviewData.barcodeDisabled
+                    else -> return@update state
+                }
+            target.copy(
+                locationCoordinate = state.locationCoordinate,
+                isLocationRefreshing = state.isLocationRefreshing,
+                isLocationUnavailable = state.isLocationUnavailable,
+            )
         }
     }
 
@@ -85,5 +115,16 @@ class HomeViewModel(
                 else -> return
             }
         sendEvent(event)
+    }
+
+    companion object {
+        fun factory(locationRepository: LocationRepository): ViewModelProvider.Factory =
+            object : ViewModelProvider.Factory {
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    require(modelClass.isAssignableFrom(HomeViewModel::class.java))
+                    return HomeViewModel(locationRepository = locationRepository) as T
+                }
+            }
     }
 }

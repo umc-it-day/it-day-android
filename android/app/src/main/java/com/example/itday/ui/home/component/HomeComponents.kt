@@ -25,6 +25,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -152,6 +153,7 @@ private fun HomeIconButton(
 @Composable
 fun CurrentLocationRow(
     location: HomeLocationUiModel,
+    isRefreshing: Boolean = false,
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -175,12 +177,13 @@ fun CurrentLocationRow(
                 overflow = TextOverflow.Ellipsis,
             )
         }
-        RefreshLocationButton(onClick = onRefresh)
+        RefreshLocationButton(isRefreshing = isRefreshing, onClick = onRefresh)
     }
 }
 
 @Composable
 private fun RefreshLocationButton(
+    isRefreshing: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -194,15 +197,19 @@ private fun RefreshLocationButton(
                     width = 1.dp,
                     color = ItDayGray300,
                     shape = CircleShape,
-                ).clickable(onClick = onClick)
+                ).clickable(enabled = !isRefreshing, onClick = onClick)
                 .semantics { contentDescription = "현재 위치 새로고침" },
         contentAlignment = Alignment.Center,
     ) {
-        Image(
-            painter = painterResource(R.drawable.ic_home_location_refresh),
-            contentDescription = null,
-            modifier = Modifier.size(20.dp),
-        )
+        if (isRefreshing) {
+            CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp)
+        } else {
+            Image(
+                painter = painterResource(R.drawable.ic_home_location_refresh),
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+            )
+        }
     }
 }
 
