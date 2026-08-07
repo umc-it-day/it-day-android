@@ -127,6 +127,10 @@ fun MapContent(
                 markers = markers,
                 routePoints = routePoints,
                 onMarkerClick = onStoreClick,
+                onMapClick = {
+                    onStoreClose()
+                    coroutineScope.launch { sheetState.partialExpand() }
+                },
                 reloadKey = mapReloadKey,
                 onRetry = onMapRetry,
                 modifier = Modifier.fillMaxSize(),
