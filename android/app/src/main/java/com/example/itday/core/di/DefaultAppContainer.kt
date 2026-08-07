@@ -28,6 +28,8 @@ import com.example.itday.core.data.repository.SettingsRepositoryImpl
 import com.example.itday.core.local.DataStoreLocalPreferencesDataSource
 import com.example.itday.core.local.LocalPreferencesDataSource
 import com.example.itday.core.local.itDayPreferencesDataStore
+import com.example.itday.core.location.FusedLocationRepository
+import com.example.itday.core.location.LocationRepository
 import com.example.itday.core.network.AuthHeaderInterceptor
 import com.example.itday.core.network.AuthTokenAuthenticator
 import com.example.itday.core.network.AndroidNetworkMonitor
@@ -62,6 +64,10 @@ class DefaultAppContainer(
 
     override val permissionManager: PermissionManager by lazy {
         AndroidPermissionManager(appContext)
+    }
+
+    override val locationRepository: LocationRepository by lazy {
+        FusedLocationRepository(appContext)
     }
 
     override val networkMonitor: NetworkMonitor by lazy {

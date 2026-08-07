@@ -13,6 +13,7 @@ import com.example.itday.core.data.repository.PaymentRepository
 import com.example.itday.core.data.repository.ReportRepository
 import com.example.itday.core.data.repository.SettingsRepository
 import com.example.itday.core.local.LocalPreferencesDataSource
+import com.example.itday.core.location.LocationRepository
 import com.example.itday.core.network.NetworkMonitor
 import com.example.itday.core.permission.PermissionManager
 import okhttp3.OkHttpClient
@@ -28,6 +29,7 @@ interface AppContainer {
     val tokenRefresher: TokenRefresher
     val kakaoLoginClient: KakaoLoginClient
     val permissionManager: PermissionManager
+    val locationRepository: LocationRepository
     val networkMonitor: NetworkMonitor
     val homeRepository: HomeRepository
     val mapRepository: MapRepository
