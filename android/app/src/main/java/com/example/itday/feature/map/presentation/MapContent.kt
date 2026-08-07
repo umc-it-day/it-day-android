@@ -29,25 +29,17 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.itday.R
-import com.example.itday.core.di.appContainer
 import kotlinx.coroutines.launch
 
 data class MapStoreUiModel(
@@ -76,53 +68,6 @@ data class MapMarkerUiModel(
 )
 
 @Composable
-fun MapScreen() {
-    val networkMonitor = LocalContext.current.appContainer.networkMonitor
-    val isOnline by
-        networkMonitor.isOnline.collectAsState(
-            initial = networkMonitor.isCurrentlyConnected(),
-        )
-    var reloadKey by remember { mutableIntStateOf(0) }
-    var mapCenter by remember { mutableStateOf(DefaultMapCoordinate) }
-    var currentLocation by remember { mutableStateOf<MapCoordinate?>(null) }
-    var isLocationUnavailable by remember { mutableStateOf(false) }
-    var routePoints by remember { mutableStateOf(emptyList<MapCoordinate>()) }
-    var selectedStoreId by remember { mutableStateOf<String?>(null) }
-
-    CurrentLocationEffect(
-        onLocationFound = { coordinate ->
-            isLocationUnavailable = false
-            currentLocation = coordinate
-            mapCenter = coordinate
-            reloadKey++
-        },
-        onLocationUnavailable = { isLocationUnavailable = true },
-    )
-
-    val stores = remember(mapCenter) { previewStoresAround(mapCenter) }
-    MapContent(
-        stores = stores,
-        isOnline = isOnline,
-        initialPosition = mapCenter,
-        currentLocation = currentLocation,
-        markers = stores.map { MapMarkerUiModel(it.id, it.position) },
-        routePoints = routePoints,
-        selectedStore = stores.firstOrNull { it.id == selectedStoreId },
-        showLocationUnavailable = isLocationUnavailable,
-        mapReloadKey = reloadKey,
-        onMapRetry = { reloadKey++ },
-        onDirectionsClick = { storeId ->
-            val start = currentLocation
-            val destination = stores.firstOrNull { it.id == storeId }?.position
-            if (start != null && destination != null) routePoints = listOf(start, destination)
-        },
-        onDirectionsCancel = { routePoints = emptyList() },
-        onStoreClick = { selectedStoreId = it },
-        onStoreClose = { selectedStoreId = null },
-    )
-}
-
-@Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun MapContent(
     modifier: Modifier = Modifier,
@@ -141,6 +86,8 @@ fun MapContent(
     onDirectionsClick: (String) -> Unit = {},
     onDirectionsCancel: () -> Unit = {},
     onStoreClose: () -> Unit = {},
+    sortOption: MapSortOption = MapSortOption.DISTANCE,
+    onSortClick: (MapSortOption) -> Unit = {},
 ) {
     val sheetState =
         rememberStandardBottomSheetState(
@@ -166,7 +113,7 @@ fun MapContent(
                 }
             }
             if (selectedStore == null) {
-                StoreSheet(stores, onStoreClick, directions)
+                StoreSheet(stores, sortOption, onSortClick, onStoreClick, directions)
             } else {
                 StoreDetailSheet(selectedStore, directions, onStoreClose)
             }
@@ -263,6 +210,8 @@ private fun SearchBar(onClick: () -> Unit) {
 @Composable
 private fun StoreSheet(
     stores: List<MapStoreUiModel>,
+    sortOption: MapSortOption,
+    onSortClick: (MapSortOption) -> Unit,
     onStoreClick: (String) -> Unit,
     onDirectionsClick: (String) -> Unit,
 ) {
@@ -274,8 +223,12 @@ private fun StoreSheet(
                 .padding(horizontal = 20.dp, vertical = 12.dp),
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FilterChip(text = stringResource(R.string.map_sort_distance), selected = true)
-            FilterChip(text = stringResource(R.string.map_sort_discount), selected = false)
+            FilterChip(stringResource(R.string.map_sort_distance), sortOption == MapSortOption.DISTANCE) {
+                onSortClick(MapSortOption.DISTANCE)
+            }
+            FilterChip(stringResource(R.string.map_sort_discount), sortOption == MapSortOption.DISCOUNT) {
+                onSortClick(MapSortOption.DISCOUNT)
+            }
         }
         Spacer(modifier = Modifier.height(16.dp))
         if (stores.isEmpty()) {
@@ -293,7 +246,11 @@ private fun StoreSheet(
 }
 
 @Composable
-private fun FilterChip(text: String, selected: Boolean) {
+private fun FilterChip(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
     val background = if (selected) MaterialTheme.colorScheme.onSurface else Color.White
     val content = if (selected) Color.White else MaterialTheme.colorScheme.onSurface
     Text(
@@ -303,6 +260,7 @@ private fun FilterChip(text: String, selected: Boolean) {
                 .clip(RoundedCornerShape(20.dp))
                 .background(background)
                 .border(1.dp, MapHandle, RoundedCornerShape(20.dp))
+                .clickable(onClick = onClick)
                 .padding(horizontal = 12.dp, vertical = 8.dp),
         color = content,
     )
@@ -485,7 +443,7 @@ private val PreviewStoreDetail =
         phoneNumber = "051-123-4567",
     )
 
-private fun previewStoresAround(center: MapCoordinate): List<MapStoreUiModel> =
+internal fun previewStoresAround(center: MapCoordinate): List<MapStoreUiModel> =
     listOf(
         MapStoreUiModel(
             "preview-1",
