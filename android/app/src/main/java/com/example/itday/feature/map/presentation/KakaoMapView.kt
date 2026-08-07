@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -67,6 +68,7 @@ fun KakaoMapView(
     markers: List<MapMarkerUiModel>,
     routePoints: List<MapCoordinate>,
     onMarkerClick: (String) -> Unit,
+    onMapClick: () -> Unit,
     reloadKey: Int,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
@@ -97,6 +99,7 @@ fun KakaoMapView(
     val mapView = remember(context, reloadKey, initialPosition) { MapView(context) }
     var isMapReady by remember(mapView) { mutableStateOf(false) }
     var readyMap by remember(mapView) { mutableStateOf<KakaoMap?>(null) }
+    val currentOnMapClick by rememberUpdatedState(onMapClick)
     val startMap =
         remember(mapView, initialPosition, currentLocation, markers, onMarkerClick) {
             Runnable {
@@ -113,6 +116,7 @@ fun KakaoMapView(
                     object : KakaoMapReadyCallback() {
                         override fun onMapReady(kakaoMap: KakaoMap) {
                             readyMap = kakaoMap
+                            kakaoMap.setOnMapClickListener { _, _, _, _ -> currentOnMapClick() }
                             kakaoMap.startMarkerClustering(
                                 currentLocation = currentLocation,
                                 markers = markers,
