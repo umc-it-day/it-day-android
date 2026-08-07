@@ -17,6 +17,11 @@
     <string name="map_distance_unknown">거리 미확인</string>
     <string name="map_discount_unknown">할인 미확인</string>
     <string name="map_discount_percent">%1$d%% 할인</string>
+    <string name="map_vip_benefit">VIP 전용 혜택</string>
+    <string name="map_product_basis">아메리카노 기준</string>
+    <string name="map_monthly_here">이번 달 여기서</string>
+    <string name="map_store_information">매장정보</string>
+    <string name="map_mini_map_placeholder">매장 위치</string>
     <string name="report_guest_title">월간 사용 리포트</string>
     <string name="report_guest_members_only">회원 전용 기능</string>
     <string name="report_guest_preview">리포트 미리보기</string>
