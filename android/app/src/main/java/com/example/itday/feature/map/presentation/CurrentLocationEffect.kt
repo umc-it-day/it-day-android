@@ -4,12 +4,11 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import com.example.itday.core.di.appContainer
 import com.example.itday.core.permission.AppPermission
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
+import kotlinx.coroutines.launch
 
 @Composable
 fun CurrentLocationEffect(
@@ -17,24 +16,20 @@ fun CurrentLocationEffect(
     onLocationUnavailable: () -> Unit,
 ) {
     val context = LocalContext.current
-    val permissionManager = context.appContainer.permissionManager
-    val locationClient = remember(context) { LocationServices.getFusedLocationProviderClient(context) }
-    val loadCurrentLocation = {
+    val appContainer = context.appContainer
+    val permissionManager = appContainer.permissionManager
+    val coroutineScope = rememberCoroutineScope()
+    val loadCurrentLocation: () -> Unit = {
         if (!permissionManager.isGranted(AppPermission.Location)) {
             onLocationUnavailable()
         } else {
-            try {
-                locationClient
-                    .getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, null)
-                    .addOnSuccessListener { location ->
-                        if (location == null) {
-                            onLocationUnavailable()
-                        } else {
-                            onLocationFound(MapCoordinate(location.latitude, location.longitude))
-                        }
-                    }.addOnFailureListener { onLocationUnavailable() }
-            } catch (_: SecurityException) {
-                onLocationUnavailable()
+            coroutineScope.launch {
+                val location = appContainer.locationRepository.getCurrentLocation()
+                if (location == null) {
+                    onLocationUnavailable()
+                } else {
+                    onLocationFound(MapCoordinate(location.latitude, location.longitude))
+                }
             }
         }
     }
