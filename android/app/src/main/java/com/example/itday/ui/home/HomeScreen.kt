@@ -15,8 +15,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.itday.core.di.appContainer
 import com.example.itday.ui.home.component.BrandDaySection
 import com.example.itday.ui.home.component.CarrierComparisonBanner
 import com.example.itday.ui.home.component.CurrentLocationRow
@@ -37,12 +39,16 @@ import com.example.itday.ui.theme.ItDayWhite
 @Composable
 fun HomeRoute(
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = viewModel(),
+    viewModel: HomeViewModel =
+        viewModel(
+            factory = HomeViewModel.factory(LocalContext.current.appContainer.locationRepository),
+        ),
     isGuestMode: Boolean = false,
     onEvent: (HomeEvent) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
     LaunchedEffect(viewModel) {
+        viewModel.loadLocation()
         viewModel.events.collect(onEvent)
     }
     LaunchedEffect(isGuestMode) {
@@ -89,6 +95,7 @@ private fun HomeScreenContent(
         Spacer(Modifier.height(ItDayDimens.Space16))
         CurrentLocationRow(
             location = uiState.location,
+            isRefreshing = uiState.isLocationRefreshing,
             onRefresh = { onAction(HomeAction.RefreshLocation) },
         )
         Spacer(Modifier.height(ItDayDimens.Space16))

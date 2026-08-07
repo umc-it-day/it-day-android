@@ -1,6 +1,7 @@
 package com.example.itday.ui.home
 
 import androidx.annotation.DrawableRes
+import com.example.itday.core.location.LocationCoordinate
 
 enum class MembershipState {
     Guest,
@@ -19,6 +20,9 @@ data class HomeUiState(
     val isBenefitExpanded: Boolean = true,
     val showProSection: Boolean = true,
     val showMembershipDialog: Boolean = false,
+    val locationCoordinate: LocationCoordinate? = null,
+    val isLocationRefreshing: Boolean = false,
+    val isLocationUnavailable: Boolean = false,
 )
 
 data class HomeLocationUiModel(

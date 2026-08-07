@@ -1,11 +1,39 @@
 package com.example.itday.ui.home
 
+import com.example.itday.core.location.LocationCoordinate
+import com.example.itday.core.location.LocationRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
+    @Test
+    fun `위치 새로고침은 강제 측정한 좌표를 상태에 반영한다`() =
+        runTest {
+            val dispatcher = UnconfinedTestDispatcher(testScheduler)
+            val repository = FakeLocationRepository()
+            Dispatchers.setMain(dispatcher)
+            try {
+                val viewModel = HomeViewModel(HomePreviewData.barcodeDisabled, repository)
+
+                viewModel.onAction(HomeAction.RefreshLocation)
+
+                assertTrue(repository.forceRefreshRequested)
+                assertEquals(repository.coordinate, viewModel.uiState.value.locationCoordinate)
+                assertFalse(viewModel.uiState.value.isLocationRefreshing)
+            } finally {
+                Dispatchers.resetMain()
+            }
+        }
+
     @Test
     fun `바코드 활성화 액션은 활성 상태로 변경한다`() {
         val viewModel = HomeViewModel(HomePreviewData.barcodeDisabled)
@@ -65,5 +93,15 @@ class HomeViewModelTest {
 
         assertEquals(MembershipState.Guest, viewModel.uiState.value.membershipState)
         assertFalse(viewModel.uiState.value.showProSection)
+    }
+}
+
+private class FakeLocationRepository : LocationRepository {
+    val coordinate = LocationCoordinate(35.1, 129.1)
+    var forceRefreshRequested = false
+
+    override suspend fun getCurrentLocation(forceRefresh: Boolean): LocationCoordinate {
+        forceRefreshRequested = forceRefresh
+        return coordinate
     }
 }
