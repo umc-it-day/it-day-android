@@ -1,5 +1,7 @@
 package com.example.itday.feature.onboarding.presentation
 
+import com.example.itday.R
+
 enum class AgreementType {
     Location,
     Privacy,
@@ -9,17 +11,47 @@ enum class AgreementType {
 enum class CarrierType(val displayName: String) {
     SKT("SKT"),
     KT("KT"),
-    LGU_PLUS("LG U+"),
+    LGU_PLUS("LG U+");
+
+    val availableGrades: List<MembershipGradeInfo>
+        get() = when (this) {
+            SKT -> listOf(
+                MembershipGradeInfo(MembershipGradeType.VVIP, R.drawable.ic_membership_vvip),
+                MembershipGradeInfo(MembershipGradeType.VIP, R.drawable.ic_membership_diamond),
+                MembershipGradeInfo(MembershipGradeType.GOLD, R.drawable.ic_membership_gold),
+                MembershipGradeInfo(MembershipGradeType.SILVER, R.drawable.ic_membership_silver),
+                MembershipGradeInfo(MembershipGradeType.WHITE, null),
+                MembershipGradeInfo(MembershipGradeType.GENERAL, R.drawable.ic_membership_general),
+            )
+            KT -> listOf(
+                MembershipGradeInfo(MembershipGradeType.VIP, R.drawable.ic_membership_vvip),
+                MembershipGradeInfo(MembershipGradeType.GOLD, R.drawable.ic_membership_gold),
+                MembershipGradeInfo(MembershipGradeType.SILVER, R.drawable.ic_membership_silver),
+            )
+            LGU_PLUS -> listOf(
+                MembershipGradeInfo(MembershipGradeType.VVIP, R.drawable.ic_membership_vvip),
+                MembershipGradeInfo(MembershipGradeType.VIP, R.drawable.ic_membership_vip_star),
+                MembershipGradeInfo(MembershipGradeType.DIAMOND, R.drawable.ic_membership_diamond),
+                MembershipGradeInfo(MembershipGradeType.GOLD, R.drawable.ic_membership_gold),
+                MembershipGradeInfo(MembershipGradeType.GENERAL, R.drawable.ic_membership_general),
+            )
+        }
 }
 
-enum class MembershipGradeType(val displayName: String, val iconEmoji: String) {
-    VVIP("VVIP", "👑"),
-    VIP("VIP", "◆"),
-    GOLD("GOLD", "🥇"),
-    SILVER("SILVER", "🥈"),
-    WHITE("WHITE", "⚪"),
-    GENERAL("일반", "👦"),
+enum class MembershipGradeType(val displayName: String) {
+    VVIP("VVIP"),
+    VIP("VIP"),
+    DIAMOND("DIAMOND"),
+    GOLD("GOLD"),
+    SILVER("SILVER"),
+    WHITE("WHITE"),
+    GENERAL("일반"),
 }
+
+data class MembershipGradeInfo(
+    val type: MembershipGradeType,
+    val iconResId: Int?,
+)
 
 data class OnboardingUiState(
     val step: Int = 0,

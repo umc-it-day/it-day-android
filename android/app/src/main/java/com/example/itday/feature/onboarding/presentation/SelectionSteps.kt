@@ -1,6 +1,8 @@
 package com.example.itday.feature.onboarding.presentation
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -126,12 +129,12 @@ fun SelectionSteps(
                     }
                 }
                 OnboardingUiState.MEMBERSHIP_STEP -> {
-                    MembershipGradeType.entries.forEach { grade ->
+                    state.selectedCarrier?.availableGrades?.forEach { gradeInfo ->
                         SelectableOptionCard(
-                            title = grade.displayName,
-                            iconEmoji = grade.iconEmoji,
-                            isSelected = state.selectedMembershipGrade == grade,
-                            onClick = { onMembershipGradeSelect(grade) },
+                            title = gradeInfo.type.displayName,
+                            iconResId = gradeInfo.iconResId,
+                            isSelected = state.selectedMembershipGrade == gradeInfo.type,
+                            onClick = { onMembershipGradeSelect(gradeInfo.type) },
                         )
                     }
                 }
@@ -173,6 +176,7 @@ fun SelectionSteps(
 private fun SelectableOptionCard(
     title: String,
     iconEmoji: String? = null,
+    iconResId: Int? = null,
     isSelected: Boolean,
     onClick: () -> Unit,
 ) {
@@ -197,7 +201,14 @@ private fun SelectableOptionCard(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (iconEmoji != null) {
+                if (iconResId != null) {
+                    Image(
+                        painter = painterResource(id = iconResId),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                } else if (iconEmoji != null) {
                     Text(text = iconEmoji, fontSize = 20.sp)
                     Spacer(modifier = Modifier.width(12.dp))
                 }
@@ -215,14 +226,14 @@ private fun SelectableOptionCard(
                         Modifier
                             .size(24.dp)
                             .clip(CircleShape)
-                            .padding(0.dp),
+                            .background(ItDayPrimary),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = null,
-                        tint = ItDayPrimary,
-                        modifier = Modifier.size(20.dp),
+                        tint = ItDayWhite,
+                        modifier = Modifier.size(16.dp),
                     )
                 }
             }

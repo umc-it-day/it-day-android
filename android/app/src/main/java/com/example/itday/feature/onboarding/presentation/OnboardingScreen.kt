@@ -1,5 +1,6 @@
 package com.example.itday.feature.onboarding.presentation
 
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
@@ -76,6 +77,14 @@ fun OnboardingScreen(
         rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
             onLocationResult(permissionManager.isGranted(AppPermission.Location))
         }
+
+    BackHandler(enabled = true) {
+        if (state.step == OnboardingUiState.TERMS_STEP) {
+            onClose()
+        } else {
+            onBack()
+        }
+    }
 
     LaunchedEffect(events) {
         events.collect { event ->
