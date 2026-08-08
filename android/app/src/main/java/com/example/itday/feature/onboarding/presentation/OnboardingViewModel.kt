@@ -29,10 +29,14 @@ class OnboardingViewModel : ViewModel() {
 
     fun next() {
         when (_uiState.value.step) {
-            OnboardingUiState.TERMS_STEP -> _uiState.update { it.copy(step = OnboardingUiState.LOCATION_PERM_STEP) }
+            OnboardingUiState.TERMS_STEP -> {
+                if (_uiState.value.notificationAgreed) {
+                    _events.trySend(OnboardingUiEvent.RequestNotificationPermission)
+                }
+                _uiState.update { it.copy(step = OnboardingUiState.LOCATION_PERM_STEP) }
+            }
             OnboardingUiState.LOCATION_PERM_STEP -> {
                 _events.trySend(OnboardingUiEvent.RequestLocationPermission)
-                _uiState.update { it.copy(step = OnboardingUiState.CARRIER_STEP) }
             }
             OnboardingUiState.BRAND_STEP -> _events.trySend(OnboardingUiEvent.Complete)
             else -> _uiState.update { it.copy(step = it.step + 1) }
@@ -69,4 +73,8 @@ class OnboardingViewModel : ViewModel() {
                 }
             state.copy(preferredBrands = brands)
         }
+
+    fun showTerms(type: AgreementType) = _uiState.update { it.copy(showingTerms = type) }
+
+    fun hideTerms() = _uiState.update { it.copy(showingTerms = null) }
 }

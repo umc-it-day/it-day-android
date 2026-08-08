@@ -17,15 +17,19 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -36,6 +40,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -65,6 +70,8 @@ fun OnboardingScreen(
     onClose: () -> Unit,
     onBack: () -> Unit,
     onNext: () -> Unit,
+    onShowTerms: (AgreementType) -> Unit,
+    onHideTerms: () -> Unit,
     onLocationResult: (Boolean) -> Unit,
     onCarrierSelect: (CarrierType) -> Unit,
     onMembershipGradeSelect: (MembershipGradeType) -> Unit,
@@ -79,7 +86,9 @@ fun OnboardingScreen(
         }
 
     BackHandler(enabled = true) {
-        if (state.step == OnboardingUiState.TERMS_STEP) {
+        if (state.showingTerms != null) {
+            onHideTerms()
+        } else if (state.step == OnboardingUiState.TERMS_STEP) {
             onClose()
         } else {
             onBack()
@@ -95,6 +104,13 @@ fun OnboardingScreen(
                     } else {
                         permissionLauncher.launch(
                             permissionManager.permissionsFor(AppPermission.Location).toTypedArray(),
+                        )
+                    }
+                }
+                OnboardingUiEvent.RequestNotificationPermission -> {
+                    if (!permissionManager.isGranted(AppPermission.Notification)) {
+                        permissionLauncher.launch(
+                            permissionManager.permissionsFor(AppPermission.Notification).toTypedArray(),
                         )
                     }
                 }
@@ -130,6 +146,7 @@ fun OnboardingScreen(
                             state = state,
                             onAgreementChange = onAgreementChange,
                             onNext = onNext,
+                            onShowTerms = onShowTerms,
                         )
                     }
                     OnboardingUiState.LOCATION_PERM_STEP -> {
@@ -148,6 +165,13 @@ fun OnboardingScreen(
                         )
                     }
                 }
+            }
+
+            if (state.showingTerms != null) {
+                TermsDetailDialog(
+                    type = state.showingTerms,
+                    onDismiss = onHideTerms,
+                )
             }
         }
     }
@@ -203,6 +227,7 @@ private fun TermsContent(
     state: OnboardingUiState,
     onAgreementChange: (AgreementType, Boolean) -> Unit,
     onNext: () -> Unit,
+    onShowTerms: (AgreementType) -> Unit,
 ) {
     Column(
         modifier =
@@ -235,6 +260,7 @@ private fun TermsContent(
                 subtitle = "주변 할인 매장 찾기",
                 isChecked = state.locationAgreed,
                 onCheckedChange = { onAgreementChange(AgreementType.Location, it) },
+                onShowTerms = { onShowTerms(AgreementType.Location) },
             )
 
             AgreementCard(
@@ -242,6 +268,7 @@ private fun TermsContent(
                 subtitle = "할인 혜택 제공",
                 isChecked = state.privacyAgreed,
                 onCheckedChange = { onAgreementChange(AgreementType.Privacy, it) },
+                onShowTerms = { onShowTerms(AgreementType.Privacy) },
             )
 
             AgreementCard(
@@ -249,6 +276,7 @@ private fun TermsContent(
                 subtitle = "할인 정보 알림",
                 isChecked = state.notificationAgreed,
                 onCheckedChange = { onAgreementChange(AgreementType.Notification, it) },
+                onShowTerms = { onShowTerms(AgreementType.Notification) },
             )
         }
 
@@ -286,11 +314,13 @@ private fun AgreementCard(
     subtitle: String,
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
+    onShowTerms: () -> Unit,
 ) {
     Card(
         modifier =
             Modifier
                 .fillMaxWidth()
+                .clip(RoundedCornerShape(18.dp))
                 .clickable { onCheckedChange(!isChecked) },
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFF6F7F9)),
@@ -343,10 +373,73 @@ private fun AgreementCard(
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
                 color = ItDayPrimary,
-                modifier = Modifier.clickable { /* 약관 상세보기 모달 */ },
+                modifier =
+                    Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .clickable { onShowTerms() }
+                        .padding(horizontal = 4.dp, vertical = 2.dp),
             )
         }
     }
+}
+
+@Composable
+private fun TermsDetailDialog(
+    type: AgreementType,
+    onDismiss: () -> Unit,
+) {
+    val title =
+        when (type) {
+            AgreementType.Location -> "위치 정보 이용 동의"
+            AgreementType.Privacy -> "개인정보 처리방침"
+            AgreementType.Notification -> "알림 권한 동의"
+        }
+
+    val content =
+        when (type) {
+            AgreementType.Location -> OnboardingConstants.LOCATION_TERMS_DETAIL
+            AgreementType.Privacy -> OnboardingConstants.PRIVACY_TERMS_DETAIL
+            AgreementType.Notification -> OnboardingConstants.NOTIFICATION_TERMS_DETAIL
+        }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = title,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF191919),
+            )
+        },
+        text = {
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 400.dp)
+                        .verticalScroll(rememberScrollState()),
+            ) {
+                Text(
+                    text = content,
+                    fontSize = 14.sp,
+                    color = ItDayGray500,
+                    lineHeight = 20.sp,
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onDismiss,
+                colors = ButtonDefaults.buttonColors(containerColor = ItDayPrimary),
+                shape = RoundedCornerShape(12.dp),
+            ) {
+                Text(text = "확인", color = ItDayWhite)
+            }
+        },
+        containerColor = ItDayWhite,
+        shape = RoundedCornerShape(20.dp),
+    )
 }
 
 @Preview(showBackground = true)
@@ -360,6 +453,8 @@ private fun OnboardingTermsStepPreview() {
             onClose = {},
             onBack = {},
             onNext = {},
+            onShowTerms = {},
+            onHideTerms = {},
             onLocationResult = {},
             onCarrierSelect = {},
             onMembershipGradeSelect = {},
@@ -381,6 +476,8 @@ private fun OnboardingLocationStepPreview() {
             onClose = {},
             onBack = {},
             onNext = {},
+            onShowTerms = {},
+            onHideTerms = {},
             onLocationResult = {},
             onCarrierSelect = {},
             onMembershipGradeSelect = {},
@@ -402,6 +499,8 @@ private fun OnboardingCarrierStepPreview() {
             onClose = {},
             onBack = {},
             onNext = {},
+            onShowTerms = {},
+            onHideTerms = {},
             onLocationResult = {},
             onCarrierSelect = {},
             onMembershipGradeSelect = {},
@@ -423,6 +522,8 @@ private fun OnboardingMembershipStepPreview() {
             onClose = {},
             onBack = {},
             onNext = {},
+            onShowTerms = {},
+            onHideTerms = {},
             onLocationResult = {},
             onCarrierSelect = {},
             onMembershipGradeSelect = {},
@@ -444,6 +545,8 @@ private fun OnboardingBrandStepPreview() {
             onClose = {},
             onBack = {},
             onNext = {},
+            onShowTerms = {},
+            onHideTerms = {},
             onLocationResult = {},
             onCarrierSelect = {},
             onMembershipGradeSelect = {},

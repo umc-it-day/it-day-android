@@ -187,6 +187,7 @@ private fun SelectableOptionCard(
         modifier =
             Modifier
                 .fillMaxWidth()
+                .clip(RoundedCornerShape(18.dp))
                 .clickable { onClick() },
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = containerColor),
@@ -283,8 +284,9 @@ private fun BrandCategorySection(
         modifier =
             Modifier
                 .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp))
                 .clickable(onClick = onExpandedChange)
-                .padding(vertical = 4.dp),
+                .padding(vertical = 8.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -319,6 +321,7 @@ private fun BrandCategorySection(
                             Modifier
                                 .weight(1f)
                                 .height(80.dp)
+                                .clip(RoundedCornerShape(14.dp))
                                 .clickable { onBrandToggle(brand) },
                         shape = RoundedCornerShape(14.dp),
                         colors = CardDefaults.cardColors(containerColor = cardBg),

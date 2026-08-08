@@ -139,9 +139,15 @@ private fun OnboardingDestination(navController: NavHostController) {
         state = uiState,
         events = onboardingViewModel.events,
         onAgreementChange = onboardingViewModel::setAgreement,
-        onClose = { navController.popBackStack() },
+        onClose = {
+            navController.navigate(AppRoute.LOGIN.route) {
+                popUpTo(AppRoute.ONBOARDING.route) { inclusive = true }
+            }
+        },
         onBack = onboardingViewModel::back,
         onNext = onboardingViewModel::next,
+        onShowTerms = onboardingViewModel::showTerms,
+        onHideTerms = onboardingViewModel::hideTerms,
         onLocationResult = onboardingViewModel::onLocationResult,
         onCarrierSelect = onboardingViewModel::selectCarrier,
         onMembershipGradeSelect = onboardingViewModel::selectMembershipGrade,

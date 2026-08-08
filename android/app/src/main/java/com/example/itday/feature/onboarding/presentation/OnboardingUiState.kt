@@ -20,7 +20,7 @@ enum class CarrierType(val displayName: String) {
                 MembershipGradeInfo(MembershipGradeType.VIP, R.drawable.ic_membership_diamond),
                 MembershipGradeInfo(MembershipGradeType.GOLD, R.drawable.ic_membership_gold),
                 MembershipGradeInfo(MembershipGradeType.SILVER, R.drawable.ic_membership_silver),
-                MembershipGradeInfo(MembershipGradeType.WHITE, null),
+                MembershipGradeInfo(MembershipGradeType.WHITE, R.drawable.white_circle),
                 MembershipGradeInfo(MembershipGradeType.GENERAL, R.drawable.ic_membership_general),
             )
             KT -> listOf(
@@ -62,6 +62,7 @@ data class OnboardingUiState(
     val selectedCarrier: CarrierType? = CarrierType.SKT,
     val selectedMembershipGrade: MembershipGradeType? = MembershipGradeType.VVIP,
     val preferredBrands: Set<String> = emptySet(),
+    val showingTerms: AgreementType? = null,
 ) {
     val totalProgressSteps: Int = 4
 
