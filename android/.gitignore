@@ -14,3 +14,7 @@
 .cxx
 local.properties
 /itday.properties
+
+# IDE Artifacts
+*.artifact.md
+.artifacts/

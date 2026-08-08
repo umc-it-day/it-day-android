@@ -22,6 +22,8 @@ import com.example.itday.ui.start.SessionViewModel
 import com.example.itday.ui.start.SplashScreen
 import kotlinx.coroutines.launch
 
+import com.example.itday.feature.barcode.presentation.BarcodeRegistrationRoute
+
 @Composable
 fun ItDayNavHost(navController: NavHostController = rememberNavController()) {
     NavHost(
@@ -41,7 +43,14 @@ fun ItDayNavHost(navController: NavHostController = rememberNavController()) {
             MainTabScaffold()
         }
         composable(AppRoute.BARCODE.route) {
-            BarcodePlaceholderScreen()
+            BarcodeRegistrationRoute(
+                onBackClick = { navController.popBackStack() },
+                onHomeClick = {
+                    navController.navigate(AppRoute.MAIN.route) {
+                        popUpTo(AppRoute.MAIN.route) { inclusive = true }
+                    }
+                },
+            )
         }
     }
 }
@@ -130,12 +139,18 @@ private fun OnboardingDestination(navController: NavHostController) {
         state = uiState,
         events = onboardingViewModel.events,
         onAgreementChange = onboardingViewModel::setAgreement,
-        onClose = { navController.popBackStack() },
+        onClose = {
+            navController.navigate(AppRoute.LOGIN.route) {
+                popUpTo(AppRoute.ONBOARDING.route) { inclusive = true }
+            }
+        },
         onBack = onboardingViewModel::back,
         onNext = onboardingViewModel::next,
+        onShowTerms = onboardingViewModel::showTerms,
+        onHideTerms = onboardingViewModel::hideTerms,
         onLocationResult = onboardingViewModel::onLocationResult,
         onCarrierSelect = onboardingViewModel::selectCarrier,
-        onMembershipSelect = onboardingViewModel::selectMembership,
+        onMembershipGradeSelect = onboardingViewModel::selectMembershipGrade,
         onBrandToggle = onboardingViewModel::toggleBrand,
         permissionManager = context.appContainer.permissionManager,
         onComplete = {
