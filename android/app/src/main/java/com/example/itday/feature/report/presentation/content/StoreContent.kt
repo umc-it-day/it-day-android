@@ -52,8 +52,11 @@ data class StoreProductUiModel(val name: String? = null, val points: Int, val ex
 fun StoreContent(
     products: List<StoreProductUiModel> = StorePreviewProducts,
     onBackClick: () -> Unit = {},
+    onPointClick: () -> Unit = {},
     onExchangeClick: (Int) -> Unit = {},
     onMissionClick: () -> Unit = {},
+    onSubscribeClick: () -> Unit = {},
+    isProMember: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     var selectedCategoryIndex by rememberSaveable { mutableIntStateOf(0) }
@@ -62,7 +65,7 @@ fun StoreContent(
         Column(modifier = Modifier.background(ItDayWhite)) {
             ItDayFlowTopBar(title = stringResource(R.string.store_title), onBackClick = onBackClick)
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = ItDayDimens.Space24),
+                modifier = Modifier.fillMaxWidth().clickable(onClick = onPointClick).padding(horizontal = ItDayDimens.Space24),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -104,7 +107,7 @@ fun StoreContent(
                     if (index < products.lastIndex) HorizontalDivider(color = ItDayGray100)
                 }
             }
-            StoreMissionCard(onMissionClick = onMissionClick)
+            StoreMissionCard(isProMember, onMissionClick, onSubscribeClick)
         }
     }
 }
@@ -144,7 +147,11 @@ private fun StoreProductRow(product: StoreProductUiModel, onExchangeClick: () ->
 }
 
 @Composable
-private fun StoreMissionCard(onMissionClick: () -> Unit) {
+private fun StoreMissionCard(
+    isProMember: Boolean,
+    onMissionClick: () -> Unit,
+    onSubscribeClick: () -> Unit,
+) {
     Column(
         modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(StoreMissionGradient).padding(20.dp),
     ) {
@@ -156,14 +163,20 @@ private fun StoreMissionCard(onMissionClick: () -> Unit) {
             Image(painter = painterResource(R.drawable.mission_gift), contentDescription = null, modifier = Modifier.size(72.dp))
         }
         ItDayButton(
-            text = stringResource(R.string.store_mission_check),
-            onClick = onMissionClick,
+            text =
+                stringResource(
+                    if (isProMember) R.string.store_mission_check else R.string.point_subscribe_description,
+                ),
+            onClick = if (isProMember) onMissionClick else onSubscribeClick,
             modifier = Modifier.fillMaxWidth().padding(top = ItDayDimens.Space16),
             variant = ItDayButtonVariant.Secondary,
             size = ItDayButtonSize.Medium,
         )
         Text(
-            text = stringResource(R.string.store_mission_reward),
+            text =
+                stringResource(
+                    if (isProMember) R.string.store_mission_reward else R.string.store_mission_reward_available,
+                ),
             modifier = Modifier.fillMaxWidth().padding(top = ItDayDimens.Space12),
             color = ItDayWhite,
             style = MaterialTheme.typography.bodySmall,

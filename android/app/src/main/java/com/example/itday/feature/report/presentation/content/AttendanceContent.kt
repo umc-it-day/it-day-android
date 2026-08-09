@@ -44,6 +44,7 @@ import com.example.itday.ui.theme.ItDayBlue
 import com.example.itday.ui.theme.ItDayDimens
 import com.example.itday.ui.theme.ItDayGray100
 import com.example.itday.ui.theme.ItDayGray500
+import com.example.itday.ui.theme.ItDayMint
 import com.example.itday.ui.theme.ItDayWhite
 
 @Composable
@@ -137,7 +138,30 @@ private fun BonusStamp(labelRes: Int, completed: Boolean) {
             contentDescription = null,
             modifier = Modifier.size(72.dp),
         )
-        Text(text = if (completed) "+30P" else "100P", color = if (completed) Color.Black else ItDayGray500)
+        if (completed) {
+            Row(
+                modifier =
+                    Modifier
+                        .padding(top = ItDayDimens.Space4)
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(ItDayMint)
+                        .padding(horizontal = 10.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.attendance_reward_check),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                )
+                Text(
+                    text = "+30P",
+                    modifier = Modifier.padding(start = ItDayDimens.Space4),
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        } else {
+            Text(text = "100P", color = ItDayGray500, modifier = Modifier.padding(top = ItDayDimens.Space4))
+        }
     }
 }
 

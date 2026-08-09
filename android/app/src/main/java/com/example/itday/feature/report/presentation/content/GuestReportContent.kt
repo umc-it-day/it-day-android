@@ -44,6 +44,7 @@ import com.example.itday.ui.theme.ItDayGray500
 @Composable
 fun GuestReportContent(
     onSignUpClick: () -> Unit,
+    onAttendanceClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -54,7 +55,7 @@ fun GuestReportContent(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = ItDayDimens.ScreenHorizontalPadding),
     ) {
-        ReportHeader()
+        ReportHeader(onAttendanceClick = onAttendanceClick)
         Row(
             modifier = Modifier.padding(top = ItDayDimens.Space16),
             verticalAlignment = Alignment.CenterVertically,
