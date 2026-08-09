@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -122,15 +123,30 @@ private fun AttendanceCompletionDialog(onHomeClick: () -> Unit, onDismiss: () ->
             modifier =
                 Modifier
                     .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            listOf(Color.White, Color(0xFFEAF2FF), Color.White),
-                        ),
-                    )
-                    .padding(horizontal = 32.dp),
+                    .background(Color.Black.copy(alpha = 0.72f))
+                    .padding(horizontal = ItDayDimens.Space16),
             contentAlignment = Alignment.Center,
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(560.dp)
+                        .background(
+                            Brush.verticalGradient(
+                                colorStops =
+                                    arrayOf(
+                                        0f to Color(0xFF55575A),
+                                        0.3f to Color(0xFFEAF2FF),
+                                        0.7f to Color(0xFFEAF2FF),
+                                        1f to Color(0xFF55575A),
+                                    ),
+                            ),
+                        )
+                        .padding(horizontal = ItDayDimens.Space16),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
                 Text(
                     text = stringResource(R.string.attendance_completion_label),
                     color = ItDayGray500,
