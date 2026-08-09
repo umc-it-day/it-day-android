@@ -17,8 +17,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,6 +43,7 @@ fun FreeReportContent(
     topStores: List<ReportTopStoreItem>,
     onShopClick: () -> Unit,
     onPointHistoryClick: () -> Unit,
+    onAttendanceClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     floor: Int = 3,
     pointBalance: Int = 0,
@@ -55,7 +56,7 @@ fun FreeReportContent(
                 .background(ItDayWhite),
     ) {
         Box(modifier = Modifier.padding(horizontal = ItDayDimens.ScreenHorizontalPadding)) {
-            ReportHeader()
+            ReportHeader(onAttendanceClick = onAttendanceClick)
         }
         FreeReportHero(floor = floor, pointBalance = pointBalance, onShopClick = onShopClick)
         ItDayCard(
@@ -109,9 +110,14 @@ private fun FreeReportHero(floor: Int, pointBalance: Int, onShopClick: () -> Uni
         modifier =
             Modifier
                 .fillMaxWidth()
-                .height(220.dp)
-                .background(ReportHeroGradient),
+                .height(220.dp),
     ) {
+        Image(
+            painter = painterResource(R.drawable.report_free_background),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop,
+        )
         Column(modifier = Modifier.padding(ItDayDimens.Space16)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = "P", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
@@ -155,11 +161,3 @@ private fun FreeReportContentPreview() {
 }
 
 private val ReportContainerColor = Color(0xFFF2F2FF)
-private val ReportHeroGradient =
-    Brush.verticalGradient(
-        0f to Color(0xFFEAFBFF),
-        0.58f to Color(0xFFEAFBFF),
-        0.59f to Color(0xFF78DFC5),
-        0.78f to Color(0xFF78DFC5),
-        1f to ItDayWhite,
-    )

@@ -133,7 +133,7 @@ private fun MainTabNavHost(
             MapScreen()
         }
         composable(AppRoute.REPORT.route) {
-            ReportScreen()
+            ReportScreen(isGuestMode = isGuestMode)
         }
         composable(AppRoute.SETTINGS.route) {
             SettingsMainRoute()
