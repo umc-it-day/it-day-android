@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -50,6 +51,7 @@ fun ReportCategorySummaryCard(
     categories: List<ReportCategoryItem>,
     modifier: Modifier = Modifier,
 ) {
+    val highestCount = categories.maxOfOrNull { it.count } ?: 0
     ItDayCard(modifier = modifier.fillMaxWidth()) {
         Text(
             text = title,
@@ -68,19 +70,25 @@ fun ReportCategorySummaryCard(
             horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
             categories.forEach { category ->
+                val isMostUsed = highestCount > 0 && category.count == highestCount
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "${category.count}회", fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "${category.count}회",
+                        color = if (isMostUsed) Color.Black else ItDayGray500,
+                        fontWeight = if (isMostUsed) FontWeight.Bold else FontWeight.Normal,
+                    )
                     category.iconRes?.let { iconRes ->
                         Image(
                             painter = painterResource(iconRes),
                             contentDescription = category.label,
-                            modifier = Modifier.size(48.dp),
+                            modifier = Modifier.size(48.dp).alpha(if (isMostUsed) 1f else 0.25f),
                         )
                     }
                     Text(
                         text = category.label,
-                        color = ItDayGray500,
+                        color = if (isMostUsed) Color.Black else ItDayGray500,
                         style = MaterialTheme.typography.bodySmall,
+                        fontWeight = if (isMostUsed) FontWeight.Bold else FontWeight.Normal,
                     )
                 }
             }

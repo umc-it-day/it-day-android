@@ -8,7 +8,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -57,6 +56,7 @@ import com.example.itday.ui.component.ItDayBadgeVariant
 import com.example.itday.ui.component.ItDayButton
 import com.example.itday.ui.component.ItDayButtonSize
 import com.example.itday.ui.component.ItDayCard
+import com.example.itday.ui.component.ItDayMainTopBar
 import com.example.itday.ui.component.ItDaySectionHeader
 import com.example.itday.ui.home.HomeBenefitUiModel
 import com.example.itday.ui.home.HomeBrandDayUiModel
@@ -92,62 +92,11 @@ fun HomeTopBar(
     onProfileClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Image(
-            painter = painterResource(R.drawable.logo_itday_symbol),
-            contentDescription = "IT-Day",
-            modifier = Modifier.size(40.dp),
-        )
-        Row(horizontalArrangement = Arrangement.spacedBy(ItDayDimens.Space8)) {
-            HomeIconButton(
-                description = "출석체크",
-                iconRes = R.drawable.ic_home_attendance,
-                showPressedBackground = false,
-                onClick = onCalendarClick,
-            )
-            HomeIconButton("프로필", R.drawable.ic_home_profile, onProfileClick)
-        }
-    }
-}
-
-@Composable
-private fun HomeIconButton(
-    description: String,
-    @DrawableRes iconRes: Int,
-    onClick: () -> Unit,
-    showPressedBackground: Boolean = true,
-) {
-    val clickModifier =
-        if (showPressedBackground) {
-            Modifier
-                .clip(CircleShape)
-                .clickable(onClick = onClick)
-        } else {
-            Modifier.clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick,
-            )
-        }
-
-    Box(
-        modifier =
-            Modifier
-                .size(40.dp)
-                .then(clickModifier)
-                .semantics { contentDescription = description },
-        contentAlignment = Alignment.Center,
-    ) {
-        Image(
-            painter = painterResource(iconRes),
-            contentDescription = null,
-            modifier = Modifier.size(24.dp),
-        )
-    }
+    ItDayMainTopBar(
+        onAttendanceClick = onCalendarClick,
+        onProfileClick = onProfileClick,
+        modifier = modifier,
+    )
 }
 
 @Composable

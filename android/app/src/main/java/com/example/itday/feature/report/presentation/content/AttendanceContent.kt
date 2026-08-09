@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,6 +37,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.example.itday.R
 import com.example.itday.ui.component.ItDayButton
 import com.example.itday.ui.component.ItDayFlowTopBar
@@ -52,9 +55,11 @@ fun AttendanceContent(
     onBackClick: () -> Unit = {},
     onPointClick: () -> Unit = {},
     onAttendanceClick: () -> Unit = {},
+    onHomeClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var selectedMonth by rememberSaveable { mutableIntStateOf(0) }
+    var showCompletionDialog by rememberSaveable { mutableStateOf(false) }
     Column(
         modifier = modifier.fillMaxSize().background(AttendanceGradient).verticalScroll(rememberScrollState()).padding(ItDayDimens.Space24),
     ) {
@@ -89,9 +94,66 @@ fun AttendanceContent(
         }
         ItDayButton(
             text = stringResource(R.string.attendance_action),
-            onClick = onAttendanceClick,
+            onClick = {
+                onAttendanceClick()
+                showCompletionDialog = true
+            },
             modifier = Modifier.fillMaxWidth().padding(top = ItDayDimens.Space24),
         )
+    }
+    if (showCompletionDialog) {
+        AttendanceCompletionDialog(
+            onHomeClick = {
+                showCompletionDialog = false
+                onHomeClick()
+            },
+            onDismiss = { showCompletionDialog = false },
+        )
+    }
+}
+
+@Composable
+private fun AttendanceCompletionDialog(onHomeClick: () -> Unit, onDismiss: () -> Unit) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(Color.White, Color(0xFFEAF2FF), Color.White),
+                        ),
+                    )
+                    .padding(horizontal = 32.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = stringResource(R.string.attendance_completion_label),
+                    color = ItDayGray500,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Text(
+                    text = stringResource(R.string.attendance_completion_title),
+                    modifier = Modifier.padding(top = ItDayDimens.Space4),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                ItDayButton(
+                    text = stringResource(R.string.attendance_go_home),
+                    onClick = onHomeClick,
+                    modifier = Modifier.fillMaxWidth().padding(top = 40.dp),
+                )
+                Text(
+                    text = stringResource(R.string.attendance_review),
+                    modifier = Modifier.padding(top = ItDayDimens.Space16).clickable(onClick = onDismiss),
+                    color = ItDayGray500,
+                )
+            }
+        }
     }
 }
 

@@ -97,6 +97,10 @@
     <string name="attendance_perfect">한달 개근</string>
     <string name="attendance_check_points">내 포인트 확인하기</string>
     <string name="attendance_action">출석하고 포인트 받기 +10P</string>
+    <string name="attendance_completion_label">일일 출석 보상</string>
+    <string name="attendance_completion_title">10P 받았어요!</string>
+    <string name="attendance_go_home">홈으로 이동</string>
+    <string name="attendance_review">출석 확인하기</string>
     <string name="onboarding_next">다음</string>
     <string name="onboarding_terms_title">약관 동의</string>
     <string name="onboarding_terms_description">서비스 이용을 위해 동의가 필요합니다.</string>
