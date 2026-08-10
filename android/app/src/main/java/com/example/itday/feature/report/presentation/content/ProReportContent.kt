@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -54,7 +55,16 @@ fun ProReportContent(
                 Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp))
-                    .background(ProMint)
+                    .background(
+                        Brush.verticalGradient(
+                            colorStops =
+                                arrayOf(
+                                    0f to ProMint,
+                                    0.72f to ProMint,
+                                    1f to ProMintFade,
+                                ),
+                        ),
+                    )
                     .padding(horizontal = ItDayDimens.Space24, vertical = ItDayDimens.Space24),
         ) {
             ProHero(onAttendanceClick = onAttendanceClick, onProfileClick = onProfileClick)
@@ -172,4 +182,5 @@ private fun ProReportContentPreview() {
 }
 
 private val ProMint = Color(0xFF82DEC5)
+private val ProMintFade = Color(0xFFDDF8F2)
 private val ProBanner = Color(0xFFE1F1FF)

@@ -12,13 +12,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import com.example.itday.R
 import com.example.itday.ui.component.ItDayButton
 import com.example.itday.ui.component.ItDayButtonSize
+import com.example.itday.ui.component.ItDayMainTopBar
 import com.example.itday.ui.preview.ItDayComponentPreview
 import com.example.itday.ui.theme.ItDayBlue
 import com.example.itday.ui.theme.ItDayDimens
@@ -52,8 +53,9 @@ fun GuestReportContent(
             modifier
                 .fillMaxSize()
                 .background(ItDayGray100)
+                .statusBarsPadding()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = ItDayDimens.ScreenHorizontalPadding),
+                .padding(horizontal = ItDayDimens.Space24),
     ) {
         ReportHeader(onAttendanceClick = onAttendanceClick)
         Row(
@@ -98,35 +100,11 @@ internal fun ReportHeader(
     onAttendanceClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(top = ItDayDimens.Space16),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Image(
-            painter = painterResource(R.drawable.itday_logo_symbol),
-            contentDescription = stringResource(R.string.app_name),
-            modifier = Modifier.size(32.dp),
-        )
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onAttendanceClick) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_calendar_outline),
-                    contentDescription = stringResource(R.string.report_calendar),
-                    modifier = Modifier.size(26.dp),
-                    tint = ItDayGray500,
-                )
-            }
-            IconButton(onClick = onProfileClick) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_person),
-                    contentDescription = stringResource(R.string.report_profile),
-                    modifier = Modifier.size(26.dp),
-                    tint = ItDayGray500,
-                )
-            }
-        }
-    }
+    ItDayMainTopBar(
+        onAttendanceClick = onAttendanceClick,
+        onProfileClick = onProfileClick,
+        modifier = Modifier.padding(top = ItDayDimens.Space8),
+    )
 }
 
 @Composable

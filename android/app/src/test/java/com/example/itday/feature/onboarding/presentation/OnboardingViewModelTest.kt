@@ -51,7 +51,7 @@ class OnboardingViewModelTest {
         viewModel.setAgreement(AgreementType.Location, true)
         viewModel.setAgreement(AgreementType.Privacy, true)
         viewModel.next() // Location permission step (1)
-        viewModel.next() // Carrier step (2)
+        viewModel.onLocationResult(granted = true) // Carrier step (2)
         viewModel.next() // Membership step (3)
         viewModel.next() // Brand step (4)
 

@@ -29,16 +29,17 @@ fun ReportScreen(
             access = ReportAccess.Free,
             categories =
                 listOf(
-                    ReportCategoryItem("카페", 1, R.drawable.report_category_cafe),
-                    ReportCategoryItem("편의점", 2, R.drawable.report_category_convenience),
-                    ReportCategoryItem("식당", 2, R.drawable.report_category_restaurant),
-                    ReportCategoryItem("서점", 1, R.drawable.report_category_bookstore),
+                    ReportCategoryItem("카페", 3, R.drawable.report_category_cafe),
+                    ReportCategoryItem("편의점", 6, R.drawable.report_category_convenience),
+                    ReportCategoryItem("식당", 10, R.drawable.report_category_restaurant),
+                    ReportCategoryItem("서점", 2, R.drawable.report_category_bookstore),
                 ),
         ),
     onSignUpClick: () -> Unit = {},
     onShopClick: () -> Unit = {},
     onPointHistoryClick: () -> Unit = {},
     onSubscribeClick: () -> Unit = {},
+    onHomeClick: () -> Unit = {},
     isGuestMode: Boolean = false,
     isProMember: Boolean = false,
 ) {
@@ -99,6 +100,7 @@ fun ReportScreen(
             AttendanceContent(
                 onBackClick = { navController.popBackStack() },
                 onPointClick = { openPage(ReportPage.PointHistory) },
+                onHomeClick = onHomeClick,
             )
         }
     }
