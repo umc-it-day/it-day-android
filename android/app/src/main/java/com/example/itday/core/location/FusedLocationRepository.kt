@@ -2,16 +2,20 @@ package com.example.itday.core.location
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.location.Geocoder
 import android.os.SystemClock
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import java.util.Locale
 import kotlin.coroutines.resume
 
 class FusedLocationRepository(
-    context: Context,
+    private val context: Context,
 ) : LocationRepository {
     private val locationClient =
         LocationServices.getFusedLocationProviderClient(context.applicationContext)
@@ -26,6 +30,33 @@ class FusedLocationRepository(
                 ?: requestLocation()?.also { coordinate ->
                     cachedLocation = CachedLocation(coordinate, SystemClock.elapsedRealtime())
                 }
+        }
+
+    override suspend fun getAddress(
+        latitude: Double,
+        longitude: Double,
+    ): String? =
+        withContext(Dispatchers.IO) {
+            try {
+                val geocoder = Geocoder(context, Locale.KOREA)
+                val addresses = geocoder.getFromLocation(latitude, longitude, 1)
+                addresses?.firstOrNull()?.let { address ->
+                    // 상세 주소에서 필요한 부분만 추출 (예: 구 + 동)
+                    val locality = address.locality ?: "" // 시
+                    val subLocality = address.subLocality ?: "" // 구
+                    val thoroughfare = address.thoroughfare ?: "" // 동
+                    
+                    if (subLocality.isNotEmpty() && thoroughfare.isNotEmpty()) {
+                        "$subLocality $thoroughfare"
+                    } else if (thoroughfare.isNotEmpty()) {
+                        thoroughfare
+                    } else {
+                        address.getAddressLine(0)?.replace("대한민국 ", "") ?: "알 수 없는 위치"
+                    }
+                }
+            } catch (e: Exception) {
+                null
+            }
         }
 
     @SuppressLint("MissingPermission")

@@ -40,7 +40,7 @@ fun ItDayNavHost(navController: NavHostController = rememberNavController()) {
             OnboardingDestination(navController = navController)
         }
         composable(AppRoute.MAIN.route) {
-            MainTabScaffold()
+            MainDestination(navController = navController)
         }
         composable(AppRoute.BARCODE.route) {
             BarcodeRegistrationRoute(
@@ -61,7 +61,11 @@ private fun SplashDestination(navController: NavHostController) {
     val coroutineScope = rememberCoroutineScope()
     val sessionViewModel: SessionViewModel =
         viewModel(
-            factory = SessionViewModel.Factory(context.appContainer.localPreferencesDataSource),
+            factory =
+                SessionViewModel.Factory(
+                    context.appContainer.localPreferencesDataSource,
+                    context.appContainer.authTokenStorage,
+                ),
         )
 
     SplashScreen(
@@ -95,7 +99,13 @@ private fun LoginDestination(navController: NavHostController) {
                 ),
         )
     val sessionViewModel: SessionViewModel =
-        viewModel(factory = SessionViewModel.Factory(localPreferencesDataSource))
+        viewModel(
+            factory =
+                SessionViewModel.Factory(
+                    localPreferencesDataSource,
+                    context.appContainer.authTokenStorage,
+                ),
+        )
     val uiState by loginViewModel.uiState.collectAsState()
 
     LaunchedEffect(loginViewModel) {
@@ -125,12 +135,41 @@ private fun LoginDestination(navController: NavHostController) {
 }
 
 @Composable
+private fun MainDestination(navController: NavHostController) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val sessionViewModel: SessionViewModel =
+        viewModel(
+            factory =
+                SessionViewModel.Factory(
+                    context.appContainer.localPreferencesDataSource,
+                    context.appContainer.authTokenStorage,
+                ),
+        )
+
+    MainTabScaffold(
+        onLogout = {
+            coroutineScope.launch {
+                sessionViewModel.logout()
+                navController.navigate(AppRoute.LOGIN.route) {
+                    popUpTo(AppRoute.MAIN.route) { inclusive = true }
+                }
+            }
+        },
+    )
+}
+
+@Composable
 private fun OnboardingDestination(navController: NavHostController) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val sessionViewModel: SessionViewModel =
         viewModel(
-            factory = SessionViewModel.Factory(context.appContainer.localPreferencesDataSource),
+            factory =
+                SessionViewModel.Factory(
+                    context.appContainer.localPreferencesDataSource,
+                    context.appContainer.authTokenStorage,
+                ),
         )
     val onboardingViewModel: OnboardingViewModel = viewModel()
     val uiState by onboardingViewModel.uiState.collectAsState()

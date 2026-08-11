@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.itday.core.location.LocationRepository
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,22 +24,50 @@ class HomeViewModel(
     private val _events = Channel<HomeEvent>(capacity = Channel.BUFFERED)
     val events = _events.receiveAsFlow()
 
+    private var timerJob: Job? = null
+
     fun onAction(action: HomeAction) {
         when (action) {
-            HomeAction.ActivateBarcode ->
+            HomeAction.ActivateBarcode -> {
                 _uiState.update { state -> state.copy(membershipState = MembershipState.BarcodeEnabled) }
-            HomeAction.UseMembership ->
-                _uiState.update { state -> state.copy(showMembershipDialog = true) }
+                startMembershipTimer()
+            }
+            HomeAction.UseMembership -> startMembershipTimer()
             HomeAction.ConfirmMembershipUse,
             HomeAction.DismissMembershipDialog,
-            -> _uiState.update { state -> state.copy(showMembershipDialog = false) }
+            -> {
+                stopMembershipTimer()
+                _uiState.update { state -> state.copy(showMembershipDialog = false) }
+            }
+            HomeAction.RefreshBarcode -> startMembershipTimer()
             HomeAction.ToggleBenefits ->
                 _uiState.update { state -> state.copy(isBenefitExpanded = !state.isBenefitExpanded) }
-            HomeAction.AddBenefit -> addMockBenefits()
+            HomeAction.AddBenefit,
+            HomeAction.ViewAllBenefits -> sendEvent(HomeEvent.OpenBrandDetail)
             is HomeAction.SelectPartnerBrand -> selectPartnerBrand(action.id)
             HomeAction.RefreshLocation -> refreshLocation(forceRefresh = true)
             else -> sendNavigationEvent(action)
         }
+    }
+
+    private fun startMembershipTimer() {
+        timerJob?.cancel()
+        timerJob = viewModelScope.launch {
+            val totalSeconds = 300 // 5분
+            for (i in totalSeconds downTo 0) {
+                _uiState.update { it.copy(remainingTimeSeconds = i) }
+                if (i == 0) {
+                    _uiState.update { it.copy(showMembershipDialog = true, remainingTimeSeconds = null) }
+                } else {
+                    delay(1000)
+                }
+            }
+        }
+    }
+
+    private fun stopMembershipTimer() {
+        timerJob?.cancel()
+        _uiState.update { it.copy(remainingTimeSeconds = null) }
     }
 
     fun loadLocation() {
@@ -49,9 +79,19 @@ class HomeViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLocationRefreshing = true) }
             val coordinate = repository.getCurrentLocation(forceRefresh)
-            _uiState.update {
-                it.copy(
-                    locationCoordinate = coordinate ?: it.locationCoordinate,
+            
+            val addressName = if (coordinate != null) {
+                repository.getAddress(coordinate.latitude, coordinate.longitude)
+            } else {
+                null
+            }
+
+            _uiState.update { state ->
+                state.copy(
+                    locationCoordinate = coordinate ?: state.locationCoordinate,
+                    location = addressName?.let {
+                        state.location.copy(name = "현재 위치", address = it)
+                    } ?: state.location,
                     isLocationRefreshing = false,
                     isLocationUnavailable = coordinate == null,
                 )
@@ -83,16 +123,6 @@ class HomeViewModel(
         }
     }
 
-    private fun addMockBenefits() {
-        if (_uiState.value.membershipState == MembershipState.Guest) {
-            sendEvent(HomeEvent.OpenLogin)
-            return
-        }
-        _uiState.update { state ->
-            state.copy(benefits = HomePreviewData.barcodeEnabled.benefits)
-        }
-    }
-
     private fun sendEvent(event: HomeEvent) {
         _events.trySend(event)
     }
@@ -104,7 +134,6 @@ class HomeViewModel(
                 HomeAction.OpenProfile -> HomeEvent.OpenProfile
                 HomeAction.OpenCarrierComparison -> HomeEvent.OpenCarrierComparison
                 HomeAction.OpenMyMembership -> HomeEvent.OpenMyMembership
-                HomeAction.ViewAllBenefits -> HomeEvent.OpenAllBenefits
                 HomeAction.Login,
                 HomeAction.RegisterMembership,
                 -> HomeEvent.OpenLogin
@@ -112,6 +141,7 @@ class HomeViewModel(
                 HomeAction.OpenProChallenge -> HomeEvent.OpenProChallenge
                 HomeAction.OpenAdvertisement -> HomeEvent.OpenAdvertisement
                 HomeAction.OpenMap -> HomeEvent.OpenMap
+                HomeAction.OpenBrandDetail -> HomeEvent.OpenBrandDetail
                 else -> return
             }
         sendEvent(event)
