@@ -95,6 +95,7 @@ private fun LoginDestination(navController: NavHostController) {
             factory =
                 LoginViewModel.Factory(
                     context.appContainer.kakaoLoginClient,
+                    context.appContainer.authRepository,
                     localPreferencesDataSource,
                 ),
         )
@@ -111,10 +112,13 @@ private fun LoginDestination(navController: NavHostController) {
     LaunchedEffect(loginViewModel) {
         loginViewModel.events.collect { event ->
             when (event) {
-                LoginEvent.Authenticated ->
-                    navController.navigate(AppRoute.ONBOARDING.route) {
+                is LoginEvent.Authenticated -> {
+                    val destination =
+                        if (event.isNewUser) AppRoute.ONBOARDING else AppRoute.MAIN
+                    navController.navigate(destination.route) {
                         popUpTo(AppRoute.LOGIN.route) { inclusive = true }
                     }
+                }
             }
         }
     }

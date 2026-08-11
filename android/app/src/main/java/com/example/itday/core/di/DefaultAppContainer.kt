@@ -37,6 +37,12 @@ import com.example.itday.core.network.NetworkClient
 import com.example.itday.core.network.NetworkMonitor
 import com.example.itday.core.permission.AndroidPermissionManager
 import com.example.itday.core.permission.PermissionManager
+import com.example.itday.feature.auth.data.remote.AuthApi
+import com.example.itday.feature.auth.data.remote.AuthLoginRemoteDataSource
+import com.example.itday.feature.auth.data.remote.MockAuthLoginRemoteDataSource
+import com.example.itday.feature.auth.data.remote.RetrofitAuthRemoteDataSource
+import com.example.itday.feature.auth.data.repository.DefaultAuthRepository
+import com.example.itday.feature.auth.domain.repository.AuthRepository
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -50,8 +56,17 @@ class DefaultAppContainer(
         DataStoreAuthTokenStorage(appContext.itDayPreferencesDataStore)
     }
 
+    private val retrofitAuthRemoteDataSource: RetrofitAuthRemoteDataSource by lazy {
+        val authRetrofit =
+            NetworkClient.createRetrofit(
+                baseUrl = AppConfig.apiBaseUrl,
+                okHttpClient = NetworkClient.createOkHttpClient(),
+            )
+        RetrofitAuthRemoteDataSource(NetworkClient.createApi<AuthApi>(authRetrofit))
+    }
+
     override val authRemoteDataSource: AuthRemoteDataSource by lazy {
-        PendingAuthRemoteDataSource()
+        if (AppConfig.useMockData) PendingAuthRemoteDataSource() else retrofitAuthRemoteDataSource
     }
 
     override val tokenRefresher: TokenRefresher by lazy {
@@ -60,6 +75,14 @@ class DefaultAppContainer(
 
     override val kakaoLoginClient: KakaoLoginClient by lazy {
         if (AppConfig.useMockKakaoLogin) MockKakaoLoginClient() else KakaoSdkLoginClient()
+    }
+
+    private val authLoginRemoteDataSource: AuthLoginRemoteDataSource by lazy {
+        if (AppConfig.useMockData) MockAuthLoginRemoteDataSource() else retrofitAuthRemoteDataSource
+    }
+
+    override val authRepository: AuthRepository by lazy {
+        DefaultAuthRepository(authLoginRemoteDataSource, authTokenStorage)
     }
 
     override val permissionManager: PermissionManager by lazy {

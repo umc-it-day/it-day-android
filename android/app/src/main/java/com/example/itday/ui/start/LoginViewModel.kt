@@ -6,7 +6,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.itday.core.auth.KakaoLoginClient
 import com.example.itday.core.auth.KakaoLoginResult
+import com.example.itday.core.data.result.ApiResult
+import com.example.itday.core.data.result.toUserMessage
 import com.example.itday.core.local.LocalPreferencesDataSource
+import com.example.itday.feature.auth.domain.repository.AuthRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,11 +24,14 @@ data class LoginUiState(
 )
 
 sealed interface LoginEvent {
-    data object Authenticated : LoginEvent
+    data class Authenticated(
+        val isNewUser: Boolean,
+    ) : LoginEvent
 }
 
 class LoginViewModel(
     private val kakaoLoginClient: KakaoLoginClient,
+    private val authRepository: AuthRepository,
     private val localPreferencesDataSource: LocalPreferencesDataSource,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -41,11 +47,7 @@ class LoginViewModel(
             _uiState.value = LoginUiState(isLoading = true)
             when (val result = kakaoLoginClient.login(context)) {
                 is KakaoLoginResult.Success -> {
-                    localPreferencesDataSource.setGuestMode(false)
-                    localPreferencesDataSource.setOnboardingCompleted(false)
-                    localPreferencesDataSource.setLoggedIn(true)
-                    _uiState.value = LoginUiState()
-                    _events.send(LoginEvent.Authenticated)
+                    authenticateWithServer(result.accessToken)
                 }
                 KakaoLoginResult.Cancelled -> {
                     _uiState.value = LoginUiState()
@@ -59,12 +61,28 @@ class LoginViewModel(
         }
     }
 
+    private suspend fun authenticateWithServer(kakaoAccessToken: String) {
+        when (val result = authRepository.loginWithKakao(kakaoAccessToken)) {
+            is ApiResult.Success -> {
+                localPreferencesDataSource.setGuestMode(false)
+                localPreferencesDataSource.setOnboardingCompleted(!result.data.isNewUser)
+                localPreferencesDataSource.setLoggedIn(true)
+                _uiState.value = LoginUiState()
+                _events.send(LoginEvent.Authenticated(result.data.isNewUser))
+            }
+            is ApiResult.Failure -> {
+                _uiState.value = LoginUiState(errorMessage = result.error.toUserMessage())
+            }
+        }
+    }
+
     class Factory(
         private val kakaoLoginClient: KakaoLoginClient,
+        private val authRepository: AuthRepository,
         private val localPreferencesDataSource: LocalPreferencesDataSource,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            LoginViewModel(kakaoLoginClient, localPreferencesDataSource) as T
+            LoginViewModel(kakaoLoginClient, authRepository, localPreferencesDataSource) as T
     }
 }
