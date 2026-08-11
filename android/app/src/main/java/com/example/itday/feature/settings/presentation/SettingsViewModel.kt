@@ -2,7 +2,6 @@ package com.example.itday.feature.settings.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.itday.core.config.TermsConstants
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -39,29 +38,14 @@ class SettingsViewModel : ViewModel() {
     }
 
     fun openPrivacyPolicy() {
-        _uiState.update {
-            it.copy(
-                showingTermsTitle = "개인정보 처리방침",
-                showingTermsContent = TermsConstants.PRIVACY_TERMS_DETAIL,
-            )
+        viewModelScope.launch {
+            _events.send(SettingsUiEvent.OpenExternalUrl("https://example.com/privacy"))
         }
     }
 
     fun openTermsOfService() {
-        _uiState.update {
-            it.copy(
-                showingTermsTitle = "서비스 이용약관",
-                showingTermsContent = TermsConstants.SERVICE_TERMS_DETAIL,
-            )
-        }
-    }
-
-    fun hideTerms() {
-        _uiState.update {
-            it.copy(
-                showingTermsTitle = null,
-                showingTermsContent = null,
-            )
+        viewModelScope.launch {
+            _events.send(SettingsUiEvent.OpenExternalUrl("https://example.com/terms"))
         }
     }
 

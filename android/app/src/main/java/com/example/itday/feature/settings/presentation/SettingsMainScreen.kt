@@ -36,7 +36,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.itday.ui.component.ItDayTermsDialog
 import com.example.itday.ui.theme.ItDayGray100
 import com.example.itday.ui.theme.ItDayGray500
 import com.example.itday.ui.theme.ItDayWhite
@@ -78,7 +77,6 @@ fun SettingsMainRoute(
         onToggleFaq = viewModel::toggleFaqItem,
         onPrivacyPolicyClick = viewModel::openPrivacyPolicy,
         onTermsOfServiceClick = viewModel::openTermsOfService,
-        onHideTerms = viewModel::hideTerms,
         onWithdrawClick = viewModel::withdraw,
         modifier = modifier,
     )
@@ -96,7 +94,6 @@ fun SettingsMainScreen(
     onToggleFaq: (Int) -> Unit,
     onPrivacyPolicyClick: () -> Unit,
     onTermsOfServiceClick: () -> Unit,
-    onHideTerms: () -> Unit,
     onWithdrawClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -139,14 +136,6 @@ fun SettingsMainScreen(
             LogoutConfirmDialog(
                 onLogout = onConfirmLogout,
                 onDismiss = onDismissLogoutDialog,
-            )
-        }
-
-        if (uiState.showingTermsTitle != null && uiState.showingTermsContent != null) {
-            ItDayTermsDialog(
-                title = uiState.showingTermsTitle,
-                content = uiState.showingTermsContent,
-                onDismiss = onHideTerms,
             )
         }
     }
@@ -402,7 +391,6 @@ private fun SettingsMainScreenPreview() {
         onToggleFaq = {},
         onPrivacyPolicyClick = {},
         onTermsOfServiceClick = {},
-        onHideTerms = {},
         onWithdrawClick = {},
     )
 }
@@ -421,7 +409,6 @@ private fun PrivacySecurityContentPreview() {
         onToggleFaq = {},
         onPrivacyPolicyClick = {},
         onTermsOfServiceClick = {},
-        onHideTerms = {},
         onWithdrawClick = {},
     )
 }
@@ -440,7 +427,6 @@ private fun CustomerServiceContentPreview() {
         onToggleFaq = {},
         onPrivacyPolicyClick = {},
         onTermsOfServiceClick = {},
-        onHideTerms = {},
         onWithdrawClick = {},
     )
 }

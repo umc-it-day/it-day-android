@@ -50,12 +50,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.itday.core.config.TermsConstants
 import com.example.itday.core.permission.AndroidPermissionManager
 import com.example.itday.core.permission.AppPermission
 import com.example.itday.core.permission.PermissionManager
 import com.example.itday.ui.component.ItDayStepIndicator
-import com.example.itday.ui.component.ItDayTermsDialog
 import com.example.itday.ui.theme.ItDayGray100
 import com.example.itday.ui.theme.ItDayGray300
 import com.example.itday.ui.theme.ItDayGray500
@@ -170,21 +168,8 @@ fun OnboardingScreen(
             }
 
             if (state.showingTerms != null) {
-                val title =
-                    when (state.showingTerms) {
-                        AgreementType.Location -> "위치 정보 이용 동의"
-                        AgreementType.Privacy -> "개인정보 처리방침"
-                        AgreementType.Notification -> "알림 권한 동의"
-                    }
-                val content =
-                    when (state.showingTerms) {
-                        AgreementType.Location -> TermsConstants.LOCATION_TERMS_DETAIL
-                        AgreementType.Privacy -> TermsConstants.PRIVACY_TERMS_DETAIL
-                        AgreementType.Notification -> TermsConstants.NOTIFICATION_TERMS_DETAIL
-                    }
-                ItDayTermsDialog(
-                    title = title,
-                    content = content,
+                TermsDetailDialog(
+                    type = state.showingTerms,
                     onDismiss = onHideTerms,
                 )
             }
@@ -396,6 +381,65 @@ private fun AgreementCard(
             )
         }
     }
+}
+
+@Composable
+private fun TermsDetailDialog(
+    type: AgreementType,
+    onDismiss: () -> Unit,
+) {
+    val title =
+        when (type) {
+            AgreementType.Location -> "위치 정보 이용 동의"
+            AgreementType.Privacy -> "개인정보 처리방침"
+            AgreementType.Notification -> "알림 권한 동의"
+        }
+
+    val content =
+        when (type) {
+            AgreementType.Location -> OnboardingConstants.LOCATION_TERMS_DETAIL
+            AgreementType.Privacy -> OnboardingConstants.PRIVACY_TERMS_DETAIL
+            AgreementType.Notification -> OnboardingConstants.NOTIFICATION_TERMS_DETAIL
+        }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = title,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF191919),
+            )
+        },
+        text = {
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 400.dp)
+                        .verticalScroll(rememberScrollState()),
+            ) {
+                Text(
+                    text = content,
+                    fontSize = 14.sp,
+                    color = ItDayGray500,
+                    lineHeight = 20.sp,
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onDismiss,
+                colors = ButtonDefaults.buttonColors(containerColor = ItDayPrimary),
+                shape = RoundedCornerShape(12.dp),
+            ) {
+                Text(text = "확인", color = ItDayWhite)
+            }
+        },
+        containerColor = ItDayWhite,
+        shape = RoundedCornerShape(20.dp),
+    )
 }
 
 @Preview(showBackground = true)
