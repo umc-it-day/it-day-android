@@ -104,4 +104,9 @@ private class FakeLocationRepository : LocationRepository {
         forceRefreshRequested = forceRefresh
         return coordinate
     }
+
+    override suspend fun getAddress(
+        latitude: Double,
+        longitude: Double,
+    ): String = "테스트 주소"
 }

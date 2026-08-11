@@ -7,4 +7,9 @@ data class LocationCoordinate(
 
 interface LocationRepository {
     suspend fun getCurrentLocation(forceRefresh: Boolean = false): LocationCoordinate?
+
+    suspend fun getAddress(
+        latitude: Double,
+        longitude: Double,
+    ): String?
 }
