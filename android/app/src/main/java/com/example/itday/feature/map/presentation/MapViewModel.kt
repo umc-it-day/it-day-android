@@ -16,6 +16,7 @@ data class MapUiState(
     val selectedStoreId: String? = null,
     val sortOption: MapSortOption = MapSortOption.DISTANCE,
     val isLocationUnavailable: Boolean = false,
+    val isLoading: Boolean = true,
     val reloadKey: Int = 0,
 ) {
     val selectedStore: MapStoreUiModel?
@@ -46,13 +47,14 @@ class MapViewModel : ViewModel() {
                 currentLocation = coordinate,
                 stores = previewStoresAround(coordinate),
                 isLocationUnavailable = false,
+                isLoading = false,
                 reloadKey = state.reloadKey + 1,
             )
         }
     }
 
     fun onLocationUnavailable() {
-        _uiState.update { it.copy(isLocationUnavailable = true) }
+        _uiState.update { it.copy(isLocationUnavailable = true, isLoading = false) }
     }
 
     fun retryMap() {
