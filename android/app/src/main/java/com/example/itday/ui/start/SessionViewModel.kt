@@ -2,6 +2,7 @@ package com.example.itday.ui.start
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.example.itday.core.auth.AuthTokenStorage
 import com.example.itday.core.local.LocalPreferencesDataSource
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
@@ -14,6 +15,7 @@ enum class SessionDestination {
 
 class SessionViewModel(
     private val localPreferencesDataSource: LocalPreferencesDataSource,
+    private val authTokenStorage: AuthTokenStorage? = null,
 ) : ViewModel() {
     suspend fun resolveDestination(): SessionDestination =
         combine(
@@ -38,11 +40,17 @@ class SessionViewModel(
         localPreferencesDataSource.setOnboardingCompleted(true)
     }
 
+    suspend fun logout() {
+        authTokenStorage?.clearTokens()
+        localPreferencesDataSource.clearUserSessionPreferences()
+    }
+
     class Factory(
         private val localPreferencesDataSource: LocalPreferencesDataSource,
+        private val authTokenStorage: AuthTokenStorage? = null,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            SessionViewModel(localPreferencesDataSource) as T
+            SessionViewModel(localPreferencesDataSource, authTokenStorage) as T
     }
 }

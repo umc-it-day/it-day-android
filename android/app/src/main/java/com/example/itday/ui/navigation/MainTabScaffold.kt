@@ -33,13 +33,16 @@ import com.example.itday.feature.payment.presentation.PaymentFlowScreen
 import com.example.itday.feature.payment.presentation.PaymentViewModel
 import com.example.itday.feature.report.presentation.ReportScreen
 import com.example.itday.feature.settings.presentation.SettingsMainRoute
+import com.example.itday.ui.home.HomeEvent
 import com.example.itday.ui.home.HomeRoute
 import com.example.itday.ui.theme.HomeNavigationMuted
 import com.example.itday.ui.theme.HomeNavigationSelected
 import com.example.itday.ui.theme.ItDayWhite
 
 @Composable
-fun MainTabScaffold() {
+fun MainTabScaffold(
+    onLogout: () -> Unit = {},
+) {
     val context = LocalContext.current
     val isGuestMode by
         context.appContainer.localPreferencesDataSource.isGuestMode
@@ -72,6 +75,7 @@ fun MainTabScaffold() {
         MainTabNavHost(
             navController = tabNavController,
             isGuestMode = isGuestMode,
+            onLogout = onLogout,
             modifier =
                 if (currentRoute == AppRoute.PAYMENT.route) {
                     Modifier
@@ -119,6 +123,7 @@ private fun MainBottomNavigationBar(
 private fun MainTabNavHost(
     navController: NavHostController,
     isGuestMode: Boolean,
+    onLogout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     NavHost(
@@ -127,7 +132,17 @@ private fun MainTabNavHost(
         modifier = modifier,
     ) {
         composable(AppRoute.HOME.route) {
-            HomeRoute(isGuestMode = isGuestMode)
+            HomeRoute(
+                isGuestMode = isGuestMode,
+                onEvent = { event ->
+                    when (event) {
+                        HomeEvent.OpenCalendar -> navController.navigateToTopLevelRoute(AppRoute.REPORT)
+                        HomeEvent.OpenProfile -> navController.navigateToTopLevelRoute(AppRoute.SETTINGS)
+                        HomeEvent.OpenLogin -> onLogout()
+                        else -> { /* 처리되지 않은 이벤트 */ }
+                    }
+                }
+            )
         }
         composable(AppRoute.MAP.route) {
             MapScreen()
@@ -139,7 +154,7 @@ private fun MainTabNavHost(
             )
         }
         composable(AppRoute.SETTINGS.route) {
-            SettingsMainRoute()
+            SettingsMainRoute(onLogoutClick = onLogout)
         }
         if (BuildConfig.DEBUG) {
             composable(AppRoute.PAYMENT.route) {
