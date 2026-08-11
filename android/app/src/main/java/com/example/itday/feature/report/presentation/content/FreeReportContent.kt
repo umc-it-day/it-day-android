@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -117,6 +118,13 @@ private fun FreeReportHero(
     pointBalance: Int,
     onShopClick: () -> Unit,
 ) {
+    val currentFloor = floor.coerceIn(1, 3)
+    val towerImageRes =
+        when (currentFloor) {
+            1 -> R.drawable.report_tower_floor_1
+            2 -> R.drawable.report_tower_floor_2
+            else -> R.drawable.report_tower_floor_3
+        }
     Box(
         modifier =
             Modifier
@@ -128,6 +136,12 @@ private fun FreeReportHero(
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
+        )
+        Image(
+            painter = painterResource(towerImageRes),
+            contentDescription = null,
+            modifier = Modifier.align(Alignment.BottomCenter).width(150.dp).height(230.dp),
+            contentScale = ContentScale.Fit,
         )
         Box(
             modifier =
@@ -165,7 +179,7 @@ private fun FreeReportHero(
             }
             Text(text = stringResource(R.string.report_free_tower), style = MaterialTheme.typography.bodySmall)
             Text(
-                text = stringResource(R.string.report_free_floor, floor.coerceIn(1, 3)),
+                text = stringResource(R.string.report_free_floor, currentFloor),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
             )

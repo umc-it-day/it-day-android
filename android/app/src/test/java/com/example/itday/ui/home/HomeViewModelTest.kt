@@ -4,8 +4,12 @@ import com.example.itday.core.location.LocationCoordinate
 import com.example.itday.core.location.LocationRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.Assert.assertEquals
@@ -44,15 +48,25 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `멤버십 사용 액션은 확인 팝업을 표시하고 닫을 수 있다`() {
-        val viewModel = HomeViewModel(HomePreviewData.barcodeEnabled)
+    fun `멤버십 사용 후 5분이 지나면 확인 팝업을 표시하고 닫을 수 있다`() =
+        runTest {
+            val dispatcher = StandardTestDispatcher(testScheduler)
+            Dispatchers.setMain(dispatcher)
+            try {
+                val viewModel = HomeViewModel(HomePreviewData.barcodeEnabled)
 
-        viewModel.onAction(HomeAction.UseMembership)
-        assertTrue(viewModel.uiState.value.showMembershipDialog)
+                viewModel.onAction(HomeAction.UseMembership)
+                assertFalse(viewModel.uiState.value.showMembershipDialog)
+                advanceTimeBy(300_000)
+                runCurrent()
+                assertTrue(viewModel.uiState.value.showMembershipDialog)
 
-        viewModel.onAction(HomeAction.DismissMembershipDialog)
-        assertFalse(viewModel.uiState.value.showMembershipDialog)
-    }
+                viewModel.onAction(HomeAction.DismissMembershipDialog)
+                assertFalse(viewModel.uiState.value.showMembershipDialog)
+            } finally {
+                Dispatchers.resetMain()
+            }
+        }
 
     @Test
     fun `브랜드 선택은 하나의 브랜드만 선택한다`() {
@@ -77,13 +91,14 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `혜택 추가 액션은 mock 선호 브랜드 혜택을 표시한다`() {
-        val viewModel = HomeViewModel(HomePreviewData.noBenefits)
+    fun `혜택 추가 액션은 브랜드 상세 이동 이벤트를 보낸다`() =
+        runTest {
+            val viewModel = HomeViewModel(HomePreviewData.noBenefits)
 
-        viewModel.onAction(HomeAction.AddBenefit)
+            viewModel.onAction(HomeAction.AddBenefit)
 
-        assertEquals(3, viewModel.uiState.value.benefits.size)
-    }
+            assertEquals(HomeEvent.OpenBrandDetail, viewModel.events.first())
+        }
 
     @Test
     fun `게스트 모드는 홈 상태를 게스트 디자인으로 전환한다`() {
