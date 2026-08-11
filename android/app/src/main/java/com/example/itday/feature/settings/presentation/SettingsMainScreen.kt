@@ -1,5 +1,7 @@
 package com.example.itday.feature.settings.presentation
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -22,16 +24,19 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.itday.ui.component.ItDayTermsDialog
 import com.example.itday.ui.theme.ItDayGray100
 import com.example.itday.ui.theme.ItDayGray500
 import com.example.itday.ui.theme.ItDayWhite
@@ -43,6 +48,21 @@ fun SettingsMainRoute(
     viewModel: SettingsViewModel = viewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is SettingsUiEvent.OpenExternalUrl -> {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(event.url))
+                    context.startActivity(intent)
+                }
+                SettingsUiEvent.UserWithdrawn -> {
+                    onLogoutClick()
+                }
+            }
+        }
+    }
 
     SettingsMainScreen(
         uiState = uiState,
@@ -56,6 +76,10 @@ fun SettingsMainRoute(
             onLogoutClick()
         },
         onToggleFaq = viewModel::toggleFaqItem,
+        onPrivacyPolicyClick = viewModel::openPrivacyPolicy,
+        onTermsOfServiceClick = viewModel::openTermsOfService,
+        onHideTerms = viewModel::hideTerms,
+        onWithdrawClick = viewModel::withdraw,
         modifier = modifier,
     )
 }
@@ -70,6 +94,10 @@ fun SettingsMainScreen(
     onDismissLogoutDialog: () -> Unit,
     onConfirmLogout: () -> Unit,
     onToggleFaq: (Int) -> Unit,
+    onPrivacyPolicyClick: () -> Unit,
+    onTermsOfServiceClick: () -> Unit,
+    onHideTerms: () -> Unit,
+    onWithdrawClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     BoxWrapper(modifier = modifier) {
@@ -86,11 +114,16 @@ fun SettingsMainScreen(
                         onPromotionToggle = onPromotionToggle,
                         onCharacterToggle = onCharacterToggle,
                         onShowLogoutDialog = onShowLogoutDialog,
+                        onPrivacyPolicyClick = onPrivacyPolicyClick,
+                        onTermsOfServiceClick = onTermsOfServiceClick,
                     )
 
                 SettingsScreenType.PrivacySecurity ->
                     PrivacySecurityContent(
                         onBackClick = { onNavigateScreen(SettingsScreenType.Main) },
+                        onPrivacyPolicyClick = onPrivacyPolicyClick,
+                        onTermsOfServiceClick = onTermsOfServiceClick,
+                        onWithdrawClick = onWithdrawClick,
                     )
 
                 SettingsScreenType.CustomerService ->
@@ -106,6 +139,14 @@ fun SettingsMainScreen(
             LogoutConfirmDialog(
                 onLogout = onConfirmLogout,
                 onDismiss = onDismissLogoutDialog,
+            )
+        }
+
+        if (uiState.showingTermsTitle != null && uiState.showingTermsContent != null) {
+            ItDayTermsDialog(
+                title = uiState.showingTermsTitle,
+                content = uiState.showingTermsContent,
+                onDismiss = onHideTerms,
             )
         }
     }
@@ -128,6 +169,8 @@ private fun SettingsMainContent(
     onPromotionToggle: (Boolean) -> Unit,
     onCharacterToggle: (Boolean) -> Unit,
     onShowLogoutDialog: () -> Unit,
+    onPrivacyPolicyClick: () -> Unit,
+    onTermsOfServiceClick: () -> Unit,
 ) {
     Scaffold(
         containerColor = ItDayWhite,
@@ -193,7 +236,8 @@ private fun SettingsMainContent(
                 items =
                     listOf(
                         "앱 버전" to {},
-                        "약관 및 정책" to {},
+                        "개인정보 처리방침" to onPrivacyPolicyClick,
+                        "서비스 이용약관" to onTermsOfServiceClick,
                     ),
                 trailingTexts = mapOf("앱 버전" to uiState.appVersion),
             )
@@ -204,7 +248,12 @@ private fun SettingsMainContent(
 }
 
 @Composable
-private fun PrivacySecurityContent(onBackClick: () -> Unit) {
+private fun PrivacySecurityContent(
+    onBackClick: () -> Unit,
+    onPrivacyPolicyClick: () -> Unit,
+    onTermsOfServiceClick: () -> Unit,
+    onWithdrawClick: () -> Unit,
+) {
     Scaffold(
         containerColor = ItDayWhite,
         topBar = {
@@ -252,8 +301,8 @@ private fun PrivacySecurityContent(onBackClick: () -> Unit) {
                 title = "보안 및 설정",
                 items =
                     listOf(
-                        "개인정보 처리방침" to {},
-                        "서비스 이용약관" to {},
+                        "개인정보 처리방침" to onPrivacyPolicyClick,
+                        "서비스 이용약관" to onTermsOfServiceClick,
                     ),
             )
 
@@ -268,7 +317,7 @@ private fun PrivacySecurityContent(onBackClick: () -> Unit) {
                     modifier =
                         Modifier
                             .fillMaxWidth()
-                            .clickable {}
+                            .clickable(onClick = onWithdrawClick)
                             .padding(20.dp),
                 ) {
                     Text(
@@ -351,6 +400,10 @@ private fun SettingsMainScreenPreview() {
         onDismissLogoutDialog = {},
         onConfirmLogout = {},
         onToggleFaq = {},
+        onPrivacyPolicyClick = {},
+        onTermsOfServiceClick = {},
+        onHideTerms = {},
+        onWithdrawClick = {},
     )
 }
 
@@ -366,6 +419,10 @@ private fun PrivacySecurityContentPreview() {
         onDismissLogoutDialog = {},
         onConfirmLogout = {},
         onToggleFaq = {},
+        onPrivacyPolicyClick = {},
+        onTermsOfServiceClick = {},
+        onHideTerms = {},
+        onWithdrawClick = {},
     )
 }
 
@@ -381,6 +438,10 @@ private fun CustomerServiceContentPreview() {
         onDismissLogoutDialog = {},
         onConfirmLogout = {},
         onToggleFaq = {},
+        onPrivacyPolicyClick = {},
+        onTermsOfServiceClick = {},
+        onHideTerms = {},
+        onWithdrawClick = {},
     )
 }
 
