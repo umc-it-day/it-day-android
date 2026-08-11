@@ -14,6 +14,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -47,18 +50,34 @@ fun HomeRoute(
     onEvent: (HomeEvent) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var showCarrierComparison by remember { mutableStateOf(false) }
+    var showPartnerDetail by remember { mutableStateOf(false) }
+
     LaunchedEffect(viewModel) {
         viewModel.loadLocation()
-        viewModel.events.collect(onEvent)
+        viewModel.events.collect { event ->
+            when (event) {
+                HomeEvent.OpenCarrierComparison -> showCarrierComparison = true
+                HomeEvent.OpenBrandDetail -> showPartnerDetail = true
+                else -> onEvent(event)
+            }
+        }
     }
     LaunchedEffect(isGuestMode) {
         viewModel.setGuestMode(isGuestMode)
     }
-    HomeScreen(
-        uiState = uiState,
-        onAction = viewModel::onAction,
-        modifier = modifier,
-    )
+
+    if (showCarrierComparison) {
+        CarrierComparisonScreen(onBack = { showCarrierComparison = false })
+    } else if (showPartnerDetail) {
+        PartnerBrandDetailScreen(onBack = { showPartnerDetail = false })
+    } else {
+        HomeScreen(
+            uiState = uiState,
+            onAction = viewModel::onAction,
+            modifier = modifier,
+        )
+    }
 }
 
 @Composable
@@ -170,9 +189,12 @@ private fun MembershipContent(
                     membership = membership,
                     brands = uiState.partnerBrands,
                     barcodeEnabled = false,
+                    remainingTimeSeconds = uiState.remainingTimeSeconds,
                     onActivate = { onAction(HomeAction.ActivateBarcode) },
                     onUse = { onAction(HomeAction.UseMembership) },
                     onBrandClick = { onAction(HomeAction.SelectPartnerBrand(it)) },
+                    onRefresh = { onAction(HomeAction.RefreshBarcode) },
+                    onBrandDetailClick = { onAction(HomeAction.OpenBrandDetail) },
                 )
             }
         MembershipState.BarcodeEnabled -> {
@@ -181,9 +203,12 @@ private fun MembershipContent(
                 membership = membership,
                 brands = uiState.partnerBrands,
                 barcodeEnabled = true,
+                remainingTimeSeconds = uiState.remainingTimeSeconds,
                 onActivate = { onAction(HomeAction.ActivateBarcode) },
                 onUse = { onAction(HomeAction.UseMembership) },
                 onBrandClick = { onAction(HomeAction.SelectPartnerBrand(it)) },
+                onRefresh = { onAction(HomeAction.RefreshBarcode) },
+                onBrandDetailClick = { onAction(HomeAction.OpenBrandDetail) },
             )
         }
     }

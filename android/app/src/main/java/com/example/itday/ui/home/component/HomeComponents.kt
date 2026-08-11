@@ -72,6 +72,7 @@ import com.example.itday.ui.theme.ItDayDimens
 import com.example.itday.ui.theme.ItDayGray300
 import com.example.itday.ui.theme.ItDayGray500
 import com.example.itday.ui.theme.ItDayWhite
+import java.util.Locale
 
 private const val BARCODE_UNIT_COUNT = 64f
 private const val BARCODE_BAR_COUNT = 32
@@ -198,9 +199,12 @@ fun MembershipBarcodeCard(
     membership: HomeMembershipUiModel,
     brands: List<HomePartnerBrandUiModel>,
     barcodeEnabled: Boolean,
+    remainingTimeSeconds: Int?,
     onActivate: () -> Unit,
     onUse: () -> Unit,
     onBrandClick: (String) -> Unit,
+    onRefresh: () -> Unit,
+    onBrandDetailClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     ItDayCard(
@@ -211,10 +215,10 @@ fun MembershipBarcodeCard(
         Box(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier =
-                    if (barcodeEnabled) {
-                        Modifier.clickable(onClick = onUse)
-                    } else {
+                    if (!barcodeEnabled) {
                         Modifier.blur(12.dp, BlurredEdgeTreatment.Unbounded)
+                    } else {
+                        Modifier
                     },
             ) {
                 Text(
@@ -226,15 +230,33 @@ fun MembershipBarcodeCard(
                 MembershipStoreHeader(
                     membership = membership,
                     brand = brands.firstOrNull { it.selected } ?: brands.firstOrNull(),
+                    onClick = onBrandDetailClick,
                 )
                 Spacer(Modifier.height(28.dp))
-                MockBarcode(
-                    value = membership.barcodeValue,
+                Column(
+                    modifier = Modifier.fillMaxWidth().clickable(enabled = barcodeEnabled, onClick = onUse),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    MockBarcode(
+                        value = membership.barcodeValue,
+                        enabled = barcodeEnabled,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Spacer(Modifier.height(ItDayDimens.Space12))
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Text(
+                            if (barcodeEnabled) membership.barcodeValue else "1234 5667 9012 3456",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                }
+                Spacer(Modifier.height(ItDayDimens.Space8))
+                BarcodeMeta(
                     enabled = barcodeEnabled,
-                    modifier = Modifier.fillMaxWidth(),
+                    remainingTimeSeconds = remainingTimeSeconds,
+                    onRefresh = onRefresh,
                 )
-                Spacer(Modifier.height(ItDayDimens.Space12))
-                BarcodeMeta(membership.barcodeValue, barcodeEnabled)
             }
             if (!barcodeEnabled) {
                 Box(
@@ -276,8 +298,12 @@ private fun MembershipStoreFooter(
 private fun MembershipStoreHeader(
     membership: HomeMembershipUiModel,
     brand: HomePartnerBrandUiModel?,
+    onClick: () -> Unit,
 ) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         brand?.let { BrandMark(brand = it) }
         Spacer(Modifier.width(ItDayDimens.Space12))
         Column(modifier = Modifier.weight(1f)) {
@@ -302,29 +328,27 @@ private fun MembershipStoreHeader(
 
 @Composable
 private fun BarcodeMeta(
-    value: String,
     enabled: Boolean,
+    remainingTimeSeconds: Int?,
+    onRefresh: () -> Unit,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Image(
-            painter = painterResource(R.drawable.ic_home_location_refresh),
-            contentDescription = null,
-            modifier = Modifier.size(16.dp),
-        )
-        Spacer(Modifier.width(ItDayDimens.Space4))
-        Text("04:55", color = HomePrimary, fontWeight = FontWeight.Bold)
-    }
-    Spacer(Modifier.height(ItDayDimens.Space8))
-    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-        Text(
-            if (enabled) value else "1234 5667 9012 3456",
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-        )
+    if (remainingTimeSeconds != null) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Image(
+                painter = painterResource(R.drawable.ic_home_location_refresh),
+                contentDescription = "바코드 새로고침",
+                modifier = Modifier.size(16.dp).clickable(onClick = onRefresh),
+            )
+            Spacer(Modifier.width(ItDayDimens.Space4))
+            val minutes = remainingTimeSeconds / 60
+            val seconds = remainingTimeSeconds % 60
+            val timeString = String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
+            Text(timeString, color = HomePrimary, fontWeight = FontWeight.Bold)
+        }
     }
 }
 

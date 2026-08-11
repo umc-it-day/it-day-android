@@ -20,6 +20,7 @@ data class HomeUiState(
     val isBenefitExpanded: Boolean = true,
     val showProSection: Boolean = true,
     val showMembershipDialog: Boolean = false,
+    val remainingTimeSeconds: Int? = null,
     val locationCoordinate: LocationCoordinate? = null,
     val isLocationRefreshing: Boolean = false,
     val isLocationUnavailable: Boolean = false,
@@ -80,6 +81,10 @@ sealed interface HomeAction {
 
     data object DismissMembershipDialog : HomeAction
 
+    data object RefreshBarcode : HomeAction
+
+    data object OpenBrandDetail : HomeAction
+
     data object OpenCarrierComparison : HomeAction
 
     data object AddBenefit : HomeAction
@@ -127,4 +132,6 @@ sealed interface HomeEvent {
     data object OpenAdvertisement : HomeEvent
 
     data object OpenMap : HomeEvent
+
+    data object OpenBrandDetail : HomeEvent
 }
