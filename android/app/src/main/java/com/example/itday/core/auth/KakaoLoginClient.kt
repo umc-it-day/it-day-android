@@ -1,6 +1,7 @@
 package com.example.itday.core.auth
 
 import android.content.Context
+import android.util.Log
 import com.example.itday.BuildConfig
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.common.model.ClientError
@@ -57,8 +58,14 @@ class KakaoSdkLoginClient : KakaoLoginClient {
         }
         return when {
             talkResult.token != null -> talkResult.token.toSuccess()
-            talkResult.error.isCancelled() -> KakaoLoginResult.Cancelled
-            else -> loginWithKakaoAccount(context)
+            talkResult.error.isCancelled() -> {
+                Log.d("KakaoLogin", "카카오톡 앱 로그인 취소됨")
+                KakaoLoginResult.Cancelled
+            }
+            else -> {
+                Log.e("KakaoLogin", "카카오톡 앱 로그인 실패: ${talkResult.error?.message}", talkResult.error)
+                loginWithKakaoAccount(context)
+            }
         }
     }
 
@@ -68,12 +75,17 @@ class KakaoSdkLoginClient : KakaoLoginClient {
         }
         return when {
             result.token != null -> result.token.toSuccess()
-            result.error.isCancelled() -> KakaoLoginResult.Cancelled
-            else ->
+            result.error.isCancelled() -> {
+                Log.d("KakaoLogin", "카카오 계정 로그인 취소됨")
+                KakaoLoginResult.Cancelled
+            }
+            else -> {
+                Log.e("KakaoLogin", "카카오 계정 로그인 최종 실패: ${result.error?.message}", result.error)
                 KakaoLoginResult.Failure(
                     message = "카카오 로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.",
                     cause = result.error,
                 )
+            }
         }
     }
 
