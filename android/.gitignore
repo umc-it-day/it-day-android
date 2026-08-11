@@ -1,5 +1,7 @@
 *.iml
 .gradle
+.kotlin
+build/
 /local.properties
 /.idea/caches
 /.idea/libraries
@@ -14,6 +16,16 @@
 .cxx
 local.properties
 /itday.properties
+/app/release/
+*.apk
+*.aab
+
+# Temporary / Plan files
+plan.md
+*plan*.md
+todo.md
+memo.md
+*.log
 
 # IDE Artifacts
 *.artifact.md
