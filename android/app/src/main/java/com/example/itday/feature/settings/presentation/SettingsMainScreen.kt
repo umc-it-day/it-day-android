@@ -36,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.itday.core.di.appContainer
 import com.example.itday.ui.theme.ItDayGray100
 import com.example.itday.ui.theme.ItDayGray500
 import com.example.itday.ui.theme.ItDayWhite
@@ -44,10 +45,13 @@ import com.example.itday.ui.theme.ItDayWhite
 fun SettingsMainRoute(
     modifier: Modifier = Modifier,
     onLogoutClick: () -> Unit = {},
-    viewModel: SettingsViewModel = viewModel(),
 ) {
-    val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val viewModel: SettingsViewModel =
+        viewModel(
+            factory = SettingsViewModel.Factory(context.appContainer.authRepository),
+        )
+    val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
