@@ -1,5 +1,12 @@
 <resources>
     <string name="app_name">ItDay</string>
+    <string name="login_title_first">&#xB193;&#xCE58;&#xB358; &#xD61C;&#xD0DD;</string>
+    <string name="login_title_second_prefix">&#xC774;&#xC81C; </string>
+    <string name="login_brand_name">&#xC787;&#xB370;&#xC774;</string>
+    <string name="login_title_second_suffix">&#xAC00; &#xCC59;&#xACA8;&#xB4DC;&#xB824;&#xC694;</string>
+    <string name="login_kakao_start">&#xCE74;&#xCE74;&#xC624;&#xB85C; &#xC2DC;&#xC791;&#xD558;&#xAE30;</string>
+    <string name="login_loading">&#xB85C;&#xADF8;&#xC778; &#xC911;...</string>
+    <string name="login_guest_browse">&#xAC8C;&#xC2A4;&#xD2B8;&#xB85C; &#xB458;&#xB7EC;&#xBCF4;&#xAE30;</string>
     <string name="map_placeholder">카카오맵 연결 예정</string>
     <string name="map_load_error">지도를 불러오지 못했습니다.</string>
     <string name="map_device_not_supported">카카오맵은 ARM 기기에서 확인할 수 있습니다.</string>
