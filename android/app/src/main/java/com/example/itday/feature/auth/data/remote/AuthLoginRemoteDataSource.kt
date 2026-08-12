@@ -16,8 +16,10 @@ data class RemoteLoginResult(
     val isNewUser: Boolean,
 )
 
-fun interface AuthLoginRemoteDataSource {
+interface AuthLoginRemoteDataSource {
     suspend fun loginWithKakao(kakaoAccessToken: String): ApiResult<RemoteLoginResult>
+    suspend fun logout(): ApiResult<Unit>
+    suspend fun withdraw(): ApiResult<Unit>
 }
 
 class RetrofitAuthRemoteDataSource(
@@ -38,6 +40,26 @@ class RetrofitAuthRemoteDataSource(
                 )
             } else {
                 ApiResult.Success(data.toRemoteLoginResult())
+            }
+        }
+
+    override suspend fun logout(): ApiResult<Unit> =
+        runApiCall {
+            val response = api.logout()
+            if (response.success) {
+                ApiResult.Success(Unit)
+            } else {
+                ApiResult.Failure(AppError.Auth(AuthErrorReason.Unauthorized))
+            }
+        }
+
+    override suspend fun withdraw(): ApiResult<Unit> =
+        runApiCall {
+            val response = api.withdraw()
+            if (response.success) {
+                ApiResult.Success(Unit)
+            } else {
+                ApiResult.Failure(AppError.Auth(AuthErrorReason.Unauthorized))
             }
         }
 
@@ -86,4 +108,8 @@ class MockAuthLoginRemoteDataSource : AuthLoginRemoteDataSource {
                 ),
             )
         }
+
+    override suspend fun logout(): ApiResult<Unit> = ApiResult.Success(Unit)
+
+    override suspend fun withdraw(): ApiResult<Unit> = ApiResult.Success(Unit)
 }
