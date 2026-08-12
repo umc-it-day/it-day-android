@@ -47,11 +47,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.itday.ui.component.ItDayButton
+import com.example.itday.ui.component.ItDayButtonVariant
+import com.example.itday.ui.component.ItDayTextField
 import com.example.itday.ui.theme.ItDayGray100
 import com.example.itday.ui.theme.ItDayGray300
 import com.example.itday.ui.theme.ItDayGray500
 import com.example.itday.ui.theme.ItDayPrimary
 import com.example.itday.ui.theme.ItDayWhite
+
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.ui.window.Dialog
 
 @Composable
 internal fun SettingsTopBar(
@@ -89,11 +96,13 @@ internal fun SettingsTopBar(
 internal fun ProfileHeaderSection(
     profile: UserProfile,
     onProfileEditClick: () -> Unit = {},
+    onNameClick: () -> Unit = {},
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        // ... (profile picture part) ...
         Box(
             modifier = Modifier.size(80.dp),
             contentAlignment = Alignment.BottomEnd,
@@ -136,6 +145,7 @@ internal fun ProfileHeaderSection(
             modifier =
                 Modifier
                     .fillMaxWidth()
+                    .clickable { onNameClick() }
                     .padding(vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
@@ -424,6 +434,60 @@ internal fun SettingsMenuGroup(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+internal fun NameEditDialog(
+    name: String,
+    onNameChange: (String) -> Unit,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = ItDayWhite),
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = "이름 변경",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF191919),
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+
+                ItDayTextField(
+                    value = name,
+                    onValueChange = onNameChange,
+                    placeholder = "변경할 이름을 입력하세요",
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                ItDayButton(
+                    text = "변경하기",
+                    variant = ItDayButtonVariant.Primary,
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onConfirm,
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                ItDayButton(
+                    text = "취소",
+                    variant = ItDayButtonVariant.Secondary,
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onDismiss,
+                )
             }
         }
     }

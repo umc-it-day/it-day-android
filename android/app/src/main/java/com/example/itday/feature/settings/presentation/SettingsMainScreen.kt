@@ -2,6 +2,7 @@ package com.example.itday.feature.settings.presentation
 
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -9,6 +10,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,11 +18,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,19 +39,25 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.itday.core.di.appContainer
 import com.example.itday.ui.theme.ItDayGray100
 import com.example.itday.ui.theme.ItDayGray500
+import com.example.itday.ui.theme.ItDayPrimary
 import com.example.itday.ui.theme.ItDayWhite
 
 @Composable
 fun SettingsMainRoute(
     modifier: Modifier = Modifier,
     onLogoutClick: () -> Unit = {},
-    viewModel: SettingsViewModel = viewModel(),
 ) {
-    val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val viewModel: SettingsViewModel = viewModel(
+        factory = SettingsViewModel.Factory(context.appContainer.featureSettingsRepository)
+    )
+    val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
@@ -55,6 +65,9 @@ fun SettingsMainRoute(
                 is SettingsUiEvent.OpenExternalUrl -> {
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(event.url))
                     context.startActivity(intent)
+                }
+                is SettingsUiEvent.ShowMessage -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
                 }
                 SettingsUiEvent.UserWithdrawn -> {
                     onLogoutClick()
@@ -74,6 +87,10 @@ fun SettingsMainRoute(
             viewModel.dismissLogoutConfirmation()
             onLogoutClick()
         },
+        onShowNameEditDialog = viewModel::showNameEditDialog,
+        onDismissNameEditDialog = viewModel::dismissNameEditDialog,
+        onEditingNameChange = viewModel::updateEditingName,
+        onConfirmNameEdit = viewModel::confirmNameEdit,
         onToggleFaq = viewModel::toggleFaqItem,
         onPrivacyPolicyClick = viewModel::openPrivacyPolicy,
         onTermsOfServiceClick = viewModel::openTermsOfService,
@@ -91,6 +108,10 @@ fun SettingsMainScreen(
     onShowLogoutDialog: () -> Unit,
     onDismissLogoutDialog: () -> Unit,
     onConfirmLogout: () -> Unit,
+    onShowNameEditDialog: () -> Unit,
+    onDismissNameEditDialog: () -> Unit,
+    onEditingNameChange: (String) -> Unit,
+    onConfirmNameEdit: () -> Unit,
     onToggleFaq: (Int) -> Unit,
     onPrivacyPolicyClick: () -> Unit,
     onTermsOfServiceClick: () -> Unit,
@@ -113,6 +134,7 @@ fun SettingsMainScreen(
                         onShowLogoutDialog = onShowLogoutDialog,
                         onPrivacyPolicyClick = onPrivacyPolicyClick,
                         onTermsOfServiceClick = onTermsOfServiceClick,
+                        onNameClick = onShowNameEditDialog,
                     )
 
                 SettingsScreenType.PrivacySecurity ->
@@ -138,6 +160,31 @@ fun SettingsMainScreen(
                 onDismiss = onDismissLogoutDialog,
             )
         }
+
+        if (uiState.showNameEditDialog) {
+            NameEditDialog(
+                name = uiState.editingName,
+                onNameChange = onEditingNameChange,
+                onConfirm = onConfirmNameEdit,
+                onDismiss = onDismissNameEditDialog,
+            )
+        }
+
+        if (uiState.isLoading) {
+            Dialog(
+                onDismissRequest = {},
+                properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .background(ItDayWhite, RoundedCornerShape(12.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = ItDayPrimary)
+                }
+            }
+        }
     }
 }
 
@@ -160,6 +207,7 @@ private fun SettingsMainContent(
     onShowLogoutDialog: () -> Unit,
     onPrivacyPolicyClick: () -> Unit,
     onTermsOfServiceClick: () -> Unit,
+    onNameClick: () -> Unit,
 ) {
     Scaffold(
         containerColor = ItDayWhite,
@@ -183,7 +231,10 @@ private fun SettingsMainContent(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            ProfileHeaderSection(profile = uiState.profile)
+            ProfileHeaderSection(
+                profile = uiState.profile,
+                onNameClick = onNameClick
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -388,6 +439,10 @@ private fun SettingsMainScreenPreview() {
         onShowLogoutDialog = {},
         onDismissLogoutDialog = {},
         onConfirmLogout = {},
+        onShowNameEditDialog = {},
+        onDismissNameEditDialog = {},
+        onEditingNameChange = {},
+        onConfirmNameEdit = {},
         onToggleFaq = {},
         onPrivacyPolicyClick = {},
         onTermsOfServiceClick = {},
@@ -406,6 +461,10 @@ private fun PrivacySecurityContentPreview() {
         onShowLogoutDialog = {},
         onDismissLogoutDialog = {},
         onConfirmLogout = {},
+        onShowNameEditDialog = {},
+        onDismissNameEditDialog = {},
+        onEditingNameChange = {},
+        onConfirmNameEdit = {},
         onToggleFaq = {},
         onPrivacyPolicyClick = {},
         onTermsOfServiceClick = {},
@@ -424,6 +483,10 @@ private fun CustomerServiceContentPreview() {
         onShowLogoutDialog = {},
         onDismissLogoutDialog = {},
         onConfirmLogout = {},
+        onShowNameEditDialog = {},
+        onDismissNameEditDialog = {},
+        onEditingNameChange = {},
+        onConfirmNameEdit = {},
         onToggleFaq = {},
         onPrivacyPolicyClick = {},
         onTermsOfServiceClick = {},
