@@ -20,6 +20,20 @@ class DefaultAuthRepository(
             handleLoginResult(remoteDataSource.loginWithKakao(kakaoAccessToken))
         }
 
+    override suspend fun logout(): ApiResult<Unit> =
+        remoteDataSource.logout().also { result ->
+            if (result is ApiResult.Success) {
+                tokenStorage.clearTokens()
+            }
+        }
+
+    override suspend fun withdraw(): ApiResult<Unit> =
+        remoteDataSource.withdraw().also { result ->
+            if (result is ApiResult.Success) {
+                tokenStorage.clearTokens()
+            }
+        }
+
     private suspend fun handleLoginResult(
         result: ApiResult<RemoteLoginResult>,
     ): ApiResult<LoginSession> =
