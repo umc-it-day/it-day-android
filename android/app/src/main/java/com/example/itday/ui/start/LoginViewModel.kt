@@ -1,6 +1,7 @@
 package com.example.itday.ui.start
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -47,12 +48,15 @@ class LoginViewModel(
             _uiState.value = LoginUiState(isLoading = true)
             when (val result = kakaoLoginClient.login(context)) {
                 is KakaoLoginResult.Success -> {
+                    Log.d("LoginFlow", "Kakao Login Success: accessToken = ${result.accessToken}")
                     authenticateWithServer(result.accessToken)
                 }
                 KakaoLoginResult.Cancelled -> {
+                    Log.d("LoginFlow", "Kakao Login Cancelled")
                     _uiState.value = LoginUiState()
                 }
                 is KakaoLoginResult.Failure -> {
+                    Log.e("LoginFlow", "Kakao Login Failed: ${result.message}", result.cause)
                     _uiState.update {
                         LoginUiState(errorMessage = result.message)
                     }
@@ -64,6 +68,7 @@ class LoginViewModel(
     private suspend fun authenticateWithServer(kakaoAccessToken: String) {
         when (val result = authRepository.loginWithKakao(kakaoAccessToken)) {
             is ApiResult.Success -> {
+                Log.d("LoginFlow", "Server Login Success: isNewUser = ${result.data.isNewUser}")
                 localPreferencesDataSource.setGuestMode(false)
                 localPreferencesDataSource.setOnboardingCompleted(!result.data.isNewUser)
                 localPreferencesDataSource.setLoggedIn(true)
@@ -71,6 +76,7 @@ class LoginViewModel(
                 _events.send(LoginEvent.Authenticated(result.data.isNewUser))
             }
             is ApiResult.Failure -> {
+                Log.e("LoginFlow", "Server Login Failed: ${result.error}")
                 _uiState.value = LoginUiState(errorMessage = result.error.toUserMessage())
             }
         }

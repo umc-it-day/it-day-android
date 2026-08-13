@@ -32,6 +32,8 @@ data class SettingsUiState(
     val promotionNotification: Boolean = true,
     val characterNotification: Boolean = false,
     val showLogoutDialog: Boolean = false,
+    val isWithdrawing: Boolean = false,
+    val errorMessage: String? = null,
     val appVersion: String = "V 0.00.0",
     val faqList: List<FaqItem> =
         listOf(

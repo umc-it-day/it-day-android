@@ -1,7 +1,11 @@
 package com.example.itday.feature.settings.presentation
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.itday.core.data.result.ApiResult
+import com.example.itday.core.data.result.toUserMessage
+import com.example.itday.feature.auth.domain.repository.AuthRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -10,7 +14,9 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class SettingsViewModel : ViewModel() {
+class SettingsViewModel(
+    private val authRepository: AuthRepository,
+) : ViewModel() {
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
@@ -50,9 +56,23 @@ class SettingsViewModel : ViewModel() {
     }
 
     fun withdraw() {
+        if (_uiState.value.isWithdrawing) return
+
         viewModelScope.launch {
-            // 실제 탈퇴 API 호출 로직이 들어갈 자리
-            _events.send(SettingsUiEvent.UserWithdrawn)
+            _uiState.update { it.copy(isWithdrawing = true, errorMessage = null) }
+            when (val result = authRepository.withdraw()) {
+                is ApiResult.Success -> {
+                    _events.send(SettingsUiEvent.UserWithdrawn)
+                }
+                is ApiResult.Failure -> {
+                    _uiState.update {
+                        it.copy(
+                            isWithdrawing = false,
+                            errorMessage = result.error.toUserMessage(),
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -68,5 +88,13 @@ class SettingsViewModel : ViewModel() {
                 }
             state.copy(faqList = updatedList)
         }
+    }
+
+    class Factory(
+        private val authRepository: AuthRepository,
+    ) : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T =
+            SettingsViewModel(authRepository) as T
     }
 }

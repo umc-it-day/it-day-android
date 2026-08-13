@@ -64,6 +64,7 @@ private fun SplashDestination(navController: NavHostController) {
             factory =
                 SessionViewModel.Factory(
                     context.appContainer.localPreferencesDataSource,
+                    context.appContainer.authRepository,
                     context.appContainer.authTokenStorage,
                 ),
         )
@@ -104,6 +105,7 @@ private fun LoginDestination(navController: NavHostController) {
             factory =
                 SessionViewModel.Factory(
                     localPreferencesDataSource,
+                    context.appContainer.authRepository,
                     context.appContainer.authTokenStorage,
                 ),
         )
@@ -147,6 +149,7 @@ private fun MainDestination(navController: NavHostController) {
             factory =
                 SessionViewModel.Factory(
                     context.appContainer.localPreferencesDataSource,
+                    context.appContainer.authRepository,
                     context.appContainer.authTokenStorage,
                 ),
         )
@@ -172,6 +175,7 @@ private fun OnboardingDestination(navController: NavHostController) {
             factory =
                 SessionViewModel.Factory(
                     context.appContainer.localPreferencesDataSource,
+                    context.appContainer.authRepository,
                     context.appContainer.authTokenStorage,
                 ),
         )

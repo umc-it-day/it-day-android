@@ -1,6 +1,5 @@
 package com.example.itday.feature.auth.data.model
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -12,7 +11,6 @@ data class ApiResponseDto<T>(
 
 @Serializable
 data class KakaoLoginRequestDto(
-    @SerialName("KakaoAccessToken")
     val kakaoAccessToken: String,
 )
 

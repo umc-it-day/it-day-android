@@ -1,10 +1,12 @@
 package com.example.itday
 
 import android.app.Application
+import android.util.Log
 import com.example.itday.core.di.AppContainer
 import com.example.itday.core.di.DefaultAppContainer
 import com.example.itday.core.map.KakaoMapEnvironment
 import com.kakao.sdk.common.KakaoSdk
+import com.kakao.sdk.common.util.Utility
 import com.kakao.vectormap.KakaoMapSdk
 
 class ItDayApplication : Application() {
@@ -13,6 +15,7 @@ class ItDayApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        Log.d("KakaoKeyHash", "Debug Key Hash: ${Utility.getKeyHash(this)}")
         if (BuildConfig.KAKAO_NATIVE_APP_KEY.isNotBlank() && KakaoMapEnvironment.isSupportedDevice) {
             KakaoSdk.init(this, BuildConfig.KAKAO_NATIVE_APP_KEY)
             KakaoMapSdk.init(this, BuildConfig.KAKAO_NATIVE_APP_KEY)
