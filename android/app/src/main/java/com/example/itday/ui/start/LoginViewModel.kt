@@ -1,6 +1,7 @@
 package com.example.itday.ui.start
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -62,6 +63,7 @@ class LoginViewModel(
     }
 
     private suspend fun authenticateWithServer(kakaoAccessToken: String) {
+        Log.d("KakaoLogin", "Kakao Access Token: $kakaoAccessToken")
         when (val result = authRepository.loginWithKakao(kakaoAccessToken)) {
             is ApiResult.Success -> {
                 localPreferencesDataSource.setGuestMode(false)
