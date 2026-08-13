@@ -8,6 +8,7 @@ import com.example.itday.core.data.result.AuthErrorReason
 import com.example.itday.feature.auth.data.mapper.toRemoteLoginResult
 import com.example.itday.feature.auth.data.model.KakaoLoginRequestDto
 import com.example.itday.feature.auth.data.model.RefreshTokenRequestDto
+import android.util.Log
 import java.io.IOException
 import retrofit2.HttpException
 
@@ -30,8 +31,10 @@ class RetrofitAuthRemoteDataSource(
             val response = api.loginWithKakao(KakaoLoginRequestDto(kakaoAccessToken))
             val data = response.data
             if (!response.success || data == null) {
+                Log.e("AuthDataSource", "Login Failed: success=${response.success}, message=${response.message}")
                 ApiResult.Failure(AppError.Auth(AuthErrorReason.Unauthorized))
             } else if (data.accessToken.isBlank() || data.refreshToken.isBlank()) {
+                Log.e("AuthDataSource", "Login Failed: Missing tokens in response data")
                 ApiResult.Failure(
                     AppError.Server(
                         statusCode = 200,
@@ -49,6 +52,7 @@ class RetrofitAuthRemoteDataSource(
             if (response.success) {
                 ApiResult.Success(Unit)
             } else {
+                Log.e("AuthDataSource", "Logout Failed: success=${response.success}, message=${response.message}")
                 ApiResult.Failure(AppError.Auth(AuthErrorReason.Unauthorized))
             }
         }
@@ -59,6 +63,7 @@ class RetrofitAuthRemoteDataSource(
             if (response.success) {
                 ApiResult.Success(Unit)
             } else {
+                Log.e("AuthDataSource", "Withdraw Failed: success=${response.success}, message=${response.message}")
                 ApiResult.Failure(AppError.Auth(AuthErrorReason.Unauthorized))
             }
         }
@@ -68,8 +73,10 @@ class RetrofitAuthRemoteDataSource(
             val response = api.refreshTokens(RefreshTokenRequestDto(refreshToken))
             val data = response.data
             if (!response.success || data == null) {
+                Log.e("AuthDataSource", "Token Refresh Failed: success=${response.success}, message=${response.message}")
                 ApiResult.Failure(AppError.Auth(AuthErrorReason.TokenExpired))
             } else if (data.accessToken.isBlank() || data.refreshToken.isBlank()) {
+                Log.e("AuthDataSource", "Token Refresh Failed: Missing tokens in response data")
                 ApiResult.Failure(
                     AppError.Server(
                         statusCode = 200,
@@ -85,13 +92,16 @@ class RetrofitAuthRemoteDataSource(
         try {
             block()
         } catch (error: IOException) {
+            Log.e("AuthDataSource", "Network Error: ${error.message}", error)
             ApiResult.Failure(AppError.Network(error))
         } catch (error: HttpException) {
+            Log.e("AuthDataSource", "HTTP Error: code=${error.code()}, message=${error.message()}", error)
             when (error.code()) {
                 401, 403 -> ApiResult.Failure(AppError.Auth(AuthErrorReason.Unauthorized, error))
                 else -> ApiResult.Failure(AppError.Server(error.code(), cause = error))
             }
         } catch (error: Exception) {
+            Log.e("AuthDataSource", "Unknown Error: ${error.message}", error)
             ApiResult.Failure(AppError.Unknown(error))
         }
 }
