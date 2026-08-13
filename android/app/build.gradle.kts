@@ -80,7 +80,7 @@ android {
             buildConfigField(
                 "boolean",
                 "USE_MOCK_KAKAO_LOGIN",
-                configBoolean("ITDAY_DEBUG_USE_MOCK_KAKAO_LOGIN", true),
+                configBoolean("ITDAY_DEBUG_USE_MOCK_KAKAO_LOGIN", false),
             )
             buildConfigField(
                 "String",
