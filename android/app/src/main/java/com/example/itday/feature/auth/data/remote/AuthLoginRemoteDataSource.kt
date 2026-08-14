@@ -5,12 +5,11 @@ import com.example.itday.core.auth.AuthTokens
 import com.example.itday.core.data.result.ApiResult
 import com.example.itday.core.data.result.AppError
 import com.example.itday.core.data.result.AuthErrorReason
+import com.example.itday.core.network.safeApiCall
 import com.example.itday.feature.auth.data.mapper.toRemoteLoginResult
 import com.example.itday.feature.auth.data.model.KakaoLoginRequestDto
 import com.example.itday.feature.auth.data.model.RefreshTokenRequestDto
 import android.util.Log
-import java.io.IOException
-import retrofit2.HttpException
 
 data class RemoteLoginResult(
     val tokens: AuthTokens,
@@ -27,7 +26,7 @@ class RetrofitAuthRemoteDataSource(
     private val api: AuthApi,
 ) : AuthLoginRemoteDataSource, AuthRemoteDataSource {
     override suspend fun loginWithKakao(kakaoAccessToken: String): ApiResult<RemoteLoginResult> =
-        runApiCall {
+        safeApiCall {
             val response = api.loginWithKakao(KakaoLoginRequestDto(kakaoAccessToken))
             val data = response.data
             if (!response.success || data == null) {
@@ -47,7 +46,7 @@ class RetrofitAuthRemoteDataSource(
         }
 
     override suspend fun logout(): ApiResult<Unit> =
-        runApiCall {
+        safeApiCall {
             val response = api.logout()
             if (response.success) {
                 ApiResult.Success(Unit)
@@ -58,7 +57,7 @@ class RetrofitAuthRemoteDataSource(
         }
 
     override suspend fun withdraw(): ApiResult<Unit> =
-        runApiCall {
+        safeApiCall {
             val response = api.withdraw()
             if (response.success) {
                 ApiResult.Success(Unit)
@@ -69,7 +68,7 @@ class RetrofitAuthRemoteDataSource(
         }
 
     override suspend fun refreshTokens(refreshToken: String): ApiResult<AuthTokens> =
-        runApiCall {
+        safeApiCall {
             val response = api.refreshTokens(RefreshTokenRequestDto(refreshToken))
             val data = response.data
             if (!response.success || data == null) {
@@ -88,22 +87,6 @@ class RetrofitAuthRemoteDataSource(
             }
         }
 
-    private suspend fun <T> runApiCall(block: suspend () -> ApiResult<T>): ApiResult<T> =
-        try {
-            block()
-        } catch (error: IOException) {
-            Log.e("AuthDataSource", "Network Error: ${error.message}", error)
-            ApiResult.Failure(AppError.Network(error))
-        } catch (error: HttpException) {
-            Log.e("AuthDataSource", "HTTP Error: code=${error.code()}, message=${error.message()}", error)
-            when (error.code()) {
-                401, 403 -> ApiResult.Failure(AppError.Auth(AuthErrorReason.Unauthorized, error))
-                else -> ApiResult.Failure(AppError.Server(error.code(), cause = error))
-            }
-        } catch (error: Exception) {
-            Log.e("AuthDataSource", "Unknown Error: ${error.message}", error)
-            ApiResult.Failure(AppError.Unknown(error))
-        }
 }
 
 class MockAuthLoginRemoteDataSource : AuthLoginRemoteDataSource {
