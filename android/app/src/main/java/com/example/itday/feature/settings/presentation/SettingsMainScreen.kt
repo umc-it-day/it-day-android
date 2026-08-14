@@ -51,7 +51,9 @@ import com.example.itday.ui.theme.ItDayWhite
 @Composable
 fun SettingsMainRoute(
     modifier: Modifier = Modifier,
+    isGuestMode: Boolean = false,
     onLogoutClick: () -> Unit = {},
+    onLoginClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val viewModel: SettingsViewModel =
@@ -83,6 +85,7 @@ fun SettingsMainRoute(
 
     SettingsMainScreen(
         uiState = uiState,
+        isGuestMode = isGuestMode,
         onNavigateScreen = viewModel::navigateToScreen,
         onPromotionToggle = viewModel::togglePromotionNotification,
         onCharacterToggle = viewModel::toggleCharacterNotification,
@@ -96,6 +99,7 @@ fun SettingsMainRoute(
         onDismissNameEditDialog = viewModel::dismissNameEditDialog,
         onEditingNameChange = viewModel::updateEditingName,
         onConfirmNameEdit = viewModel::confirmNameEdit,
+        onLoginClick = onLoginClick,
         onToggleFaq = viewModel::toggleFaqItem,
         onPrivacyPolicyClick = viewModel::openPrivacyPolicy,
         onTermsOfServiceClick = viewModel::openTermsOfService,
@@ -107,6 +111,7 @@ fun SettingsMainRoute(
 @Composable
 fun SettingsMainScreen(
     uiState: SettingsUiState,
+    isGuestMode: Boolean,
     onNavigateScreen: (SettingsScreenType) -> Unit,
     onPromotionToggle: (Boolean) -> Unit,
     onCharacterToggle: (Boolean) -> Unit,
@@ -117,6 +122,7 @@ fun SettingsMainScreen(
     onDismissNameEditDialog: () -> Unit,
     onEditingNameChange: (String) -> Unit,
     onConfirmNameEdit: () -> Unit,
+    onLoginClick: () -> Unit,
     onToggleFaq: (Int) -> Unit,
     onPrivacyPolicyClick: () -> Unit,
     onTermsOfServiceClick: () -> Unit,
@@ -133,10 +139,12 @@ fun SettingsMainScreen(
                 SettingsScreenType.Main ->
                     SettingsMainContent(
                         uiState = uiState,
+                        isGuestMode = isGuestMode,
                         onNavigateScreen = onNavigateScreen,
                         onPromotionToggle = onPromotionToggle,
                         onCharacterToggle = onCharacterToggle,
                         onShowLogoutDialog = onShowLogoutDialog,
+                        onLoginClick = onLoginClick,
                         onPrivacyPolicyClick = onPrivacyPolicyClick,
                         onTermsOfServiceClick = onTermsOfServiceClick,
                         onNameClick = onShowNameEditDialog,
@@ -159,7 +167,7 @@ fun SettingsMainScreen(
             }
         }
 
-        if (uiState.showLogoutDialog) {
+        if (!isGuestMode && uiState.showLogoutDialog) {
             LogoutConfirmDialog(
                 onLogout = onConfirmLogout,
                 onDismiss = onDismissLogoutDialog,
@@ -206,10 +214,12 @@ private fun BoxWrapper(
 @Composable
 private fun SettingsMainContent(
     uiState: SettingsUiState,
+    isGuestMode: Boolean,
     onNavigateScreen: (SettingsScreenType) -> Unit,
     onPromotionToggle: (Boolean) -> Unit,
     onCharacterToggle: (Boolean) -> Unit,
     onShowLogoutDialog: () -> Unit,
+    onLoginClick: () -> Unit,
     onPrivacyPolicyClick: () -> Unit,
     onTermsOfServiceClick: () -> Unit,
     onNameClick: () -> Unit,
@@ -270,7 +280,11 @@ private fun SettingsMainContent(
                 items =
                     listOf(
                         "고객센터" to { onNavigateScreen(SettingsScreenType.CustomerService) },
-                        "로그아웃" to onShowLogoutDialog,
+                        if (isGuestMode) {
+                            "로그인하기" to onLoginClick
+                        } else {
+                            "로그아웃" to onShowLogoutDialog
+                        },
                     ),
             )
 
@@ -438,6 +452,7 @@ private fun CustomerServiceContent(
 private fun SettingsMainScreenPreview() {
     SettingsMainScreen(
         uiState = SettingsUiState(),
+        isGuestMode = false,
         onNavigateScreen = {},
         onPromotionToggle = {},
         onCharacterToggle = {},
@@ -448,6 +463,7 @@ private fun SettingsMainScreenPreview() {
         onDismissNameEditDialog = {},
         onEditingNameChange = {},
         onConfirmNameEdit = {},
+        onLoginClick = {},
         onToggleFaq = {},
         onPrivacyPolicyClick = {},
         onTermsOfServiceClick = {},
@@ -460,6 +476,7 @@ private fun SettingsMainScreenPreview() {
 private fun PrivacySecurityContentPreview() {
     SettingsMainScreen(
         uiState = SettingsUiState(currentScreen = SettingsScreenType.PrivacySecurity),
+        isGuestMode = false,
         onNavigateScreen = {},
         onPromotionToggle = {},
         onCharacterToggle = {},
@@ -470,6 +487,7 @@ private fun PrivacySecurityContentPreview() {
         onDismissNameEditDialog = {},
         onEditingNameChange = {},
         onConfirmNameEdit = {},
+        onLoginClick = {},
         onToggleFaq = {},
         onPrivacyPolicyClick = {},
         onTermsOfServiceClick = {},
@@ -482,6 +500,7 @@ private fun PrivacySecurityContentPreview() {
 private fun CustomerServiceContentPreview() {
     SettingsMainScreen(
         uiState = SettingsUiState(currentScreen = SettingsScreenType.CustomerService),
+        isGuestMode = false,
         onNavigateScreen = {},
         onPromotionToggle = {},
         onCharacterToggle = {},
@@ -492,6 +511,7 @@ private fun CustomerServiceContentPreview() {
         onDismissNameEditDialog = {},
         onEditingNameChange = {},
         onConfirmNameEdit = {},
+        onLoginClick = {},
         onToggleFaq = {},
         onPrivacyPolicyClick = {},
         onTermsOfServiceClick = {},

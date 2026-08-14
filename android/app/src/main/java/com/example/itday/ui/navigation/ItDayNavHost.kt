@@ -163,6 +163,14 @@ private fun MainDestination(navController: NavHostController) {
                 }
             }
         },
+        onLogin = {
+            coroutineScope.launch {
+                sessionViewModel.exitGuestMode()
+                navController.navigate(AppRoute.LOGIN.route) {
+                    popUpTo(AppRoute.MAIN.route) { inclusive = true }
+                }
+            }
+        },
     )
 }
 
