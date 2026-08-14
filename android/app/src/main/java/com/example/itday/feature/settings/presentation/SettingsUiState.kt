@@ -36,6 +36,7 @@ data class SettingsUiState(
     val showLogoutDialog: Boolean = false,
     val showNameEditDialog: Boolean = false,
     val editingName: String = "",
+    val isWithdrawing: Boolean = false,
     val appVersion: String = "V 0.00.0",
     val faqList: List<FaqItem> =
         listOf(

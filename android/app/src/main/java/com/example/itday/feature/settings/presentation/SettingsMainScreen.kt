@@ -54,9 +54,14 @@ fun SettingsMainRoute(
     onLogoutClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
-    val viewModel: SettingsViewModel = viewModel(
-        factory = SettingsViewModel.Factory(context.appContainer.featureSettingsRepository)
-    )
+    val viewModel: SettingsViewModel =
+        viewModel(
+            factory =
+                SettingsViewModel.Factory(
+                    settingsRepository = context.appContainer.featureSettingsRepository,
+                    authRepository = context.appContainer.authRepository,
+                ),
+        )
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(viewModel) {
