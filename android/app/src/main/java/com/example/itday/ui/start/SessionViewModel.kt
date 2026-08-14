@@ -38,6 +38,10 @@ class SessionViewModel(
         localPreferencesDataSource.setGuestMode(true)
     }
 
+    suspend fun exitGuestMode() {
+        localPreferencesDataSource.setGuestMode(false)
+    }
+
     suspend fun completeOnboarding() {
         localPreferencesDataSource.setOnboardingCompleted(true)
     }

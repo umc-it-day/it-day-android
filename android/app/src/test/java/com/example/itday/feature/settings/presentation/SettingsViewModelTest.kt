@@ -1,5 +1,8 @@
 package com.example.itday.feature.settings.presentation
 
+import com.example.itday.core.data.result.ApiResult
+import com.example.itday.feature.auth.domain.model.LoginSession
+import com.example.itday.feature.auth.domain.repository.AuthRepository
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -11,7 +14,7 @@ class SettingsViewModelTest {
 
     @Before
     fun setUp() {
-        viewModel = SettingsViewModel()
+        viewModel = SettingsViewModel(FakeAuthRepository())
     }
 
     @Test
@@ -69,4 +72,13 @@ class SettingsViewModelTest {
         viewModel.toggleFaqItem(targetId)
         assertFalse(viewModel.uiState.value.faqList.first { it.id == targetId }.isExpanded)
     }
+}
+
+private class FakeAuthRepository : AuthRepository {
+    override suspend fun loginWithKakao(kakaoAccessToken: String): ApiResult<LoginSession> =
+        ApiResult.Success(LoginSession(isNewUser = false))
+
+    override suspend fun logout(): ApiResult<Unit> = ApiResult.Success(Unit)
+
+    override suspend fun withdraw(): ApiResult<Unit> = ApiResult.Success(Unit)
 }
