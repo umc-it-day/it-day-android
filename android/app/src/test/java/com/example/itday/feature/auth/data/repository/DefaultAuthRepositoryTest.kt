@@ -23,9 +23,9 @@ class DefaultAuthRepositoryTest {
             val repository =
                 DefaultAuthRepository(
                     remoteDataSource =
-                        AuthLoginRemoteDataSource {
-                            ApiResult.Success(RemoteLoginResult(tokens, isNewUser = true))
-                        },
+                        FakeAuthLoginRemoteDataSource(
+                            loginResult = ApiResult.Success(RemoteLoginResult(tokens, isNewUser = true)),
+                        ),
                     tokenStorage = storage,
                 )
 
@@ -43,9 +43,9 @@ class DefaultAuthRepositoryTest {
             val repository =
                 DefaultAuthRepository(
                     remoteDataSource =
-                        AuthLoginRemoteDataSource {
-                            ApiResult.Failure(AppError.Network())
-                        },
+                        FakeAuthLoginRemoteDataSource(
+                            loginResult = ApiResult.Failure(AppError.Network()),
+                        ),
                     tokenStorage = storage,
                 )
 
@@ -54,6 +54,16 @@ class DefaultAuthRepositoryTest {
             assertTrue(result is ApiResult.Failure)
             assertNull(storage.getTokens())
         }
+}
+
+private class FakeAuthLoginRemoteDataSource(
+    private val loginResult: ApiResult<RemoteLoginResult>,
+) : AuthLoginRemoteDataSource {
+    override suspend fun loginWithKakao(kakaoAccessToken: String) = loginResult
+
+    override suspend fun logout(): ApiResult<Unit> = ApiResult.Success(Unit)
+
+    override suspend fun withdraw(): ApiResult<Unit> = ApiResult.Success(Unit)
 }
 
 private class FakeTokenStorage : AuthTokenStorage {
