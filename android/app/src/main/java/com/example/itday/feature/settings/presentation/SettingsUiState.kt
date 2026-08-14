@@ -27,13 +27,16 @@ data class FaqItem(
 
 data class SettingsUiState(
     val currentScreen: SettingsScreenType = SettingsScreenType.Main,
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null,
     val profile: UserProfile = UserProfile(),
     val membership: MembershipInfo = MembershipInfo(),
     val promotionNotification: Boolean = true,
     val characterNotification: Boolean = false,
     val showLogoutDialog: Boolean = false,
+    val showNameEditDialog: Boolean = false,
+    val editingName: String = "",
     val isWithdrawing: Boolean = false,
-    val errorMessage: String? = null,
     val appVersion: String = "V 0.00.0",
     val faqList: List<FaqItem> =
         listOf(

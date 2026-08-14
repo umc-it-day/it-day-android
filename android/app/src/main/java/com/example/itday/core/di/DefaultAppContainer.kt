@@ -43,6 +43,9 @@ import com.example.itday.feature.auth.data.remote.MockAuthLoginRemoteDataSource
 import com.example.itday.feature.auth.data.remote.RetrofitAuthRemoteDataSource
 import com.example.itday.feature.auth.data.repository.DefaultAuthRepository
 import com.example.itday.feature.auth.domain.repository.AuthRepository
+import com.example.itday.feature.settings.data.api.SettingsApi
+import com.example.itday.feature.settings.data.repository.SettingsRepositoryImpl as FeatureSettingsRepositoryImpl
+import com.example.itday.feature.settings.domain.repository.SettingsRepository as FeatureSettingsRepository
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -148,5 +151,9 @@ class DefaultAppContainer(
 
     override val settingsRepository: SettingsRepository by lazy {
         SettingsRepositoryImpl(mockDataSource)
+    }
+
+    override val featureSettingsRepository: FeatureSettingsRepository by lazy {
+        FeatureSettingsRepositoryImpl(NetworkClient.createApi<SettingsApi>(retrofit))
     }
 }

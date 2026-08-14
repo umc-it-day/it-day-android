@@ -3,18 +3,35 @@ package com.example.itday.feature.settings.presentation
 import com.example.itday.core.data.result.ApiResult
 import com.example.itday.feature.auth.domain.model.LoginSession
 import com.example.itday.feature.auth.domain.repository.AuthRepository
+import com.example.itday.feature.settings.domain.model.MembershipInfo
+import com.example.itday.feature.settings.domain.model.UserProfile
+import com.example.itday.feature.settings.domain.repository.SettingsRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class SettingsViewModelTest {
     private lateinit var viewModel: SettingsViewModel
+    private val testDispatcher = UnconfinedTestDispatcher()
 
     @Before
     fun setUp() {
-        viewModel = SettingsViewModel(FakeAuthRepository())
+        Dispatchers.setMain(testDispatcher)
+        viewModel = SettingsViewModel(FakeSettingsRepository(), FakeAuthRepository())
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
     }
 
     @Test
@@ -72,6 +89,18 @@ class SettingsViewModelTest {
         viewModel.toggleFaqItem(targetId)
         assertFalse(viewModel.uiState.value.faqList.first { it.id == targetId }.isExpanded)
     }
+}
+
+private class FakeSettingsRepository : SettingsRepository {
+    override suspend fun getMembershipInfo(): ApiResult<MembershipInfo> =
+        ApiResult.Success(MembershipInfo(telecomLabel = "SKT", telecomGrade = "VIP"))
+
+    override suspend fun getUserProfile(): ApiResult<UserProfile> =
+        ApiResult.Success(UserProfile(name = "김예진", email = "test@itday.com", phone = ""))
+
+    override suspend fun updateName(name: String): ApiResult<Unit> = ApiResult.Success(Unit)
+
+    override suspend fun updateMembership(membershipId: Long): ApiResult<Unit> = ApiResult.Success(Unit)
 }
 
 private class FakeAuthRepository : AuthRepository {
