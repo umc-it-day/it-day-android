@@ -11,5 +11,6 @@ fun AppError.toUserMessage(): String =
                 AuthErrorReason.PermissionDenied -> "접근 권한이 없습니다."
             }
         is AppError.Validation -> message
+        is AppError.Parsing -> "서버 응답을 읽지 못했습니다. 잠시 후 다시 시도해주세요."
         is AppError.Unknown -> "알 수 없는 오류가 발생했습니다."
     }
