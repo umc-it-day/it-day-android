@@ -42,6 +42,7 @@ import com.example.itday.ui.theme.ItDayWhite
 @Composable
 fun MainTabScaffold(
     onLogout: () -> Unit = {},
+    onLogin: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val isGuestMode by
@@ -76,6 +77,7 @@ fun MainTabScaffold(
             navController = tabNavController,
             isGuestMode = isGuestMode,
             onLogout = onLogout,
+            onLogin = onLogin,
             modifier =
                 if (currentRoute == AppRoute.PAYMENT.route) {
                     Modifier
@@ -124,6 +126,7 @@ private fun MainTabNavHost(
     navController: NavHostController,
     isGuestMode: Boolean,
     onLogout: () -> Unit,
+    onLogin: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     NavHost(
@@ -154,7 +157,11 @@ private fun MainTabNavHost(
             )
         }
         composable(AppRoute.SETTINGS.route) {
-            SettingsMainRoute(onLogoutClick = onLogout)
+            SettingsMainRoute(
+                isGuestMode = isGuestMode,
+                onLogoutClick = onLogout,
+                onLoginClick = onLogin,
+            )
         }
         if (BuildConfig.DEBUG) {
             composable(AppRoute.PAYMENT.route) {

@@ -2,6 +2,7 @@ package com.example.itday.feature.settings.presentation
 
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -9,6 +10,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,11 +18,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,21 +39,30 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.itday.core.di.appContainer
 import com.example.itday.ui.theme.ItDayGray100
 import com.example.itday.ui.theme.ItDayGray500
+import com.example.itday.ui.theme.ItDayPrimary
 import com.example.itday.ui.theme.ItDayWhite
 
 @Composable
 fun SettingsMainRoute(
     modifier: Modifier = Modifier,
+    isGuestMode: Boolean = false,
     onLogoutClick: () -> Unit = {},
+    onLoginClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val viewModel: SettingsViewModel =
         viewModel(
-            factory = SettingsViewModel.Factory(context.appContainer.authRepository),
+            factory =
+                SettingsViewModel.Factory(
+                    settingsRepository = context.appContainer.featureSettingsRepository,
+                    authRepository = context.appContainer.authRepository,
+                ),
         )
     val uiState by viewModel.uiState.collectAsState()
 
@@ -60,6 +73,9 @@ fun SettingsMainRoute(
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(event.url))
                     context.startActivity(intent)
                 }
+                is SettingsUiEvent.ShowMessage -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
                 SettingsUiEvent.UserWithdrawn -> {
                     onLogoutClick()
                 }
@@ -69,6 +85,7 @@ fun SettingsMainRoute(
 
     SettingsMainScreen(
         uiState = uiState,
+        isGuestMode = isGuestMode,
         onNavigateScreen = viewModel::navigateToScreen,
         onPromotionToggle = viewModel::togglePromotionNotification,
         onCharacterToggle = viewModel::toggleCharacterNotification,
@@ -78,6 +95,11 @@ fun SettingsMainRoute(
             viewModel.dismissLogoutConfirmation()
             onLogoutClick()
         },
+        onShowNameEditDialog = viewModel::showNameEditDialog,
+        onDismissNameEditDialog = viewModel::dismissNameEditDialog,
+        onEditingNameChange = viewModel::updateEditingName,
+        onConfirmNameEdit = viewModel::confirmNameEdit,
+        onLoginClick = onLoginClick,
         onToggleFaq = viewModel::toggleFaqItem,
         onPrivacyPolicyClick = viewModel::openPrivacyPolicy,
         onTermsOfServiceClick = viewModel::openTermsOfService,
@@ -89,12 +111,18 @@ fun SettingsMainRoute(
 @Composable
 fun SettingsMainScreen(
     uiState: SettingsUiState,
+    isGuestMode: Boolean,
     onNavigateScreen: (SettingsScreenType) -> Unit,
     onPromotionToggle: (Boolean) -> Unit,
     onCharacterToggle: (Boolean) -> Unit,
     onShowLogoutDialog: () -> Unit,
     onDismissLogoutDialog: () -> Unit,
     onConfirmLogout: () -> Unit,
+    onShowNameEditDialog: () -> Unit,
+    onDismissNameEditDialog: () -> Unit,
+    onEditingNameChange: (String) -> Unit,
+    onConfirmNameEdit: () -> Unit,
+    onLoginClick: () -> Unit,
     onToggleFaq: (Int) -> Unit,
     onPrivacyPolicyClick: () -> Unit,
     onTermsOfServiceClick: () -> Unit,
@@ -111,12 +139,15 @@ fun SettingsMainScreen(
                 SettingsScreenType.Main ->
                     SettingsMainContent(
                         uiState = uiState,
+                        isGuestMode = isGuestMode,
                         onNavigateScreen = onNavigateScreen,
                         onPromotionToggle = onPromotionToggle,
                         onCharacterToggle = onCharacterToggle,
                         onShowLogoutDialog = onShowLogoutDialog,
+                        onLoginClick = onLoginClick,
                         onPrivacyPolicyClick = onPrivacyPolicyClick,
                         onTermsOfServiceClick = onTermsOfServiceClick,
+                        onNameClick = onShowNameEditDialog,
                     )
 
                 SettingsScreenType.PrivacySecurity ->
@@ -136,11 +167,36 @@ fun SettingsMainScreen(
             }
         }
 
-        if (uiState.showLogoutDialog) {
+        if (!isGuestMode && uiState.showLogoutDialog) {
             LogoutConfirmDialog(
                 onLogout = onConfirmLogout,
                 onDismiss = onDismissLogoutDialog,
             )
+        }
+
+        if (uiState.showNameEditDialog) {
+            NameEditDialog(
+                name = uiState.editingName,
+                onNameChange = onEditingNameChange,
+                onConfirm = onConfirmNameEdit,
+                onDismiss = onDismissNameEditDialog,
+            )
+        }
+
+        if (uiState.isLoading) {
+            Dialog(
+                onDismissRequest = {},
+                properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .background(ItDayWhite, RoundedCornerShape(12.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = ItDayPrimary)
+                }
+            }
         }
     }
 }
@@ -158,12 +214,15 @@ private fun BoxWrapper(
 @Composable
 private fun SettingsMainContent(
     uiState: SettingsUiState,
+    isGuestMode: Boolean,
     onNavigateScreen: (SettingsScreenType) -> Unit,
     onPromotionToggle: (Boolean) -> Unit,
     onCharacterToggle: (Boolean) -> Unit,
     onShowLogoutDialog: () -> Unit,
+    onLoginClick: () -> Unit,
     onPrivacyPolicyClick: () -> Unit,
     onTermsOfServiceClick: () -> Unit,
+    onNameClick: () -> Unit,
 ) {
     Scaffold(
         containerColor = ItDayWhite,
@@ -187,7 +246,10 @@ private fun SettingsMainContent(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            ProfileHeaderSection(profile = uiState.profile)
+            ProfileHeaderSection(
+                profile = uiState.profile,
+                onNameClick = onNameClick
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -218,7 +280,11 @@ private fun SettingsMainContent(
                 items =
                     listOf(
                         "고객센터" to { onNavigateScreen(SettingsScreenType.CustomerService) },
-                        "로그아웃" to onShowLogoutDialog,
+                        if (isGuestMode) {
+                            "로그인하기" to onLoginClick
+                        } else {
+                            "로그아웃" to onShowLogoutDialog
+                        },
                     ),
             )
 
@@ -386,12 +452,18 @@ private fun CustomerServiceContent(
 private fun SettingsMainScreenPreview() {
     SettingsMainScreen(
         uiState = SettingsUiState(),
+        isGuestMode = false,
         onNavigateScreen = {},
         onPromotionToggle = {},
         onCharacterToggle = {},
         onShowLogoutDialog = {},
         onDismissLogoutDialog = {},
         onConfirmLogout = {},
+        onShowNameEditDialog = {},
+        onDismissNameEditDialog = {},
+        onEditingNameChange = {},
+        onConfirmNameEdit = {},
+        onLoginClick = {},
         onToggleFaq = {},
         onPrivacyPolicyClick = {},
         onTermsOfServiceClick = {},
@@ -404,12 +476,18 @@ private fun SettingsMainScreenPreview() {
 private fun PrivacySecurityContentPreview() {
     SettingsMainScreen(
         uiState = SettingsUiState(currentScreen = SettingsScreenType.PrivacySecurity),
+        isGuestMode = false,
         onNavigateScreen = {},
         onPromotionToggle = {},
         onCharacterToggle = {},
         onShowLogoutDialog = {},
         onDismissLogoutDialog = {},
         onConfirmLogout = {},
+        onShowNameEditDialog = {},
+        onDismissNameEditDialog = {},
+        onEditingNameChange = {},
+        onConfirmNameEdit = {},
+        onLoginClick = {},
         onToggleFaq = {},
         onPrivacyPolicyClick = {},
         onTermsOfServiceClick = {},
@@ -422,12 +500,18 @@ private fun PrivacySecurityContentPreview() {
 private fun CustomerServiceContentPreview() {
     SettingsMainScreen(
         uiState = SettingsUiState(currentScreen = SettingsScreenType.CustomerService),
+        isGuestMode = false,
         onNavigateScreen = {},
         onPromotionToggle = {},
         onCharacterToggle = {},
         onShowLogoutDialog = {},
         onDismissLogoutDialog = {},
         onConfirmLogout = {},
+        onShowNameEditDialog = {},
+        onDismissNameEditDialog = {},
+        onEditingNameChange = {},
+        onConfirmNameEdit = {},
+        onLoginClick = {},
         onToggleFaq = {},
         onPrivacyPolicyClick = {},
         onTermsOfServiceClick = {},

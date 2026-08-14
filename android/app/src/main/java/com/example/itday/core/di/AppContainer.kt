@@ -12,6 +12,7 @@ import com.example.itday.core.data.repository.OnboardingRepository
 import com.example.itday.core.data.repository.PaymentRepository
 import com.example.itday.core.data.repository.ReportRepository
 import com.example.itday.core.data.repository.SettingsRepository
+import com.example.itday.feature.settings.domain.repository.SettingsRepository as FeatureSettingsRepository
 import com.example.itday.core.local.LocalPreferencesDataSource
 import com.example.itday.core.location.LocationRepository
 import com.example.itday.core.network.NetworkMonitor
@@ -40,4 +41,5 @@ interface AppContainer {
     val onboardingRepository: OnboardingRepository
     val paymentRepository: PaymentRepository
     val settingsRepository: SettingsRepository
+    val featureSettingsRepository: FeatureSettingsRepository
 }
