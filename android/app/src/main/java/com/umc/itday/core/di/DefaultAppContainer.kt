@@ -11,8 +11,6 @@ import com.umc.itday.core.auth.PendingAuthRemoteDataSource
 import com.umc.itday.core.auth.TokenRefresher
 import com.umc.itday.core.config.AppConfig
 import com.umc.itday.core.data.mock.ItDayMockDataSource
-import com.umc.itday.core.data.repository.BarcodeRepository
-import com.umc.itday.core.data.repository.BarcodeRepositoryImpl
 import com.umc.itday.core.data.repository.HomeRepository
 import com.umc.itday.core.data.repository.HomeRepositoryImpl
 import com.umc.itday.core.data.repository.MapRepository
@@ -43,6 +41,9 @@ import com.umc.itday.feature.auth.data.remote.MockAuthLoginRemoteDataSource
 import com.umc.itday.feature.auth.data.remote.RetrofitAuthRemoteDataSource
 import com.umc.itday.feature.auth.data.repository.DefaultAuthRepository
 import com.umc.itday.feature.auth.domain.repository.AuthRepository
+import com.umc.itday.feature.barcode.data.api.BarcodeApi
+import com.umc.itday.feature.barcode.data.repository.BarcodeRepositoryImpl
+import com.umc.itday.feature.barcode.domain.repository.BarcodeRepository
 import com.umc.itday.feature.settings.data.api.SettingsApi
 import com.umc.itday.feature.settings.data.repository.SettingsRepositoryImpl as FeatureSettingsRepositoryImpl
 import com.umc.itday.feature.settings.domain.repository.SettingsRepository as FeatureSettingsRepository
@@ -134,7 +135,7 @@ class DefaultAppContainer(
     }
 
     override val barcodeRepository: BarcodeRepository by lazy {
-        BarcodeRepositoryImpl(mockDataSource)
+        BarcodeRepositoryImpl(NetworkClient.createApi<BarcodeApi>(retrofit))
     }
 
     override val reportRepository: ReportRepository by lazy {
