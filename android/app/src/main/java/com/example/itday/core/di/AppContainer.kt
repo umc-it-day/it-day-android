@@ -7,7 +7,7 @@ import com.example.itday.core.auth.TokenRefresher
 import com.example.itday.core.data.mock.ItDayMockDataSource
 import com.example.itday.core.data.repository.BarcodeRepository
 import com.example.itday.core.data.repository.HomeRepository
-import com.example.itday.core.data.repository.MapRepository
+import com.example.itday.feature.map.domain.repository.MapRepository
 import com.example.itday.core.data.repository.OnboardingRepository
 import com.example.itday.core.data.repository.PaymentRepository
 import com.example.itday.core.data.repository.ReportRepository

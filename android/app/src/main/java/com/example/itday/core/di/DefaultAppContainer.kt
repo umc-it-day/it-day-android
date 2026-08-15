@@ -15,8 +15,9 @@ import com.example.itday.core.data.repository.BarcodeRepository
 import com.example.itday.core.data.repository.BarcodeRepositoryImpl
 import com.example.itday.core.data.repository.HomeRepository
 import com.example.itday.core.data.repository.HomeRepositoryImpl
-import com.example.itday.core.data.repository.MapRepository
-import com.example.itday.core.data.repository.MapRepositoryImpl
+import com.example.itday.feature.map.data.remote.MapApiService
+import com.example.itday.feature.map.data.repository.MapRepositoryImpl
+import com.example.itday.feature.map.domain.repository.MapRepository
 import com.example.itday.core.data.repository.OnboardingRepository
 import com.example.itday.core.data.repository.OnboardingRepositoryImpl
 import com.example.itday.core.data.repository.PaymentRepository
@@ -127,7 +128,7 @@ class DefaultAppContainer(
     }
 
     override val mapRepository: MapRepository by lazy {
-        MapRepositoryImpl(mockDataSource)
+        MapRepositoryImpl(NetworkClient.createApi<MapApiService>(retrofit))
     }
 
     override val barcodeRepository: BarcodeRepository by lazy {
