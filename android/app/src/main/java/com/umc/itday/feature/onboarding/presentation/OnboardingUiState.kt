@@ -1,6 +1,8 @@
 ﻿package com.umc.itday.feature.onboarding.presentation
 
 import com.umc.itday.R
+import com.umc.itday.feature.onboarding.domain.model.OnboardingTerm
+import com.umc.itday.feature.onboarding.domain.model.PreferredBrand
 
 enum class AgreementType {
     Location,
@@ -51,6 +53,7 @@ enum class MembershipGradeType(val displayName: String) {
 data class MembershipGradeInfo(
     val type: MembershipGradeType,
     val iconResId: Int?,
+    val membershipId: Long? = null,
 )
 
 data class OnboardingUiState(
@@ -59,10 +62,18 @@ data class OnboardingUiState(
     val privacyAgreed: Boolean = false,
     val notificationAgreed: Boolean = false,
     val locationError: Boolean = false,
-    val selectedCarrier: CarrierType? = CarrierType.SKT,
-    val selectedMembershipGrade: MembershipGradeType? = MembershipGradeType.VVIP,
+    val selectedCarrier: CarrierType? = null,
+    val selectedMembershipGrade: MembershipGradeType? = null,
     val preferredBrands: Set<String> = emptySet(),
     val showingTerms: AgreementType? = null,
+    val terms: Map<AgreementType, OnboardingTerm> = emptyMap(),
+    val availableCarriers: List<CarrierType> = emptyList(),
+    val availableGrades: List<MembershipGradeInfo> = emptyList(),
+    val availableBrands: List<PreferredBrand> = emptyList(),
+    val selectedMembershipId: Long? = null,
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null,
+    val isSubmitting: Boolean = false,
 ) {
     val totalProgressSteps: Int = 4
 
@@ -70,10 +81,10 @@ data class OnboardingUiState(
     val canContinue: Boolean
         get() =
             when (step) {
-                TERMS_STEP -> locationAgreed && privacyAgreed
+                TERMS_STEP -> terms.isNotEmpty() && locationAgreed && privacyAgreed
                 LOCATION_PERM_STEP -> true
                 CARRIER_STEP -> selectedCarrier != null
-                MEMBERSHIP_STEP -> selectedMembershipGrade != null
+                MEMBERSHIP_STEP -> selectedMembershipId != null
                 BRAND_STEP -> preferredBrands.size >= MIN_BRAND_COUNT
                 else -> true
             }

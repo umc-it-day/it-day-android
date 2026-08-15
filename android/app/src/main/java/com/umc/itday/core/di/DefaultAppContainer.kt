@@ -17,8 +17,6 @@ import com.umc.itday.core.data.repository.HomeRepository
 import com.umc.itday.core.data.repository.HomeRepositoryImpl
 import com.umc.itday.core.data.repository.MapRepository
 import com.umc.itday.core.data.repository.MapRepositoryImpl
-import com.umc.itday.core.data.repository.OnboardingRepository
-import com.umc.itday.core.data.repository.OnboardingRepositoryImpl
 import com.umc.itday.core.data.repository.PaymentRepository
 import com.umc.itday.core.data.repository.PaymentRepositoryImpl
 import com.umc.itday.core.data.repository.ReportRepository
@@ -43,6 +41,9 @@ import com.umc.itday.feature.auth.data.remote.MockAuthLoginRemoteDataSource
 import com.umc.itday.feature.auth.data.remote.RetrofitAuthRemoteDataSource
 import com.umc.itday.feature.auth.data.repository.DefaultAuthRepository
 import com.umc.itday.feature.auth.domain.repository.AuthRepository
+import com.umc.itday.feature.onboarding.data.remote.OnboardingApi
+import com.umc.itday.feature.onboarding.data.repository.DefaultOnboardingRepository
+import com.umc.itday.feature.onboarding.domain.repository.OnboardingRepository
 import com.umc.itday.feature.settings.data.api.SettingsApi
 import com.umc.itday.feature.settings.data.repository.SettingsRepositoryImpl as FeatureSettingsRepositoryImpl
 import com.umc.itday.feature.settings.domain.repository.SettingsRepository as FeatureSettingsRepository
@@ -142,7 +143,7 @@ class DefaultAppContainer(
     }
 
     override val onboardingRepository: OnboardingRepository by lazy {
-        OnboardingRepositoryImpl(mockDataSource)
+        DefaultOnboardingRepository(NetworkClient.createApi<OnboardingApi>(retrofit))
     }
 
     override val paymentRepository: PaymentRepository by lazy {

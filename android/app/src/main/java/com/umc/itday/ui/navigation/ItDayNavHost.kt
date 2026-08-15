@@ -187,7 +187,8 @@ private fun OnboardingDestination(navController: NavHostController) {
                     context.appContainer.authTokenStorage,
                 ),
         )
-    val onboardingViewModel: OnboardingViewModel = viewModel()
+    val onboardingViewModel: OnboardingViewModel =
+        viewModel(factory = OnboardingViewModel.Factory(context.appContainer.onboardingRepository))
     val uiState by onboardingViewModel.uiState.collectAsState()
 
     OnboardingScreen(

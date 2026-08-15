@@ -46,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -80,6 +81,7 @@ fun OnboardingScreen(
     permissionManager: PermissionManager,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
     val permissionLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
             onLocationResult(permissionManager.isGranted(AppPermission.Location))
@@ -115,6 +117,8 @@ fun OnboardingScreen(
                     }
                 }
                 OnboardingUiEvent.Complete -> onComplete()
+                is OnboardingUiEvent.ShowMessage ->
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -170,6 +174,7 @@ fun OnboardingScreen(
             if (state.showingTerms != null) {
                 TermsDetailDialog(
                     type = state.showingTerms,
+                    term = state.terms[state.showingTerms],
                     onDismiss = onHideTerms,
                 )
             }
@@ -386,16 +391,17 @@ private fun AgreementCard(
 @Composable
 private fun TermsDetailDialog(
     type: AgreementType,
+    term: com.umc.itday.feature.onboarding.domain.model.OnboardingTerm?,
     onDismiss: () -> Unit,
 ) {
-    val title =
+    val fallbackTitle =
         when (type) {
             AgreementType.Location -> "위치 정보 이용 동의"
             AgreementType.Privacy -> "개인정보 처리방침"
             AgreementType.Notification -> "알림 권한 동의"
         }
 
-    val content =
+    val fallbackContent =
         when (type) {
             AgreementType.Location -> OnboardingConstants.LOCATION_TERMS_DETAIL
             AgreementType.Privacy -> OnboardingConstants.PRIVACY_TERMS_DETAIL
@@ -406,7 +412,7 @@ private fun TermsDetailDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = title,
+                text = term?.title ?: fallbackTitle,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF191919),
@@ -421,7 +427,7 @@ private fun TermsDetailDialog(
                         .verticalScroll(rememberScrollState()),
             ) {
                 Text(
-                    text = content,
+                    text = term?.content ?: fallbackContent,
                     fontSize = 14.sp,
                     color = ItDayGray500,
                     lineHeight = 20.sp,
