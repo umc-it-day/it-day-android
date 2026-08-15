@@ -1,8 +1,10 @@
 package com.umc.itday.feature.onboarding.presentation
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.umc.itday.BuildConfig
 import com.umc.itday.R
 import com.umc.itday.core.data.result.ApiResult
 import com.umc.itday.core.data.result.toUserMessage
@@ -34,10 +36,18 @@ class OnboardingViewModel(
     private fun loadInitialData() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            logDebug("GET /api/terms, GET /api/telecoms 요청 시작")
             val terms = async { repository.getTerms() }
             val telecoms = async { repository.getTelecoms() }
             val termsResult = terms.await()
             val telecomsResult = telecoms.await()
+
+            if (termsResult is ApiResult.Success) {
+                logInfo("GET /api/terms 성공: ${termsResult.data.size}개")
+            }
+            if (telecomsResult is ApiResult.Success) {
+                logInfo("GET /api/telecoms 성공: ${telecomsResult.data.size}개")
+            }
 
             _uiState.update { state ->
                 state.copy(
@@ -110,8 +120,10 @@ class OnboardingViewModel(
         }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            logDebug("GET /api/telecoms/${carrier.apiCode}/grades 요청 시작")
             when (val result = repository.getGrades(carrier.apiCode)) {
                 is ApiResult.Success -> {
+                    logInfo("GET /api/telecoms/${carrier.apiCode}/grades 성공: ${result.data.size}개")
                     _uiState.update { state ->
                         state.copy(
                             availableGrades =
@@ -152,8 +164,12 @@ class OnboardingViewModel(
         if (_uiState.value.availableBrands.isNotEmpty()) return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            logDebug("GET /api/brands 요청 시작")
             when (val result = repository.getBrands()) {
-                is ApiResult.Success -> _uiState.update { it.copy(availableBrands = result.data, isLoading = false) }
+                is ApiResult.Success -> {
+                    logInfo("GET /api/brands 성공: ${result.data.size}개")
+                    _uiState.update { it.copy(availableBrands = result.data, isLoading = false) }
+                }
                 is ApiResult.Failure -> updateFailure(result)
             }
         }
@@ -178,8 +194,10 @@ class OnboardingViewModel(
                             .filter { it.name in state.preferredBrands }
                             .map { it.id },
                 )
+            logDebug("POST /api/members/onboarding 요청 시작")
             when (val result = repository.submitOnboarding(submission)) {
                 is ApiResult.Success -> {
+                    logInfo("POST /api/members/onboarding 성공")
                     _uiState.update { it.copy(isSubmitting = false) }
                     _events.send(OnboardingUiEvent.Complete)
                 }
@@ -194,9 +212,21 @@ class OnboardingViewModel(
         _events.trySend(OnboardingUiEvent.ShowMessage(message))
     }
 
+    private fun logDebug(message: String) {
+        if (BuildConfig.DEBUG) Log.d(TAG, message)
+    }
+
+    private fun logInfo(message: String) {
+        if (BuildConfig.DEBUG) Log.i(TAG, message)
+    }
+
     class Factory(private val repository: OnboardingRepository) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T = OnboardingViewModel(repository) as T
+    }
+
+    private companion object {
+        const val TAG = "OnboardingApi"
     }
 }
 
