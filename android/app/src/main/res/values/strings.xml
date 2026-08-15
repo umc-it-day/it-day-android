@@ -20,6 +20,7 @@
     <string name="map_store_empty">주변 매장 정보를 불러올 예정입니다.</string>
     <string name="map_directions">길찾기</string>
     <string name="map_directions_cancel">길찾기 취소</string>
+    <string name="map_research_here">이 지역 재검색</string>
     <string name="map_value_unknown">미확인</string>
     <string name="map_distance_unknown">거리 미확인</string>
     <string name="map_discount_unknown">할인 미확인</string>

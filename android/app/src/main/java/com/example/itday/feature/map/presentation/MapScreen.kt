@@ -13,11 +13,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.itday.core.di.appContainer
 
 @Composable
-fun MapScreen(
-    viewModel: MapViewModel = viewModel(),
-) {
+fun MapScreen() {
+    val container = LocalContext.current.appContainer
+    val viewModel: MapViewModel = viewModel(
+        factory = MapViewModel.Factory(container.mapRepository)
+    )
     val uiState by viewModel.uiState.collectAsState()
-    val networkMonitor = LocalContext.current.appContainer.networkMonitor
+    val networkMonitor = container.networkMonitor
     val isOnline by
         networkMonitor.isOnline.collectAsState(
             initial = networkMonitor.isCurrentlyConnected(),
@@ -38,8 +40,11 @@ fun MapScreen(
             routePoints = uiState.routePoints,
             selectedStore = uiState.selectedStore,
             showLocationUnavailable = uiState.isLocationUnavailable,
+            showResearchButton = uiState.showResearchButton,
             mapReloadKey = uiState.reloadKey,
             onMapRetry = viewModel::retryMap,
+            onResearchClick = viewModel::searchCurrentLocation,
+            onCameraMoveEnd = viewModel::onCameraMoved,
             onDirectionsClick = viewModel::startDirections,
             onDirectionsCancel = viewModel::cancelDirections,
             onStoreClick = viewModel::selectStore,
