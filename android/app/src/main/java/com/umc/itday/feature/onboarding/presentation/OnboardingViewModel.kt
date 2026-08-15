@@ -23,6 +23,12 @@ import kotlinx.coroutines.launch
 
 class OnboardingViewModel(
     private val repository: OnboardingRepository,
+    private val debugLogger: (String) -> Unit = { message ->
+        if (BuildConfig.DEBUG) Log.d(TAG, message)
+    },
+    private val infoLogger: (String) -> Unit = { message ->
+        if (BuildConfig.DEBUG) Log.i(TAG, message)
+    },
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(OnboardingUiState())
     val uiState: StateFlow<OnboardingUiState> = _uiState.asStateFlow()
@@ -213,11 +219,11 @@ class OnboardingViewModel(
     }
 
     private fun logDebug(message: String) {
-        if (BuildConfig.DEBUG) Log.d(TAG, message)
+        debugLogger(message)
     }
 
     private fun logInfo(message: String) {
-        if (BuildConfig.DEBUG) Log.i(TAG, message)
+        infoLogger(message)
     }
 
     class Factory(private val repository: OnboardingRepository) : ViewModelProvider.Factory {

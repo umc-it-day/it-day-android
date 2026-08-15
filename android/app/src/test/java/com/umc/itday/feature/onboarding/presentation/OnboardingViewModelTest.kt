@@ -32,7 +32,12 @@ class OnboardingViewModelTest {
     fun setUp() {
         Dispatchers.setMain(dispatcher)
         repository = FakeOnboardingApiRepository()
-        viewModel = OnboardingViewModel(repository)
+        viewModel =
+            OnboardingViewModel(
+                repository = repository,
+                debugLogger = {},
+                infoLogger = {},
+            )
     }
 
     @After
