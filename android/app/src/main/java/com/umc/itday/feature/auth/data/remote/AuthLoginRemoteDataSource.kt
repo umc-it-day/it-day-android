@@ -96,7 +96,7 @@ class MockAuthLoginRemoteDataSource : AuthLoginRemoteDataSource {
         } else {
             ApiResult.Success(
                 RemoteLoginResult(
-                    tokens = AuthTokens("mock-itday-access-token", "mock-itday-refresh-token"),
+                    tokens = AuthTokens("mock-itday-access-token", "mock-itday-refresh-token", userId = 1L),
                     isNewUser = true,
                 ),
             )

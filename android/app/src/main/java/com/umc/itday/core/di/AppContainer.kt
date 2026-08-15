@@ -10,9 +10,9 @@ import com.umc.itday.core.data.repository.HomeRepository
 import com.umc.itday.core.data.repository.MapRepository
 import com.umc.itday.core.data.repository.OnboardingRepository
 import com.umc.itday.core.data.repository.PaymentRepository
-import com.umc.itday.core.data.repository.ReportRepository
 import com.umc.itday.core.data.repository.SettingsRepository
 import com.umc.itday.feature.settings.domain.repository.SettingsRepository as FeatureSettingsRepository
+import com.umc.itday.feature.report.domain.repository.ReportRepository
 import com.umc.itday.core.local.LocalPreferencesDataSource
 import com.umc.itday.core.location.LocationRepository
 import com.umc.itday.core.network.NetworkMonitor

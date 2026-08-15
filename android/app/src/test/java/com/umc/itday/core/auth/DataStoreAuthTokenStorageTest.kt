@@ -28,7 +28,7 @@ class DataStoreAuthTokenStorageTest {
     fun `saves access and refresh tokens together`() =
         runTest {
             val storage = createStorage(backgroundScope)
-            val expected = AuthTokens(accessToken = "access", refreshToken = "refresh")
+            val expected = AuthTokens(accessToken = "access", refreshToken = "refresh", userId = 42L)
 
             storage.saveTokens(expected)
 
