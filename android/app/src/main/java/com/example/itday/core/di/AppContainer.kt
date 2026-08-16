@@ -17,6 +17,7 @@ import com.example.itday.core.location.LocationRepository
 import com.example.itday.core.network.NetworkMonitor
 import com.example.itday.core.permission.PermissionManager
 import com.example.itday.feature.auth.domain.repository.AuthRepository
+import com.example.itday.feature.member.domain.repository.MemberRepository
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 
@@ -30,6 +31,7 @@ interface AppContainer {
     val tokenRefresher: TokenRefresher
     val kakaoLoginClient: KakaoLoginClient
     val authRepository: AuthRepository
+    val memberRepository: MemberRepository
     val permissionManager: PermissionManager
     val locationRepository: LocationRepository
     val networkMonitor: NetworkMonitor
@@ -41,3 +43,4 @@ interface AppContainer {
     val paymentRepository: PaymentRepository
     val settingsRepository: SettingsRepository
 }
+

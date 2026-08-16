@@ -43,6 +43,11 @@ import com.example.itday.feature.auth.data.remote.MockAuthLoginRemoteDataSource
 import com.example.itday.feature.auth.data.remote.RetrofitAuthRemoteDataSource
 import com.example.itday.feature.auth.data.repository.DefaultAuthRepository
 import com.example.itday.feature.auth.domain.repository.AuthRepository
+import com.example.itday.feature.member.data.remote.MemberApi
+import com.example.itday.feature.member.data.remote.MemberRemoteDataSource
+import com.example.itday.feature.member.data.remote.RetrofitMemberRemoteDataSource
+import com.example.itday.feature.member.data.repository.DefaultMemberRepository
+import com.example.itday.feature.member.domain.repository.MemberRepository
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -83,6 +88,15 @@ class DefaultAppContainer(
 
     override val authRepository: AuthRepository by lazy {
         DefaultAuthRepository(authLoginRemoteDataSource, authTokenStorage)
+    }
+
+    private val memberRemoteDataSource: MemberRemoteDataSource by lazy {
+        val memberApi = NetworkClient.createApi<MemberApi>(retrofit)
+        RetrofitMemberRemoteDataSource(memberApi)
+    }
+
+    override val memberRepository: MemberRepository by lazy {
+        DefaultMemberRepository(memberRemoteDataSource, authTokenStorage)
     }
 
     override val permissionManager: PermissionManager by lazy {
