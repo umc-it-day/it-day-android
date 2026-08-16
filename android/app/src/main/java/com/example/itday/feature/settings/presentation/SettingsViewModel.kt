@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.itday.core.data.result.ApiResult
 import com.example.itday.core.data.result.toUserMessage
 import com.example.itday.feature.auth.domain.repository.AuthRepository
+import com.example.itday.feature.member.domain.repository.MemberRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,12 +17,57 @@ import kotlinx.coroutines.launch
 
 class SettingsViewModel(
     private val authRepository: AuthRepository,
+    private val memberRepository: MemberRepository? = null,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
     private val _events = Channel<SettingsUiEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
+
+    init {
+        loadUserData()
+    }
+
+    fun loadUserData() {
+        if (memberRepository == null) return
+
+        viewModelScope.launch {
+            when (val profileResult = memberRepository.getProfile()) {
+                is ApiResult.Success -> {
+                    _uiState.update { state ->
+                        state.copy(
+                            profile =
+                                state.profile.copy(
+                                    userName = profileResult.data.name.ifBlank { state.profile.userName },
+                                    userEmail = profileResult.data.email.ifBlank { state.profile.userEmail },
+                                ),
+                        )
+                    }
+                }
+                is ApiResult.Failure -> {
+                    // API 실패 시 기본/기존 값 유지
+                }
+            }
+
+            when (val membershipResult = memberRepository.getMembership()) {
+                is ApiResult.Success -> {
+                    _uiState.update { state ->
+                        state.copy(
+                            membership =
+                                state.membership.copy(
+                                    carrier = membershipResult.data.telecomLabel.ifBlank { state.membership.carrier },
+                                    grade = membershipResult.data.telecomGrade.ifBlank { state.membership.grade },
+                                ),
+                        )
+                    }
+                }
+                is ApiResult.Failure -> {
+                    // API 실패 시 기본/기존 값 유지
+                }
+            }
+        }
+    }
 
     fun navigateToScreen(screen: SettingsScreenType) {
         _uiState.update { it.copy(currentScreen = screen) }
@@ -92,9 +138,11 @@ class SettingsViewModel(
 
     class Factory(
         private val authRepository: AuthRepository,
+        private val memberRepository: MemberRepository? = null,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            SettingsViewModel(authRepository) as T
+            SettingsViewModel(authRepository, memberRepository) as T
     }
 }
+

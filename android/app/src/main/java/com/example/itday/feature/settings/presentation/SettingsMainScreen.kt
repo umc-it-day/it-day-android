@@ -49,9 +49,14 @@ fun SettingsMainRoute(
     val context = LocalContext.current
     val viewModel: SettingsViewModel =
         viewModel(
-            factory = SettingsViewModel.Factory(context.appContainer.authRepository),
+            factory =
+                SettingsViewModel.Factory(
+                    authRepository = context.appContainer.authRepository,
+                    memberRepository = context.appContainer.memberRepository,
+                ),
         )
     val uiState by viewModel.uiState.collectAsState()
+
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
