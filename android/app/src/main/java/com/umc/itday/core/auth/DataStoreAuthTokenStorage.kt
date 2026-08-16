@@ -4,6 +4,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -26,6 +27,7 @@ class DataStoreAuthTokenStorage(
         dataStore.edit { preferences ->
             preferences[ACCESS_TOKEN] = tokens.accessToken
             preferences[REFRESH_TOKEN] = tokens.refreshToken
+            tokens.userId?.let { preferences[USER_ID] = it }
         }
     }
 
@@ -33,6 +35,7 @@ class DataStoreAuthTokenStorage(
         dataStore.edit { preferences ->
             preferences.remove(ACCESS_TOKEN)
             preferences.remove(REFRESH_TOKEN)
+            preferences.remove(USER_ID)
         }
     }
 
@@ -40,7 +43,7 @@ class DataStoreAuthTokenStorage(
         val accessToken = this[ACCESS_TOKEN]?.takeIf(String::isNotBlank)
         val refreshToken = this[REFRESH_TOKEN]?.takeIf(String::isNotBlank)
         return if (accessToken != null && refreshToken != null) {
-            AuthTokens(accessToken, refreshToken)
+            AuthTokens(accessToken, refreshToken, this[USER_ID])
         } else {
             null
         }
@@ -49,5 +52,6 @@ class DataStoreAuthTokenStorage(
     private companion object {
         val ACCESS_TOKEN = stringPreferencesKey("itday_access_token")
         val REFRESH_TOKEN = stringPreferencesKey("itday_refresh_token")
+        val USER_ID = longPreferencesKey("itday_user_id")
     }
 }

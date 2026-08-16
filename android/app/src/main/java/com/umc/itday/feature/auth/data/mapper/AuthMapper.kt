@@ -6,6 +6,6 @@ import com.umc.itday.feature.auth.data.remote.RemoteLoginResult
 
 fun KakaoLoginDataDto.toRemoteLoginResult(): RemoteLoginResult =
     RemoteLoginResult(
-        tokens = AuthTokens(accessToken, refreshToken),
+        tokens = AuthTokens(accessToken, refreshToken, userId),
         isNewUser = isNewUser,
     )

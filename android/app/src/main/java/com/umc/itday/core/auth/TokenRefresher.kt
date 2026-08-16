@@ -22,7 +22,10 @@ class TokenRefresher(
                 is ApiResult.Success -> {
                     val refreshedTokens =
                         result.data.takeIf { it.accessToken.isNotBlank() && it.refreshToken.isNotBlank() }
-                    refreshedTokens?.also { tokenStorage.saveTokens(it) }?.accessToken
+                    refreshedTokens
+                        ?.copy(userId = refreshedTokens.userId ?: currentTokens.userId)
+                        ?.also { tokenStorage.saveTokens(it) }
+                        ?.accessToken
                 }
                 is ApiResult.Failure -> {
                     if (result.error is AppError.Auth) tokenStorage.clearTokens()

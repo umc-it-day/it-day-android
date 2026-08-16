@@ -31,7 +31,7 @@ import com.umc.itday.core.di.appContainer
 import com.umc.itday.feature.payment.presentation.DemoPaymentGateway
 import com.umc.itday.feature.payment.presentation.PaymentFlowScreen
 import com.umc.itday.feature.payment.presentation.PaymentViewModel
-import com.umc.itday.feature.report.presentation.ReportScreen
+import com.umc.itday.feature.report.presentation.ReportRoute
 import com.umc.itday.feature.settings.presentation.SettingsMainRoute
 import com.umc.itday.ui.home.HomeEvent
 import com.umc.itday.ui.home.HomeRoute
@@ -151,7 +151,7 @@ private fun MainTabNavHost(
             MapScreen()
         }
         composable(AppRoute.REPORT.route) {
-            ReportScreen(
+            ReportRoute(
                 isGuestMode = isGuestMode,
                 onHomeClick = { navController.navigateToHome() },
             )
