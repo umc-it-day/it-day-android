@@ -1,5 +1,7 @@
 ﻿package com.umc.itday.core.network
 
+import android.util.Log
+import com.umc.itday.BuildConfig
 import kotlinx.coroutines.runBlocking
 import okhttp3.Authenticator
 import okhttp3.Interceptor
@@ -12,11 +14,24 @@ class AuthHeaderInterceptor(
 ) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
-        val accessToken = accessTokenProvider()?.takeIf(String::isNotBlank)
+        val accessToken = accessTokenProvider()?.normalizedAccessToken()
         if (accessToken == null || request.header(AUTHORIZATION_HEADER) != null) {
             return chain.proceed(request)
         }
-        return chain.proceed(request.withBearerToken(accessToken))
+        val authenticatedRequest = request.withBearerToken(accessToken)
+        if (BuildConfig.DEBUG) {
+            Log.d(
+                AUTH_LOG_TAG,
+                "${request.method} ${request.url.encodedPath} auth=true " +
+                    "tokenLength=${accessToken.length} tokenSuffix=${accessToken.takeLast(TOKEN_SUFFIX_LENGTH)}",
+            )
+        }
+
+        return chain.proceed(authenticatedRequest).also { response ->
+            if (BuildConfig.DEBUG) {
+                Log.d(AUTH_LOG_TAG, "${request.method} ${request.url.encodedPath} -> HTTP ${response.code}")
+            }
+        }
     }
 }
 
@@ -30,7 +45,9 @@ class AuthTokenAuthenticator(
         if (response.responseCount() >= MAX_AUTH_ATTEMPTS) return null
 
         val failedAccessToken = response.request.bearerToken()
-        val refreshedAccessToken = runBlocking { refreshAccessToken(failedAccessToken) }
+        val refreshedAccessToken =
+            runBlocking { refreshAccessToken(failedAccessToken) }
+                ?.normalizedAccessToken()
         return refreshedAccessToken?.let(response.request::withBearerToken)
     }
 
@@ -51,6 +68,14 @@ class AuthTokenAuthenticator(
 
 private const val AUTHORIZATION_HEADER = "Authorization"
 private const val BEARER_PREFIX = "Bearer "
+private const val AUTH_LOG_TAG = "ApiRequest"
+private const val TOKEN_SUFFIX_LENGTH = 6
+
+private fun String.normalizedAccessToken(): String? =
+    trim()
+        .removePrefix(BEARER_PREFIX)
+        .trim()
+        .takeIf(String::isNotBlank)
 
 private fun Request.withBearerToken(accessToken: String): Request =
     newBuilder().header(AUTHORIZATION_HEADER, "$BEARER_PREFIX$accessToken").build()

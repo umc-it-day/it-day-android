@@ -2,6 +2,32 @@ package com.umc.itday.feature.report.domain.model
 
 enum class ReportPeriodType { WEEKLY, MONTHLY }
 
+data class Attendance(
+    val attendanceId: Long,
+    val attendanceDate: String,
+    val consecutiveDays: Int,
+    val dailyPoint: Int,
+    val bonusPoint: Int,
+    val earnedPoint: Int,
+    val monthlyAttendanceCount: Int,
+    val monthlyEarnedPoint: Int,
+    val sevenDayBonusReceived: Boolean,
+    val fifteenDayBonusReceived: Boolean,
+    val thirtyDayBonusReceived: Boolean,
+)
+
+data class VisitChallenge(
+    val visitCount: Int,
+    val currentStage: Int,
+    val nextTargetVisitCount: Int,
+    val currentStageRewardPoint: Int,
+    val accumulatedRewardPoint: Int,
+    val newlyEarnedPoint: Int,
+    val progressRate: Double,
+    val completed: Boolean,
+    val characterVisual: String,
+)
+
 data class ReportSummary(
     val reportId: Long,
     val periodType: ReportPeriodType,
