@@ -1,12 +1,19 @@
 package com.example.itday.feature.barcode.presentation
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import com.example.itday.core.data.result.ApiResult
+import com.example.itday.feature.member.domain.repository.MemberRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
-class BarcodeRegistrationViewModel : ViewModel() {
+class BarcodeRegistrationViewModel(
+    private val memberRepository: MemberRepository? = null,
+) : ViewModel() {
     private val _uiState = MutableStateFlow(BarcodeRegistrationUiState())
     val uiState: StateFlow<BarcodeRegistrationUiState> = _uiState.asStateFlow()
 
@@ -33,10 +40,27 @@ class BarcodeRegistrationViewModel : ViewModel() {
 
         if (currentNumber == DUPLICATE_TEST_NUMBER) {
             _uiState.update { it.copy(step = BarcodeStep.Duplicate) }
-        } else {
+            return
+        }
+
+        val repository = memberRepository
+        if (repository == null) {
             _uiState.update { it.copy(step = BarcodeStep.Success) }
+            return
+        }
+
+        viewModelScope.launch {
+            when (val result = repository.registerBarcode(currentNumber)) {
+                is ApiResult.Success -> {
+                    _uiState.update { it.copy(step = BarcodeStep.Success) }
+                }
+                is ApiResult.Failure -> {
+                    _uiState.update { it.copy(step = BarcodeStep.Duplicate) }
+                }
+            }
         }
     }
+
 
     fun resetFormToReentry() {
         _uiState.update {
@@ -50,5 +74,15 @@ class BarcodeRegistrationViewModel : ViewModel() {
     companion object {
         const val MAX_BARCODE_LENGTH = 16
         const val DUPLICATE_TEST_NUMBER = "9999999999999999"
+
+        fun factory(memberRepository: MemberRepository? = null): ViewModelProvider.Factory =
+            object : ViewModelProvider.Factory {
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    require(modelClass.isAssignableFrom(BarcodeRegistrationViewModel::class.java))
+                    return BarcodeRegistrationViewModel(memberRepository = memberRepository) as T
+                }
+            }
     }
 }
+

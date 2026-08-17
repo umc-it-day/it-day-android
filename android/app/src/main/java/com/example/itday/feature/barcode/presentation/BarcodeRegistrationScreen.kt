@@ -23,7 +23,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.itday.core.di.appContainer
+
 import com.example.itday.ui.theme.ItDayBlue50
 import com.example.itday.ui.theme.ItDayGray500
 import com.example.itday.ui.theme.ItDayPrimary
@@ -33,9 +36,14 @@ import com.example.itday.ui.theme.ItDayWhite
 fun BarcodeRegistrationRoute(
     onBackClick: () -> Unit,
     onHomeClick: () -> Unit,
-    viewModel: BarcodeRegistrationViewModel = viewModel(),
 ) {
+    val context = LocalContext.current
+    val viewModel: BarcodeRegistrationViewModel =
+        viewModel(
+            factory = BarcodeRegistrationViewModel.factory(context.appContainer.memberRepository),
+        )
     val uiState by viewModel.uiState.collectAsState()
+
 
     BarcodeRegistrationScreen(
         uiState = uiState,

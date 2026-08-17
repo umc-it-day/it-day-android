@@ -44,11 +44,16 @@ fun HomeRoute(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel =
         viewModel(
-            factory = HomeViewModel.factory(LocalContext.current.appContainer.locationRepository),
+            factory =
+                HomeViewModel.factory(
+                    locationRepository = LocalContext.current.appContainer.locationRepository,
+                    memberRepository = LocalContext.current.appContainer.memberRepository,
+                ),
         ),
     isGuestMode: Boolean = false,
     onEvent: (HomeEvent) -> Unit = {},
 ) {
+
     val uiState by viewModel.uiState.collectAsState()
     var showCarrierComparison by remember { mutableStateOf(false) }
     var showPartnerDetail by remember { mutableStateOf(false) }

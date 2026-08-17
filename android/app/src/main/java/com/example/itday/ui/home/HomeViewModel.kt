@@ -3,7 +3,9 @@ package com.example.itday.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.itday.core.data.result.ApiResult
 import com.example.itday.core.location.LocationRepository
+import com.example.itday.feature.member.domain.repository.MemberRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -17,6 +19,7 @@ import kotlinx.coroutines.launch
 class HomeViewModel(
     initialState: HomeUiState = HomePreviewData.barcodeDisabled,
     private val locationRepository: LocationRepository? = null,
+    private val memberRepository: MemberRepository? = null,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(initialState)
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
@@ -26,7 +29,53 @@ class HomeViewModel(
 
     private var timerJob: Job? = null
 
+    init {
+        loadMemberData()
+    }
+
+    fun loadMemberData() {
+        val repository = memberRepository ?: return
+        viewModelScope.launch {
+            when (val membershipResult = repository.getMembership()) {
+                is ApiResult.Success -> {
+                    _uiState.update { state ->
+                        state.copy(
+                            membership =
+                                state.membership?.copy(
+                                    carrier = membershipResult.data.telecomLabel.ifBlank { state.membership.carrier },
+                                    grade = membershipResult.data.telecomGrade.ifBlank { state.membership.grade },
+                                ),
+                        )
+                    }
+                }
+                is ApiResult.Failure -> Unit
+            }
+
+            when (val barcodeResult = repository.getBarcode()) {
+                is ApiResult.Success -> {
+                    _uiState.update { state ->
+                        state.copy(
+                            membership =
+                                state.membership?.copy(
+                                    barcodeValue = barcodeResult.data.barcodeNum.ifBlank { state.membership.barcodeValue },
+                                ),
+                        )
+                    }
+                }
+                is ApiResult.Failure -> Unit
+            }
+        }
+    }
+
+    fun recordBarcodeUsage(storeId: Long) {
+        val repository = memberRepository ?: return
+        viewModelScope.launch {
+            repository.recordBarcodeUsage(storeId)
+        }
+    }
+
     fun onAction(action: HomeAction) {
+
         when (action) {
             HomeAction.ActivateBarcode -> {
                 _uiState.update { state -> state.copy(membershipState = MembershipState.BarcodeEnabled) }
@@ -148,13 +197,20 @@ class HomeViewModel(
     }
 
     companion object {
-        fun factory(locationRepository: LocationRepository): ViewModelProvider.Factory =
+        fun factory(
+            locationRepository: LocationRepository,
+            memberRepository: MemberRepository? = null,
+        ): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                     require(modelClass.isAssignableFrom(HomeViewModel::class.java))
-                    return HomeViewModel(locationRepository = locationRepository) as T
+                    return HomeViewModel(
+                        locationRepository = locationRepository,
+                        memberRepository = memberRepository,
+                    ) as T
                 }
             }
     }
 }
+

@@ -67,4 +67,48 @@ class BarcodeRegistrationViewModelTest {
         assertEquals(BarcodeStep.Form, viewModel.uiState.value.step)
         assertEquals("", viewModel.uiState.value.barcodeNumber)
     }
+
+    @Test
+    fun `submitRegistration with memberRepository calls registerBarcode and transitions to Success`() =
+        kotlinx.coroutines.test.runTest {
+            val fakeMemberRepo =
+                object : com.example.itday.feature.member.domain.repository.MemberRepository {
+                    override suspend fun getProfile(): com.example.itday.core.data.result.ApiResult<com.example.itday.feature.member.domain.model.MemberProfile> =
+                        com.example.itday.core.data.result.ApiResult.Success(com.example.itday.feature.member.domain.model.MemberProfile("", "", ""))
+
+                    override suspend fun updateName(name: String): com.example.itday.core.data.result.ApiResult<Unit> =
+                        com.example.itday.core.data.result.ApiResult.Success(Unit)
+
+                    override suspend fun getMembership(): com.example.itday.core.data.result.ApiResult<com.example.itday.feature.member.domain.model.MemberMembership> =
+                        com.example.itday.core.data.result.ApiResult.Success(com.example.itday.feature.member.domain.model.MemberMembership("", ""))
+
+                    override suspend fun updateMembership(membershipId: Long): com.example.itday.core.data.result.ApiResult<Unit> =
+                        com.example.itday.core.data.result.ApiResult.Success(Unit)
+
+                    override suspend fun getBarcode(): com.example.itday.core.data.result.ApiResult<com.example.itday.feature.member.domain.model.MemberBarcode> =
+                        com.example.itday.core.data.result.ApiResult.Success(com.example.itday.feature.member.domain.model.MemberBarcode(""))
+
+                    override suspend fun registerBarcode(barcodeNum: String): com.example.itday.core.data.result.ApiResult<String> =
+                        com.example.itday.core.data.result.ApiResult.Success("성공")
+
+                    override suspend fun updateBarcode(barcodeNum: String): com.example.itday.core.data.result.ApiResult<Unit> =
+                        com.example.itday.core.data.result.ApiResult.Success(Unit)
+
+                    override suspend fun recordBarcodeUsage(storeId: Long): com.example.itday.core.data.result.ApiResult<String> =
+                        com.example.itday.core.data.result.ApiResult.Success("성공")
+
+                    override suspend fun getLottery(): com.example.itday.core.data.result.ApiResult<com.example.itday.feature.member.domain.model.MemberLottery> =
+                        com.example.itday.core.data.result.ApiResult.Success(com.example.itday.feature.member.domain.model.MemberLottery(""))
+
+                    override suspend fun withdraw(): com.example.itday.core.data.result.ApiResult<Unit> =
+                        com.example.itday.core.data.result.ApiResult.Success(Unit)
+                }
+
+            val repoViewModel = BarcodeRegistrationViewModel(memberRepository = fakeMemberRepo)
+            repoViewModel.onBarcodeNumberChange("1234567890123456")
+            repoViewModel.submitRegistration()
+
+            assertEquals(BarcodeStep.Success, repoViewModel.uiState.value.step)
+        }
 }
+
