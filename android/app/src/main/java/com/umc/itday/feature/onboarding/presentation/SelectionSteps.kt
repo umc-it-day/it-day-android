@@ -120,7 +120,7 @@ fun SelectionSteps(
         ) {
             when (state.step) {
                 OnboardingUiState.CARRIER_STEP -> {
-                    CarrierType.entries.forEach { carrier ->
+                    state.availableCarriers.forEach { carrier ->
                         SelectableOptionCard(
                             title = carrier.displayName,
                             isSelected = state.selectedCarrier == carrier,
@@ -129,7 +129,7 @@ fun SelectionSteps(
                     }
                 }
                 OnboardingUiState.MEMBERSHIP_STEP -> {
-                    state.selectedCarrier?.availableGrades?.forEach { gradeInfo ->
+                    state.availableGrades.forEach { gradeInfo ->
                         SelectableOptionCard(
                             title = gradeInfo.type.displayName,
                             iconResId = gradeInfo.iconResId,
@@ -139,7 +139,11 @@ fun SelectionSteps(
                     }
                 }
                 else -> {
-                    BrandSections(state.preferredBrands, onBrandToggle)
+                    BrandSections(
+                        brands = state.availableBrands,
+                        selectedBrands = state.preferredBrands,
+                        onBrandToggle = onBrandToggle,
+                    )
                 }
             }
         }
@@ -148,7 +152,7 @@ fun SelectionSteps(
 
         Button(
             onClick = onNext,
-            enabled = state.canContinue,
+            enabled = state.canContinue && !state.isLoading && !state.isSubmitting,
             modifier =
                 Modifier
                     .fillMaxWidth()
@@ -244,6 +248,7 @@ private fun SelectableOptionCard(
 
 @Composable
 private fun BrandSections(
+    brands: List<com.umc.itday.feature.onboarding.domain.model.PreferredBrand>,
     selectedBrands: Set<String>,
     onBrandToggle: (String) -> Unit,
 ) {
@@ -252,7 +257,7 @@ private fun BrandSections(
 
     BrandCategorySection(
         title = "카페",
-        brands = CAFE_BRANDS,
+        brands = brands.filter { it.category.isCafeCategory() }.map { it.name },
         selectedBrands = selectedBrands,
         expanded = cafeExpanded,
         onExpandedChange = { cafeExpanded = !cafeExpanded },
@@ -263,7 +268,7 @@ private fun BrandSections(
 
     BrandCategorySection(
         title = "편의점",
-        brands = CONVENIENCE_BRANDS.toList(),
+        brands = brands.filterNot { it.category.isCafeCategory() }.map { it.name },
         selectedBrands = selectedBrands,
         expanded = convenienceExpanded,
         onExpandedChange = { convenienceExpanded = !convenienceExpanded },
@@ -365,5 +370,6 @@ private fun BrandCategorySection(
 }
 
 private val CONVENIENCE_BRANDS = setOf("CU", "GS25", "세븐일레븐", "이마트24", "미니스톱")
-private val CAFE_BRANDS =
-    listOf("스타벅스", "투썸", "메가커피", "컴포즈", "파스쿠찌", "이디야", "할리스", "폴 바셋")
+
+private fun String.isCafeCategory(): Boolean =
+    contains("카페", ignoreCase = true) || contains("cafe", ignoreCase = true)

@@ -4,4 +4,5 @@ sealed interface OnboardingUiEvent {
     data object RequestLocationPermission : OnboardingUiEvent
     data object RequestNotificationPermission : OnboardingUiEvent
     data object Complete : OnboardingUiEvent
+    data class ShowMessage(val message: String) : OnboardingUiEvent
 }
