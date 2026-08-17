@@ -83,6 +83,9 @@ fun SettingsMainRoute(
             viewModel.dismissLogoutConfirmation()
             onLogoutClick()
         },
+        onShowEditNameDialog = viewModel::showEditNameDialog,
+        onDismissEditNameDialog = viewModel::dismissEditNameDialog,
+        onConfirmUpdateName = viewModel::updateName,
         onToggleFaq = viewModel::toggleFaqItem,
         onPrivacyPolicyClick = viewModel::openPrivacyPolicy,
         onTermsOfServiceClick = viewModel::openTermsOfService,
@@ -100,6 +103,9 @@ fun SettingsMainScreen(
     onShowLogoutDialog: () -> Unit,
     onDismissLogoutDialog: () -> Unit,
     onConfirmLogout: () -> Unit,
+    onShowEditNameDialog: () -> Unit,
+    onDismissEditNameDialog: () -> Unit,
+    onConfirmUpdateName: (String) -> Unit,
     onToggleFaq: (Int) -> Unit,
     onPrivacyPolicyClick: () -> Unit,
     onTermsOfServiceClick: () -> Unit,
@@ -120,6 +126,7 @@ fun SettingsMainScreen(
                         onPromotionToggle = onPromotionToggle,
                         onCharacterToggle = onCharacterToggle,
                         onShowLogoutDialog = onShowLogoutDialog,
+                        onShowEditNameDialog = onShowEditNameDialog,
                         onPrivacyPolicyClick = onPrivacyPolicyClick,
                         onTermsOfServiceClick = onTermsOfServiceClick,
                     )
@@ -147,8 +154,19 @@ fun SettingsMainScreen(
                 onDismiss = onDismissLogoutDialog,
             )
         }
+
+        if (uiState.showEditNameDialog) {
+            EditNameDialog(
+                initialName = uiState.profile.userName,
+                isUpdating = uiState.isUpdatingName,
+                errorMessage = uiState.updateNameError,
+                onConfirm = onConfirmUpdateName,
+                onDismiss = onDismissEditNameDialog,
+            )
+        }
     }
 }
+
 
 @Composable
 private fun BoxWrapper(
@@ -167,6 +185,7 @@ private fun SettingsMainContent(
     onPromotionToggle: (Boolean) -> Unit,
     onCharacterToggle: (Boolean) -> Unit,
     onShowLogoutDialog: () -> Unit,
+    onShowEditNameDialog: () -> Unit,
     onPrivacyPolicyClick: () -> Unit,
     onTermsOfServiceClick: () -> Unit,
 ) {
@@ -192,7 +211,11 @@ private fun SettingsMainContent(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            ProfileHeaderSection(profile = uiState.profile)
+            ProfileHeaderSection(
+                profile = uiState.profile,
+                onProfileEditClick = onShowEditNameDialog,
+            )
+
 
             Spacer(modifier = Modifier.height(24.dp))
 

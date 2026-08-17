@@ -160,5 +160,40 @@ class SettingsViewModelTest {
             assertEquals("KT", state.membership.carrier)
             assertEquals("GOLD", state.membership.grade)
         }
+
+    @Test
+    fun `showEditNameDialog and dismissEditNameDialog update showEditNameDialog state`() {
+        viewModel.showEditNameDialog()
+        assertTrue(viewModel.uiState.value.showEditNameDialog)
+
+        viewModel.dismissEditNameDialog()
+        assertFalse(viewModel.uiState.value.showEditNameDialog)
+    }
+
+    @Test
+    fun `updateName with empty string sets updateNameError`() {
+        viewModel.updateName("   ")
+        assertEquals("이름을 입력해 주세요.", viewModel.uiState.value.updateNameError)
+    }
+
+    @Test
+    fun `updateName with valid name succeeds and updates profile userName`() =
+        runTest {
+            val memberViewModel =
+                SettingsViewModel(
+                    authRepository = fakeAuthRepository,
+                    memberRepository = fakeMemberRepository,
+                )
+            testDispatcher.scheduler.advanceUntilIdle()
+
+            memberViewModel.updateName("새로운이름")
+            testDispatcher.scheduler.advanceUntilIdle()
+
+            val state = memberViewModel.uiState.value
+            assertEquals("새로운이름", state.profile.userName)
+            assertFalse(state.showEditNameDialog)
+            assertFalse(state.isUpdatingName)
+        }
 }
+
 

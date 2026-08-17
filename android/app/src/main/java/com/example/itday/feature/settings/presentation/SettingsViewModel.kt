@@ -89,6 +89,72 @@ class SettingsViewModel(
         _uiState.update { it.copy(showLogoutDialog = false) }
     }
 
+    fun showEditNameDialog() {
+        _uiState.update { it.copy(showEditNameDialog = true, updateNameError = null) }
+    }
+
+    fun dismissEditNameDialog() {
+        _uiState.update { it.copy(showEditNameDialog = false, updateNameError = null) }
+    }
+
+    fun updateName(newName: String) {
+        val trimmedName = newName.trim()
+        if (trimmedName.isBlank()) {
+            _uiState.update { it.copy(updateNameError = "이름을 입력해 주세요.") }
+            return
+        }
+
+        if (memberRepository == null) {
+            _uiState.update { state ->
+                state.copy(
+                    profile = state.profile.copy(userName = trimmedName),
+                    showEditNameDialog = false,
+                    updateNameError = null,
+                )
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isUpdatingName = true, updateNameError = null) }
+            when (val result = memberRepository.updateName(trimmedName)) {
+                is ApiResult.Success -> {
+                    _uiState.update { state ->
+                        state.copy(
+                            isUpdatingName = false,
+                            showEditNameDialog = false,
+                            profile = state.profile.copy(userName = trimmedName),
+                        )
+                    }
+                }
+                is ApiResult.Failure -> {
+                    _uiState.update { state ->
+                        state.copy(
+                            isUpdatingName = false,
+                            updateNameError = result.error.toUserMessage(),
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    fun updateMembership(membershipId: Long) {
+        if (memberRepository == null) return
+
+        viewModelScope.launch {
+            when (val result = memberRepository.updateMembership(membershipId)) {
+                is ApiResult.Success -> {
+                    // 멤버십 갱신 후 최신 정보 로드
+                    loadUserData()
+                }
+                is ApiResult.Failure -> {
+                    _uiState.update { it.copy(errorMessage = result.error.toUserMessage()) }
+                }
+            }
+        }
+    }
+
     fun openPrivacyPolicy() {
         viewModelScope.launch {
             _events.send(SettingsUiEvent.OpenExternalUrl("https://example.com/privacy"))
@@ -100,6 +166,7 @@ class SettingsViewModel(
             _events.send(SettingsUiEvent.OpenExternalUrl("https://example.com/terms"))
         }
     }
+
 
     fun withdraw() {
         if (_uiState.value.isWithdrawing) return

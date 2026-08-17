@@ -136,6 +136,8 @@ internal fun ProfileHeaderSection(
             modifier =
                 Modifier
                     .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable { onProfileEditClick() }
                     .padding(vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
@@ -155,6 +157,7 @@ internal fun ProfileHeaderSection(
                 )
             }
         }
+
 
         Row(
             modifier =
@@ -613,3 +616,107 @@ internal fun FaqListCard(
         }
     }
 }
+
+@Composable
+internal fun EditNameDialog(
+    initialName: String,
+    isUpdating: Boolean,
+    errorMessage: String?,
+    onConfirm: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var nameText by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(initialName) }
+
+    Dialog(onDismissRequest = { if (!isUpdating) onDismiss() }) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = ItDayWhite),
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = "이름 수정",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF191919),
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                androidx.compose.material3.OutlinedTextField(
+                    value = nameText,
+                    onValueChange = { nameText = it },
+                    singleLine = true,
+                    placeholder = { Text(text = "이름을 입력하세요", fontSize = 14.sp, color = ItDayGray300) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    isError = errorMessage != null,
+                    enabled = !isUpdating,
+                )
+
+                if (errorMessage != null) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = errorMessage,
+                        fontSize = 12.sp,
+                        color = Color(0xFFFF3B30),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Button(
+                        onClick = onDismiss,
+                        modifier =
+                            Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors =
+                            ButtonDefaults.buttonColors(
+                                containerColor = ItDayGray100,
+                                contentColor = Color(0xFF191919),
+                            ),
+                        enabled = !isUpdating,
+                    ) {
+                        Text(text = "취소", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                    }
+
+                    Button(
+                        onClick = { onConfirm(nameText) },
+                        modifier =
+                            Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors =
+                            ButtonDefaults.buttonColors(
+                                containerColor = ItDayPrimary,
+                                contentColor = ItDayWhite,
+                            ),
+                        enabled = !isUpdating && nameText.isNotBlank(),
+                    ) {
+                        if (isUpdating) {
+                            androidx.compose.material3.CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = ItDayWhite,
+                                strokeWidth = 2.dp,
+                            )
+                        } else {
+                            Text(text = "저장", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+

@@ -32,6 +32,9 @@ data class SettingsUiState(
     val promotionNotification: Boolean = true,
     val characterNotification: Boolean = false,
     val showLogoutDialog: Boolean = false,
+    val showEditNameDialog: Boolean = false,
+    val isUpdatingName: Boolean = false,
+    val updateNameError: String? = null,
     val isWithdrawing: Boolean = false,
     val errorMessage: String? = null,
     val appVersion: String = "V 0.00.0",
@@ -42,3 +45,4 @@ data class SettingsUiState(
             FaqItem(3, "위치 권한을 허용했는데도 안돼요"),
         ),
 )
+
