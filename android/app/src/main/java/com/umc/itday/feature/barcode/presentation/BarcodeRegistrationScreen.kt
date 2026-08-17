@@ -19,11 +19,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.umc.itday.core.di.appContainer
 import com.umc.itday.ui.theme.ItDayBlue50
 import com.umc.itday.ui.theme.ItDayGray500
 import com.umc.itday.ui.theme.ItDayPrimary
@@ -33,8 +35,10 @@ import com.umc.itday.ui.theme.ItDayWhite
 fun BarcodeRegistrationRoute(
     onBackClick: () -> Unit,
     onHomeClick: () -> Unit,
-    viewModel: BarcodeRegistrationViewModel = viewModel(),
 ) {
+    val context = LocalContext.current
+    val viewModel: BarcodeRegistrationViewModel =
+        viewModel(factory = BarcodeRegistrationViewModel.Factory(context.appContainer.barcodeRepository))
     val uiState by viewModel.uiState.collectAsState()
 
     BarcodeRegistrationScreen(
@@ -210,12 +214,17 @@ private fun BarcodeFormContent(
                 onValueChange = onBarcodeChange,
             )
 
+            uiState.errorMessage?.let { message ->
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(text = message, color = Color(0xFFD32F2F), fontSize = 13.sp)
+            }
+
             Spacer(modifier = Modifier.weight(1f))
 
             if (uiState.isValidLength) {
                 BarcodePrimaryButton(
-                    text = "등록하기",
-                    enabled = true,
+                    text = if (uiState.isLoading) "등록 중..." else "등록하기",
+                    enabled = !uiState.isLoading,
                     onClick = onSubmit,
                 )
                 Spacer(modifier = Modifier.height(32.dp))

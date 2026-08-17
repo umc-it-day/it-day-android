@@ -46,6 +46,9 @@ fun ProReportContent(
     onAttendanceClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
     discountUseCount: Int = 15,
+    attendanceCount: Int = 0,
+    monthlyPoint: Int = 0,
+    visitCount: Int = 0,
 ) {
     Column(
         modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).background(ItDayWhite),
@@ -67,7 +70,13 @@ fun ProReportContent(
                     )
                     .padding(horizontal = ItDayDimens.Space24, vertical = ItDayDimens.Space24),
         ) {
-            ProHero(onAttendanceClick = onAttendanceClick, onProfileClick = onProfileClick)
+            ProHero(
+                onAttendanceClick = onAttendanceClick,
+                onProfileClick = onProfileClick,
+                attendanceCount = attendanceCount,
+                monthlyPoint = monthlyPoint,
+                visitCount = visitCount,
+            )
             ProAchievementCard(
                 currentCount = discountUseCount,
                 modifier = Modifier.padding(top = ItDayDimens.Space4),
@@ -78,7 +87,13 @@ fun ProReportContent(
 }
 
 @Composable
-private fun ProHero(onAttendanceClick: () -> Unit, onProfileClick: () -> Unit) {
+private fun ProHero(
+    onAttendanceClick: () -> Unit,
+    onProfileClick: () -> Unit,
+    attendanceCount: Int,
+    monthlyPoint: Int,
+    visitCount: Int,
+) {
     Box(modifier = Modifier.fillMaxWidth().height(290.dp)) {
         Row(
             modifier = Modifier.align(Alignment.TopEnd),
@@ -115,9 +130,9 @@ private fun ProHero(onAttendanceClick: () -> Unit, onProfileClick: () -> Unit) {
         )
         ItDayCard(modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth()) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                ProStat("🗓️", stringResource(R.string.report_pro_monthly_use), 15)
-                ProStat("💰", stringResource(R.string.report_pro_monthly_point), 15)
-                ProStat("🚩", stringResource(R.string.report_pro_total_use), 15)
+                ProStat("🗓️", stringResource(R.string.report_pro_monthly_use), attendanceCount)
+                ProStat("💰", stringResource(R.string.report_pro_monthly_point), monthlyPoint)
+                ProStat("🚩", stringResource(R.string.report_pro_total_use), visitCount)
             }
         }
     }

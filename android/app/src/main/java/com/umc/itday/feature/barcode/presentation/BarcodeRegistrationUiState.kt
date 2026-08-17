@@ -25,6 +25,8 @@ data class BarcodeRegistrationUiState(
     val selectedCarrier: Carrier = Carrier.SKT,
     val selectedGrade: MembershipGrade = MembershipGrade.GOLD,
     val barcodeNumber: String = "",
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null,
 ) {
     val isValidLength: Boolean
         get() = barcodeNumber.length == 16

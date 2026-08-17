@@ -11,16 +11,12 @@ import com.umc.itday.core.auth.PendingAuthRemoteDataSource
 import com.umc.itday.core.auth.TokenRefresher
 import com.umc.itday.core.config.AppConfig
 import com.umc.itday.core.data.mock.ItDayMockDataSource
-import com.umc.itday.core.data.repository.BarcodeRepository
-import com.umc.itday.core.data.repository.BarcodeRepositoryImpl
 import com.umc.itday.core.data.repository.HomeRepository
 import com.umc.itday.core.data.repository.HomeRepositoryImpl
 import com.umc.itday.core.data.repository.MapRepository
 import com.umc.itday.core.data.repository.MapRepositoryImpl
 import com.umc.itday.core.data.repository.PaymentRepository
 import com.umc.itday.core.data.repository.PaymentRepositoryImpl
-import com.umc.itday.core.data.repository.ReportRepository
-import com.umc.itday.core.data.repository.ReportRepositoryImpl
 import com.umc.itday.core.data.repository.SettingsRepository
 import com.umc.itday.core.data.repository.SettingsRepositoryImpl
 import com.umc.itday.core.local.DataStoreLocalPreferencesDataSource
@@ -44,9 +40,15 @@ import com.umc.itday.feature.auth.domain.repository.AuthRepository
 import com.umc.itday.feature.onboarding.data.remote.OnboardingApi
 import com.umc.itday.feature.onboarding.data.repository.DefaultOnboardingRepository
 import com.umc.itday.feature.onboarding.domain.repository.OnboardingRepository
+import com.umc.itday.feature.barcode.data.api.BarcodeApi
+import com.umc.itday.feature.barcode.data.repository.BarcodeRepositoryImpl
+import com.umc.itday.feature.barcode.domain.repository.BarcodeRepository
 import com.umc.itday.feature.settings.data.api.SettingsApi
 import com.umc.itday.feature.settings.data.repository.SettingsRepositoryImpl as FeatureSettingsRepositoryImpl
 import com.umc.itday.feature.settings.domain.repository.SettingsRepository as FeatureSettingsRepository
+import com.umc.itday.feature.report.data.remote.ReportApi
+import com.umc.itday.feature.report.data.repository.DefaultReportRepository
+import com.umc.itday.feature.report.domain.repository.ReportRepository
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -135,11 +137,14 @@ class DefaultAppContainer(
     }
 
     override val barcodeRepository: BarcodeRepository by lazy {
-        BarcodeRepositoryImpl(mockDataSource)
+        BarcodeRepositoryImpl(NetworkClient.createApi<BarcodeApi>(retrofit))
     }
 
     override val reportRepository: ReportRepository by lazy {
-        ReportRepositoryImpl(mockDataSource)
+        DefaultReportRepository(
+            api = NetworkClient.createApi<ReportApi>(retrofit),
+            tokenStorage = authTokenStorage,
+        )
     }
 
     override val onboardingRepository: OnboardingRepository by lazy {

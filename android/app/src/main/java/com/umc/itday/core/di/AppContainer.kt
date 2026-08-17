@@ -5,19 +5,19 @@ import com.umc.itday.core.auth.AuthTokenStorage
 import com.umc.itday.core.auth.KakaoLoginClient
 import com.umc.itday.core.auth.TokenRefresher
 import com.umc.itday.core.data.mock.ItDayMockDataSource
-import com.umc.itday.core.data.repository.BarcodeRepository
 import com.umc.itday.core.data.repository.HomeRepository
 import com.umc.itday.core.data.repository.MapRepository
 import com.umc.itday.core.data.repository.PaymentRepository
-import com.umc.itday.core.data.repository.ReportRepository
 import com.umc.itday.core.data.repository.SettingsRepository
 import com.umc.itday.feature.settings.domain.repository.SettingsRepository as FeatureSettingsRepository
+import com.umc.itday.feature.report.domain.repository.ReportRepository
 import com.umc.itday.core.local.LocalPreferencesDataSource
 import com.umc.itday.core.location.LocationRepository
 import com.umc.itday.core.network.NetworkMonitor
 import com.umc.itday.core.permission.PermissionManager
 import com.umc.itday.feature.auth.domain.repository.AuthRepository
 import com.umc.itday.feature.onboarding.domain.repository.OnboardingRepository
+import com.umc.itday.feature.barcode.domain.repository.BarcodeRepository
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 
