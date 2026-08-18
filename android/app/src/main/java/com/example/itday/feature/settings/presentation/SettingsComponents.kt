@@ -33,8 +33,15 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
@@ -625,7 +632,7 @@ internal fun EditNameDialog(
     onConfirm: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    var nameText by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(initialName) }
+    var nameText by remember { mutableStateOf(initialName) }
 
     Dialog(onDismissRequest = { if (!isUpdating) onDismiss() }) {
         Card(
@@ -646,7 +653,7 @@ internal fun EditNameDialog(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-                androidx.compose.material3.OutlinedTextField(
+                OutlinedTextField(
                     value = nameText,
                     onValueChange = { nameText = it },
                     singleLine = true,
@@ -705,7 +712,7 @@ internal fun EditNameDialog(
                         enabled = !isUpdating && nameText.isNotBlank(),
                     ) {
                         if (isUpdating) {
-                            androidx.compose.material3.CircularProgressIndicator(
+                            CircularProgressIndicator(
                                 modifier = Modifier.size(20.dp),
                                 color = ItDayWhite,
                                 strokeWidth = 2.dp,
@@ -719,4 +726,5 @@ internal fun EditNameDialog(
         }
     }
 }
+
 
