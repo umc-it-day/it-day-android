@@ -1,4 +1,4 @@
-﻿package com.umc.itday.feature.barcode.presentation
+package com.umc.itday.feature.barcode.presentation
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -40,6 +41,8 @@ fun BarcodeRegistrationRoute(
     val viewModel: BarcodeRegistrationViewModel =
         viewModel(factory = BarcodeRegistrationViewModel.Factory(context.appContainer.barcodeRepository))
     val uiState by viewModel.uiState.collectAsState()
+
+
 
     BarcodeRegistrationScreen(
         uiState = uiState,

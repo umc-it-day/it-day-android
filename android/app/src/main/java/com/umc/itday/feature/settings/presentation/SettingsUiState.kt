@@ -1,4 +1,4 @@
-﻿package com.umc.itday.feature.settings.presentation
+package com.umc.itday.feature.settings.presentation
 
 enum class SettingsScreenType {
     Main,
@@ -37,6 +37,7 @@ data class SettingsUiState(
     val showNameEditDialog: Boolean = false,
     val editingName: String = "",
     val isWithdrawing: Boolean = false,
+
     val appVersion: String = "V 0.00.0",
     val faqList: List<FaqItem> =
         listOf(
@@ -45,3 +46,4 @@ data class SettingsUiState(
             FaqItem(3, "위치 권한을 허용했는데도 안돼요"),
         ),
 )
+

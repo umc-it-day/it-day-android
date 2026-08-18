@@ -1,4 +1,4 @@
-﻿package com.umc.itday.ui.home
+package com.umc.itday.ui.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -49,6 +49,8 @@ fun HomeRoute(
     isGuestMode: Boolean = false,
     onEvent: (HomeEvent) -> Unit = {},
 ) {
+
+
     val uiState by viewModel.uiState.collectAsState()
     var showCarrierComparison by remember { mutableStateOf(false) }
     var showPartnerDetail by remember { mutableStateOf(false) }
