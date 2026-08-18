@@ -70,17 +70,12 @@ android {
             buildConfigField(
                 "boolean",
                 "USE_MOCK_DATA",
-                configBoolean("ITDAY_DEBUG_USE_MOCK_DATA", true),
+                configBoolean("ITDAY_DEBUG_USE_MOCK_DATA", false),
             )
             buildConfigField(
                 "boolean",
                 "USE_MOCK_KAKAO_LOGIN",
-                configBoolean("ITDAY_DEBUG_USE_MOCK_KAKAO_LOGIN", true),
-            )
-            buildConfigField(
-                "boolean",
-                "SHOW_ONBOARDING_DEBUG_ENTRY",
-                configBoolean("ITDAY_SHOW_ONBOARDING_DEBUG_ENTRY", false),
+                configBoolean("ITDAY_DEBUG_USE_MOCK_KAKAO_LOGIN", false),
             )
             buildConfigField(
                 "String",
@@ -104,11 +99,6 @@ android {
                 "boolean",
                 "USE_MOCK_KAKAO_LOGIN",
                 configBoolean("ITDAY_RELEASE_USE_MOCK_KAKAO_LOGIN", false),
-            )
-            buildConfigField(
-                "boolean",
-                "SHOW_ONBOARDING_DEBUG_ENTRY",
-                "false",
             )
             buildConfigField(
                 "String",
@@ -156,6 +146,7 @@ dependencies {
     implementation(libs.kakao.user)
     implementation(libs.konfetti.compose)
     implementation(libs.play.services.location)
+    implementation(libs.zxing.core)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)

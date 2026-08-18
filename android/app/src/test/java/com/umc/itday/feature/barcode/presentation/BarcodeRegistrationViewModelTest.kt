@@ -77,4 +77,6 @@ private class FakeBarcodeRepository : BarcodeRepository {
     override suspend fun updateBarcode(barcodeNumber: String): ApiResult<Unit> = ApiResult.Success(Unit)
 
     override suspend fun recordUsage(storeId: Long): ApiResult<Unit> = ApiResult.Success(Unit)
+
+    override suspend fun getLotteryNumber(): ApiResult<String> = ApiResult.Success("1234567890123456")
 }

@@ -54,6 +54,7 @@ fun BarcodeRegistrationRoute(
         onReenter = viewModel::resetFormToReentry,
         onBackClick = onBackClick,
         onHomeClick = onHomeClick,
+        onSkipClick = onHomeClick,
     )
 }
 
@@ -68,6 +69,7 @@ fun BarcodeRegistrationScreen(
     onReenter: () -> Unit,
     onBackClick: () -> Unit,
     onHomeClick: () -> Unit,
+    onSkipClick: () -> Unit = {},
 ) {
     AnimatedContent(
         targetState = uiState.step,
@@ -78,6 +80,7 @@ fun BarcodeRegistrationScreen(
             BarcodeStep.Intro ->
                 BarcodeIntroContent(
                     onNext = { onNavigateStep(BarcodeStep.Form) },
+                    onSkipClick = onSkipClick,
                     onBackClick = onBackClick,
                 )
 
@@ -88,6 +91,7 @@ fun BarcodeRegistrationScreen(
                     onGradeSelect = onGradeSelect,
                     onBarcodeChange = onBarcodeChange,
                     onSubmit = onSubmit,
+                    onSkipClick = onSkipClick,
                     onBackClick = { onNavigateStep(BarcodeStep.Intro) },
                 )
 
@@ -110,6 +114,7 @@ fun BarcodeRegistrationScreen(
 @Composable
 private fun BarcodeIntroContent(
     onNext: () -> Unit,
+    onSkipClick: () -> Unit,
     onBackClick: () -> Unit,
 ) {
     Scaffold(
@@ -159,6 +164,11 @@ private fun BarcodeIntroContent(
                 text = "번호 입력하기",
                 onClick = onNext,
             )
+            Spacer(modifier = Modifier.height(8.dp))
+            BarcodeSecondaryTextButton(
+                text = "건너뛰기",
+                onClick = onSkipClick,
+            )
 
             Spacer(modifier = Modifier.height(32.dp))
         }
@@ -172,6 +182,7 @@ private fun BarcodeFormContent(
     onGradeSelect: (MembershipGrade) -> Unit,
     onBarcodeChange: (String) -> Unit,
     onSubmit: () -> Unit,
+    onSkipClick: () -> Unit,
     onBackClick: () -> Unit,
 ) {
     Scaffold(
@@ -230,8 +241,13 @@ private fun BarcodeFormContent(
                     enabled = !uiState.isLoading,
                     onClick = onSubmit,
                 )
-                Spacer(modifier = Modifier.height(32.dp))
             }
+            Spacer(modifier = Modifier.height(8.dp))
+            BarcodeSecondaryTextButton(
+                text = "건너뛰기",
+                onClick = onSkipClick,
+            )
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }

@@ -3,7 +3,11 @@
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.umc.itday.core.data.result.ApiResult
+import com.umc.itday.core.data.result.AppError
+import com.umc.itday.core.data.result.toUserMessage
 import com.umc.itday.core.location.LocationRepository
+import com.umc.itday.feature.barcode.domain.repository.BarcodeRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -17,6 +21,7 @@ import kotlinx.coroutines.launch
 class HomeViewModel(
     initialState: HomeUiState = HomePreviewData.barcodeDisabled,
     private val locationRepository: LocationRepository? = null,
+    private val barcodeRepository: BarcodeRepository? = null,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(initialState)
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
@@ -40,6 +45,7 @@ class HomeViewModel(
                 _uiState.update { state -> state.copy(showMembershipDialog = false) }
             }
             HomeAction.RefreshBarcode -> startMembershipTimer()
+            HomeAction.RefreshLotteryBarcode -> loadHomeBarcodes()
             HomeAction.ToggleBenefits ->
                 _uiState.update { state -> state.copy(isBenefitExpanded = !state.isBenefitExpanded) }
             HomeAction.AddBenefit,
@@ -72,6 +78,71 @@ class HomeViewModel(
 
     fun loadLocation() {
         refreshLocation(forceRefresh = false)
+    }
+
+    fun loadLotteryBarcode() {
+        loadHomeBarcodes()
+    }
+
+    private fun loadHomeBarcodes() {
+        val repository = barcodeRepository ?: return
+        viewModelScope.launch {
+            _uiState.update { state ->
+                state.copy(lotteryBarcode = state.lotteryBarcode.copy(isLoading = true, errorMessage = null))
+            }
+
+            when (val lotteryResult = repository.getLotteryNumber()) {
+                is ApiResult.Success -> {
+                    val lotteryNumber = lotteryResult.data
+                    if (!lotteryNumber.isValidLotteryNumber()) {
+                        updateLotteryFailure(AppError.Parsing())
+                        return@launch
+                    }
+
+                    _uiState.update { state ->
+                        state.copy(
+                            membershipState =
+                                if (state.membership != null) {
+                                    MembershipState.BarcodeEnabled
+                                } else {
+                                    state.membershipState
+                                },
+                            lotteryBarcode =
+                                state.lotteryBarcode.copy(
+                                    number = lotteryNumber,
+                                    isLoading = false,
+                                    errorMessage = null,
+                                ),
+                        )
+                    }
+                }
+                is ApiResult.Failure -> {
+                    updateLotteryFailure(lotteryResult.error)
+                }
+            }
+
+            when (val registeredBarcodeResult = repository.getBarcode()) {
+                is ApiResult.Success -> {
+                    _uiState.update { state ->
+                        state.copy(registeredMembershipBarcode = registeredBarcodeResult.data)
+                    }
+                }
+                is ApiResult.Failure -> Unit
+            }
+        }
+    }
+
+    private fun updateLotteryFailure(error: AppError) {
+        val message = error.toUserMessage()
+        _uiState.update { state ->
+            state.copy(
+                lotteryBarcode =
+                    state.lotteryBarcode.copy(
+                        isLoading = false,
+                        errorMessage = message,
+                    ),
+            )
+        }
     }
 
     private fun refreshLocation(forceRefresh: Boolean) {
@@ -111,6 +182,9 @@ class HomeViewModel(
                 locationCoordinate = state.locationCoordinate,
                 isLocationRefreshing = state.isLocationRefreshing,
                 isLocationUnavailable = state.isLocationUnavailable,
+                lotteryBarcode = state.lotteryBarcode,
+                registeredMembershipBarcode = state.registeredMembershipBarcode,
+                isProMember = state.isProMember,
             )
         }
     }
@@ -137,25 +211,35 @@ class HomeViewModel(
                 HomeAction.Login,
                 HomeAction.RegisterMembership,
                 -> HomeEvent.OpenLogin
-                HomeAction.OpenProStore -> HomeEvent.OpenProStore
-                HomeAction.OpenProChallenge -> HomeEvent.OpenProChallenge
+                HomeAction.OpenProStore -> if (_uiState.value.isProMember) HomeEvent.OpenProStore else HomeEvent.OpenPayment
+                HomeAction.OpenProChallenge -> if (_uiState.value.isProMember) HomeEvent.OpenProChallenge else HomeEvent.OpenPayment
                 HomeAction.OpenAdvertisement -> HomeEvent.OpenAdvertisement
                 HomeAction.OpenMap -> HomeEvent.OpenMap
                 HomeAction.OpenBrandDetail -> HomeEvent.OpenBrandDetail
-                HomeAction.OpenOnboarding -> HomeEvent.OpenOnboarding
                 else -> return
             }
         sendEvent(event)
     }
 
     companion object {
-        fun factory(locationRepository: LocationRepository): ViewModelProvider.Factory =
+        fun factory(
+            locationRepository: LocationRepository,
+            barcodeRepository: BarcodeRepository,
+        ): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                     require(modelClass.isAssignableFrom(HomeViewModel::class.java))
-                    return HomeViewModel(locationRepository = locationRepository) as T
+                    return HomeViewModel(
+                        locationRepository = locationRepository,
+                        barcodeRepository = barcodeRepository,
+                    ) as T
                 }
             }
     }
 }
+
+private fun String.isValidLotteryNumber(): Boolean =
+    length == LOTTERY_NUMBER_LENGTH && all(Char::isDigit)
+
+private const val LOTTERY_NUMBER_LENGTH = 16

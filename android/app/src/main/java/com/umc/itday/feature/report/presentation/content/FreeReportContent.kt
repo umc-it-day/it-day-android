@@ -47,6 +47,7 @@ fun FreeReportContent(
     onShopClick: () -> Unit,
     onPointHistoryClick: () -> Unit,
     onAttendanceClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     floor: Int = 3,
     pointBalance: Int = 0,
@@ -60,7 +61,7 @@ fun FreeReportContent(
                 .background(ItDayWhite),
     ) {
         Box(modifier = Modifier.padding(horizontal = ItDayDimens.Space24)) {
-            ReportHeader(onAttendanceClick = onAttendanceClick)
+            ReportHeader(onAttendanceClick = onAttendanceClick, onProfileClick = onProfileClick)
         }
         FreeReportHero(
             floor = floor,

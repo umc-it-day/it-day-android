@@ -76,7 +76,7 @@ fun OnboardingScreen(
     onLocationResult: (Boolean) -> Unit,
     onCarrierSelect: (CarrierType) -> Unit,
     onMembershipGradeSelect: (MembershipGradeType) -> Unit,
-    onBrandToggle: (String) -> Unit,
+    onBrandToggle: (Long) -> Unit,
     onComplete: () -> Unit,
     permissionManager: PermissionManager,
     modifier: Modifier = Modifier,

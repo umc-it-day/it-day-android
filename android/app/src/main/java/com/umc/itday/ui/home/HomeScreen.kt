@@ -22,11 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.umc.itday.BuildConfig
 import com.umc.itday.core.di.appContainer
-import com.umc.itday.ui.component.ItDayButton
-import com.umc.itday.ui.component.ItDayButtonSize
-import com.umc.itday.ui.component.ItDayButtonVariant
 import com.umc.itday.ui.home.component.BrandDaySection
 import com.umc.itday.ui.home.component.CarrierComparisonBanner
 import com.umc.itday.ui.home.component.CurrentLocationRow
@@ -49,7 +45,11 @@ fun HomeRoute(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel =
         viewModel(
-            factory = HomeViewModel.factory(LocalContext.current.appContainer.locationRepository),
+            factory =
+                HomeViewModel.factory(
+                    locationRepository = LocalContext.current.appContainer.locationRepository,
+                    barcodeRepository = LocalContext.current.appContainer.barcodeRepository,
+                ),
         ),
     isGuestMode: Boolean = false,
     onEvent: (HomeEvent) -> Unit = {},
@@ -62,6 +62,9 @@ fun HomeRoute(
 
     LaunchedEffect(viewModel) {
         viewModel.loadLocation()
+        if (!isGuestMode) {
+            viewModel.loadLotteryBarcode()
+        }
         viewModel.events.collect { event ->
             when (event) {
                 HomeEvent.OpenCarrierComparison -> showCarrierComparison = true
@@ -124,16 +127,6 @@ private fun HomeScreenContent(
             isRefreshing = uiState.isLocationRefreshing,
             onRefresh = { onAction(HomeAction.RefreshLocation) },
         )
-        if (BuildConfig.SHOW_ONBOARDING_DEBUG_ENTRY) {
-            Spacer(Modifier.height(ItDayDimens.Space16))
-            ItDayButton(
-                text = "온보딩 브랜드 이미지 확인",
-                onClick = { onAction(HomeAction.OpenOnboarding) },
-                modifier = Modifier.fillMaxWidth(),
-                variant = ItDayButtonVariant.Secondary,
-                size = ItDayButtonSize.Medium,
-            )
-        }
         Spacer(Modifier.height(ItDayDimens.Space16))
         MembershipContent(uiState, onAction)
         HomeDashboardSections(uiState, onAction)
@@ -190,9 +183,54 @@ private fun MembershipContent(
     uiState: HomeUiState,
     onAction: (HomeAction) -> Unit,
 ) {
+    val lotteryNumber = uiState.lotteryBarcode.number
+    if (!lotteryNumber.isNullOrBlank() && uiState.membershipState != MembershipState.Guest) {
+        MembershipBarcodeCard(
+            membership = uiState.membership
+                ?: HomeMembershipUiModel(
+                    carrier = "ITDAY",
+                    grade = "EVENT",
+                    brandName = "잇데이 경품",
+                    benefitText = "경품 추첨용 바코드",
+                    barcodeValue = lotteryNumber,
+                    pointText = "",
+                ),
+            brands = uiState.partnerBrands,
+            barcodeEnabled = true,
+            remainingTimeSeconds = uiState.remainingTimeSeconds,
+            barcodeValue = lotteryNumber,
+            registeredMembershipBarcode = uiState.registeredMembershipBarcode,
+            onActivate = { onAction(HomeAction.ActivateBarcode) },
+            onUse = { onAction(HomeAction.UseMembership) },
+            onBrandClick = { onAction(HomeAction.SelectPartnerBrand(it)) },
+            onRefresh = { onAction(HomeAction.RefreshLotteryBarcode) },
+            onBrandDetailClick = { onAction(HomeAction.OpenBrandDetail) },
+        )
+        return
+    }
+
     when (uiState.membershipState) {
         MembershipState.Guest ->
-            GuestMembershipCard(onLogin = { onAction(HomeAction.Login) })
+            MembershipBarcodeCard(
+                membership =
+                    HomeMembershipUiModel(
+                        carrier = "ITDAY",
+                        grade = "GUEST",
+                        brandName = "잇데이 경품",
+                        benefitText = "로그인 후 경품 확인용 바코드를 받을 수 있어요",
+                        barcodeValue = "1234567890123456",
+                        pointText = "",
+                    ),
+                brands = uiState.partnerBrands,
+                barcodeEnabled = false,
+                remainingTimeSeconds = null,
+                barcodeValue = "1234567890123456",
+                onActivate = { onAction(HomeAction.Login) },
+                onUse = { onAction(HomeAction.Login) },
+                onBrandClick = { onAction(HomeAction.SelectPartnerBrand(it)) },
+                onRefresh = { onAction(HomeAction.Login) },
+                onBrandDetailClick = { onAction(HomeAction.OpenBrandDetail) },
+            )
         MembershipState.NotRegistered ->
             MembershipStatusCard(
                 title = "내 멤버십",
@@ -207,6 +245,7 @@ private fun MembershipContent(
                     brands = uiState.partnerBrands,
                     barcodeEnabled = false,
                     remainingTimeSeconds = uiState.remainingTimeSeconds,
+                    registeredMembershipBarcode = uiState.registeredMembershipBarcode,
                     onActivate = { onAction(HomeAction.ActivateBarcode) },
                     onUse = { onAction(HomeAction.UseMembership) },
                     onBrandClick = { onAction(HomeAction.SelectPartnerBrand(it)) },
@@ -221,6 +260,7 @@ private fun MembershipContent(
                 brands = uiState.partnerBrands,
                 barcodeEnabled = true,
                 remainingTimeSeconds = uiState.remainingTimeSeconds,
+                registeredMembershipBarcode = uiState.registeredMembershipBarcode,
                 onActivate = { onAction(HomeAction.ActivateBarcode) },
                 onUse = { onAction(HomeAction.UseMembership) },
                 onBrandClick = { onAction(HomeAction.SelectPartnerBrand(it)) },

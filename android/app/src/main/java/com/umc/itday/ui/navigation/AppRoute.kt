@@ -13,4 +13,6 @@ enum class AppRoute(
     REPORT("report"),
     SETTINGS("settings"),
     PAYMENT("payment"),
+    PRO_STORE("pro-store"),
+    PRO_CHALLENGE("pro-challenge"),
 }

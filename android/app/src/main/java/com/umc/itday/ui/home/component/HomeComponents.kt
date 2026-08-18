@@ -2,6 +2,7 @@
 
 package com.umc.itday.ui.home.component
 
+import android.graphics.Bitmap
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -37,10 +38,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
@@ -72,13 +72,12 @@ import com.umc.itday.ui.theme.ItDayDimens
 import com.umc.itday.ui.theme.ItDayGray300
 import com.umc.itday.ui.theme.ItDayGray500
 import com.umc.itday.ui.theme.ItDayWhite
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.oned.Code128Writer
 import java.util.Locale
 
-private const val BARCODE_UNIT_COUNT = 64f
-private const val BARCODE_BAR_COUNT = 32
-private const val BARCODE_WIDE_INTERVAL = 5
-private const val BARCODE_WIDE_FACTOR = 1.8f
-private const val BARCODE_X_FACTOR = 2f
+private const val BARCODE_IMAGE_WIDTH = 720
+private const val BARCODE_IMAGE_HEIGHT = 160
 private val ProGradientColors =
     listOf(
         Color(0xFFEF59FF),
@@ -136,6 +135,7 @@ private fun RefreshLocationButton(
     isRefreshing: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    contentDescription: String = "현재 위치 새로고침",
 ) {
     Box(
         modifier =
@@ -148,7 +148,7 @@ private fun RefreshLocationButton(
                     color = ItDayGray300,
                     shape = CircleShape,
                 ).clickable(enabled = !isRefreshing, onClick = onClick)
-                .semantics { contentDescription = "현재 위치 새로고침" },
+                .semantics { this.contentDescription = contentDescription },
         contentAlignment = Alignment.Center,
     ) {
         if (isRefreshing) {
@@ -200,6 +200,8 @@ fun MembershipBarcodeCard(
     brands: List<HomePartnerBrandUiModel>,
     barcodeEnabled: Boolean,
     remainingTimeSeconds: Int?,
+    barcodeValue: String = membership.barcodeValue,
+    registeredMembershipBarcode: String? = null,
     onActivate: () -> Unit,
     onUse: () -> Unit,
     onBrandClick: (String) -> Unit,
@@ -237,15 +239,25 @@ fun MembershipBarcodeCard(
                     modifier = Modifier.fillMaxWidth().clickable(enabled = barcodeEnabled, onClick = onUse),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    MockBarcode(
-                        value = membership.barcodeValue,
+                    BarcodeImage(
+                        value = barcodeValue,
                         enabled = barcodeEnabled,
                         modifier = Modifier.fillMaxWidth(),
+                        contentDescription =
+                            if (barcodeEnabled) {
+                                "경품 확인용 바코드 $barcodeValue"
+                            } else {
+                                "예시 바코드"
+                            },
                     )
                     Spacer(Modifier.height(ItDayDimens.Space12))
                     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                         Text(
-                            if (barcodeEnabled) membership.barcodeValue else "1234 5667 9012 3456",
+                            if (barcodeEnabled) {
+                                barcodeValue.formatBarcodeNumber()
+                            } else {
+                                "1234 5667 9012 3456"
+                            },
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
                         )
@@ -257,6 +269,7 @@ fun MembershipBarcodeCard(
                     remainingTimeSeconds = remainingTimeSeconds,
                     onRefresh = onRefresh,
                 )
+                RegisteredMembershipBarcodeInfo(registeredMembershipBarcode)
             }
             if (!barcodeEnabled) {
                 Box(
@@ -363,10 +376,11 @@ fun GuestMembershipCard(
         contentPadding = PaddingValues(0.dp),
     ) {
         Box(modifier = Modifier.fillMaxWidth().height(295.dp), contentAlignment = Alignment.Center) {
-            MockBarcode(
+            BarcodeImage(
                 value = "1234 5667 9012 3456",
                 enabled = false,
                 modifier = Modifier.fillMaxWidth().blur(14.dp, BlurredEdgeTreatment.Unbounded),
+                contentDescription = "비활성화된 멤버십 바코드",
             )
             Box(Modifier.matchParentSize().background(HomeSurface.copy(alpha = 0.58f)))
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -388,35 +402,73 @@ fun GuestMembershipCard(
 }
 
 @Composable
-private fun MockBarcode(
+fun BarcodeImage(
     value: String,
     enabled: Boolean,
     modifier: Modifier = Modifier,
+    contentDescription: String? = null,
 ) {
-    Canvas(
+    val barcodeBitmap = remember(value) { value.toCode128BarcodeBitmap() }
+    Image(
+        bitmap = barcodeBitmap.asImageBitmap(),
+        contentDescription = contentDescription,
         modifier =
             modifier
                 .fillMaxWidth()
-                .height(72.dp)
-                .semantics {
-                    contentDescription =
-                        if (enabled) "멤버십 바코드 $value" else "비활성화된 멤버십 바코드"
-                },
+                .height(72.dp),
+        contentScale = ContentScale.FillBounds,
+        alpha = if (enabled) 1f else 0.65f,
+    )
+}
+
+@Composable
+private fun RegisteredMembershipBarcodeInfo(registeredMembershipBarcode: String?) {
+    if (registeredMembershipBarcode.isNullOrBlank()) return
+
+    Spacer(Modifier.height(ItDayDimens.Space16))
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(ItDayWhite)
+                .padding(horizontal = 16.dp, vertical = 14.dp),
     ) {
-        val unit = size.width / BARCODE_UNIT_COUNT
-        repeat(BARCODE_BAR_COUNT) { index ->
-            val width = if (index % BARCODE_WIDE_INTERVAL == 0) unit * BARCODE_WIDE_FACTOR else unit
-            val x = index * unit * BARCODE_X_FACTOR
-            drawLine(
-                color = Color.Black.copy(alpha = if (enabled) 1f else 0.65f),
-                start = Offset(x, 0f),
-                end = Offset(x, size.height),
-                strokeWidth = width,
-                cap = StrokeCap.Butt,
-            )
-        }
+        Text(
+            "등록된 멤버십 번호",
+            color = ItDayGray500,
+            style = MaterialTheme.typography.bodySmall,
+        )
+        Spacer(Modifier.height(ItDayDimens.Space4))
+        Text(
+            registeredMembershipBarcode.formatBarcodeNumber(),
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold,
+        )
     }
 }
+
+private fun String.toCode128BarcodeBitmap(): Bitmap {
+    val matrix =
+        Code128Writer().encode(
+            filter(Char::isDigit).ifBlank { "0" },
+            BarcodeFormat.CODE_128,
+            BARCODE_IMAGE_WIDTH,
+            BARCODE_IMAGE_HEIGHT,
+        )
+    val bitmap = Bitmap.createBitmap(matrix.width, matrix.height, Bitmap.Config.ARGB_8888)
+    for (x in 0 until matrix.width) {
+        for (y in 0 until matrix.height) {
+            bitmap.setPixel(x, y, if (matrix[x, y]) android.graphics.Color.BLACK else android.graphics.Color.WHITE)
+        }
+    }
+    return bitmap
+}
+
+private fun String.formatBarcodeNumber(): String =
+    filter(Char::isDigit)
+        .chunked(4)
+        .joinToString(" ")
 
 @Composable
 fun PartnerBrandRow(

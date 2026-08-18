@@ -1,7 +1,9 @@
 ﻿package com.umc.itday.ui.home
 
+import com.umc.itday.core.data.result.ApiResult
 import com.umc.itday.core.location.LocationCoordinate
 import com.umc.itday.core.location.LocationRepository
+import com.umc.itday.feature.barcode.domain.repository.BarcodeRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -109,6 +111,29 @@ class HomeViewModelTest {
         assertEquals(MembershipState.Guest, viewModel.uiState.value.membershipState)
         assertFalse(viewModel.uiState.value.showProSection)
     }
+
+    @Test
+    fun `복권 번호를 조회하면 홈 바코드 번호에 반영한다`() =
+        runTest {
+            val dispatcher = UnconfinedTestDispatcher(testScheduler)
+            Dispatchers.setMain(dispatcher)
+            try {
+                val repository = FakeBarcodeRepository()
+                val viewModel =
+                    HomeViewModel(
+                        initialState = HomePreviewData.barcodeEnabled,
+                        barcodeRepository = repository,
+                    )
+
+                viewModel.loadLotteryBarcode()
+
+                assertEquals("7777888899990000", viewModel.uiState.value.lotteryBarcode.number)
+                assertEquals("7777888899990000", viewModel.uiState.value.membership?.barcodeValue)
+                assertEquals(MembershipState.BarcodeEnabled, viewModel.uiState.value.membershipState)
+            } finally {
+                Dispatchers.resetMain()
+            }
+        }
 }
 
 private class FakeLocationRepository : LocationRepository {
@@ -124,4 +149,16 @@ private class FakeLocationRepository : LocationRepository {
         latitude: Double,
         longitude: Double,
     ): String = "테스트 주소"
+}
+
+private class FakeBarcodeRepository : BarcodeRepository {
+    override suspend fun getBarcode(): ApiResult<String> = ApiResult.Success("1234567890123456")
+
+    override suspend fun registerBarcode(barcodeNumber: String): ApiResult<Unit> = ApiResult.Success(Unit)
+
+    override suspend fun updateBarcode(barcodeNumber: String): ApiResult<Unit> = ApiResult.Success(Unit)
+
+    override suspend fun recordUsage(storeId: Long): ApiResult<Unit> = ApiResult.Success(Unit)
+
+    override suspend fun getLotteryNumber(): ApiResult<String> = ApiResult.Success("7777888899990000")
 }
