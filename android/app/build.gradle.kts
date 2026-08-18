@@ -45,16 +45,11 @@ detekt {
 }
 
 android {
-    namespace = "com.example.itday"
-    compileSdk {
-        version =
-            release(36) {
-                minorApiLevel = 1
-            }
-    }
+    namespace = "com.umc.itday"
+    compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.itday"
+        applicationId = "com.umc.itday"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -125,6 +120,11 @@ android {
     buildFeatures {
         buildConfig = true
         compose = true
+    }
+    testOptions {
+        unitTests {
+            isReturnDefaultValues = true
+        }
     }
 }
 dependencies {
