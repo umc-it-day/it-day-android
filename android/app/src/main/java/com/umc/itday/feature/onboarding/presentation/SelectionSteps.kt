@@ -56,7 +56,7 @@ fun SelectionSteps(
     state: OnboardingUiState,
     onCarrierSelect: (CarrierType) -> Unit,
     onMembershipGradeSelect: (MembershipGradeType) -> Unit,
-    onBrandToggle: (String) -> Unit,
+    onBrandToggle: (Long) -> Unit,
     onNext: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -250,15 +250,26 @@ private fun SelectableOptionCard(
 }
 
 @Composable
-private fun BrandSections(
+fun BrandSections(
     brands: List<PreferredBrand>,
-    selectedBrands: Set<String>,
-    onBrandToggle: (String) -> Unit,
+    selectedBrands: Set<Long>,
+    onBrandToggle: (Long) -> Unit,
 ) {
     val groupedBrands = BrandCategory.entries.mapNotNull { category ->
         brands.filter { category.matches(it.category) }
             .takeIf(List<PreferredBrand>::isNotEmpty)
             ?.let { category to it }
+    }.ifEmpty {
+        if (brands.isEmpty()) emptyList() else listOf(BrandCategory.Etc to brands)
+    }
+
+    if (groupedBrands.isEmpty()) {
+        Text(
+            text = "표시할 선호 브랜드가 없어요",
+            fontSize = 14.sp,
+            color = ItDayGray500,
+        )
+        return
     }
 
     groupedBrands.forEachIndexed { index, (category, categoryBrands) ->
@@ -282,10 +293,10 @@ private fun BrandSections(
 private fun BrandCategorySection(
     title: String,
     brands: List<PreferredBrand>,
-    selectedBrands: Set<String>,
+    selectedBrands: Set<Long>,
     expanded: Boolean,
     onExpandedChange: () -> Unit,
-    onBrandToggle: (String) -> Unit,
+    onBrandToggle: (Long) -> Unit,
 ) {
     Row(
         modifier =
@@ -318,7 +329,7 @@ private fun BrandCategorySection(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 rowBrands.forEach { brand ->
-                    val isSelected = brand.name in selectedBrands
+                    val isSelected = brand.id in selectedBrands
                     val cardBg = if (isSelected) Color(0xFFEBF2FF) else Color(0xFFF6F7F9)
                     val cardBorder = if (isSelected) ItDayPrimary else Color.Transparent
 
@@ -328,7 +339,7 @@ private fun BrandCategorySection(
                                 .weight(1f)
                                 .height(80.dp)
                                 .clip(RoundedCornerShape(14.dp))
-                                .clickable { onBrandToggle(brand.name) },
+                                .clickable { onBrandToggle(brand.id) },
                         shape = RoundedCornerShape(14.dp),
                         colors = CardDefaults.cardColors(containerColor = cardBg),
                         border = BorderStroke(1.5.dp, cardBorder),

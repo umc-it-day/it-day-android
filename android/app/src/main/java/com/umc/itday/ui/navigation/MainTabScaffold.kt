@@ -26,12 +26,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.umc.itday.feature.map.presentation.MapScreen
-import com.umc.itday.BuildConfig
 import com.umc.itday.core.di.appContainer
 import com.umc.itday.feature.payment.presentation.DemoPaymentGateway
 import com.umc.itday.feature.payment.presentation.PaymentFlowScreen
 import com.umc.itday.feature.payment.presentation.PaymentViewModel
 import com.umc.itday.feature.report.presentation.ReportRoute
+import com.umc.itday.feature.report.presentation.content.AttendanceContent
+import com.umc.itday.feature.report.presentation.content.StoreContent
 import com.umc.itday.feature.settings.presentation.SettingsMainRoute
 import com.umc.itday.ui.home.HomeEvent
 import com.umc.itday.ui.home.HomeRoute
@@ -43,7 +44,6 @@ import com.umc.itday.ui.theme.ItDayWhite
 fun MainTabScaffold(
     onLogout: () -> Unit = {},
     onLogin: () -> Unit = {},
-    onOpenOnboarding: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val isGuestMode by
@@ -79,7 +79,6 @@ fun MainTabScaffold(
             isGuestMode = isGuestMode,
             onLogout = onLogout,
             onLogin = onLogin,
-            onOpenOnboarding = onOpenOnboarding,
             modifier =
                 if (currentRoute == AppRoute.PAYMENT.route) {
                     Modifier
@@ -129,7 +128,6 @@ private fun MainTabNavHost(
     isGuestMode: Boolean,
     onLogout: () -> Unit,
     onLogin: () -> Unit,
-    onOpenOnboarding: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     NavHost(
@@ -145,7 +143,9 @@ private fun MainTabNavHost(
                         HomeEvent.OpenCalendar -> navController.navigateToTopLevelRoute(AppRoute.REPORT)
                         HomeEvent.OpenProfile -> navController.navigateToTopLevelRoute(AppRoute.SETTINGS)
                         HomeEvent.OpenLogin -> onLogout()
-                        HomeEvent.OpenOnboarding -> onOpenOnboarding()
+                        HomeEvent.OpenProStore -> navController.navigate(AppRoute.PRO_STORE.route)
+                        HomeEvent.OpenProChallenge -> navController.navigate(AppRoute.PRO_CHALLENGE.route)
+                        HomeEvent.OpenPayment -> navController.navigate(AppRoute.PAYMENT.route)
                         else -> { /* 처리되지 않은 이벤트 */ }
                     }
                 }
@@ -158,6 +158,8 @@ private fun MainTabNavHost(
             ReportRoute(
                 isGuestMode = isGuestMode,
                 onHomeClick = { navController.navigateToHome() },
+                onLoginClick = onLogin,
+                onSettingsClick = { navController.navigateToTopLevelRoute(AppRoute.SETTINGS) },
             )
         }
         composable(AppRoute.SETTINGS.route) {
@@ -167,19 +169,33 @@ private fun MainTabNavHost(
                 onLoginClick = onLogin,
             )
         }
-        if (BuildConfig.DEBUG) {
-            composable(AppRoute.PAYMENT.route) {
-                val paymentViewModel: PaymentViewModel =
-                    viewModel(
-                        factory = PaymentViewModel.factory(DemoPaymentGateway()),
-                    )
-                PaymentFlowScreen(
-                    viewModel = paymentViewModel,
-                    onExit = { navController.popBackStack() },
-                    onHome = { navController.navigateToHome() },
-                    onChallenges = {},
+        composable(AppRoute.PAYMENT.route) {
+            val paymentViewModel: PaymentViewModel =
+                viewModel(
+                    factory = PaymentViewModel.factory(DemoPaymentGateway()),
                 )
-            }
+            PaymentFlowScreen(
+                viewModel = paymentViewModel,
+                onExit = { navController.popBackStack() },
+                onHome = { navController.navigateToHome() },
+                onChallenges = { navController.navigate(AppRoute.PRO_CHALLENGE.route) },
+            )
+        }
+        composable(AppRoute.PRO_STORE.route) {
+            StoreContent(
+                isProMember = true,
+                onBackClick = { navController.popBackStack() },
+                onPointClick = { navController.navigate(AppRoute.PRO_CHALLENGE.route) },
+                onMissionClick = { navController.navigate(AppRoute.PRO_CHALLENGE.route) },
+                onSubscribeClick = { navController.navigate(AppRoute.PAYMENT.route) },
+            )
+        }
+        composable(AppRoute.PRO_CHALLENGE.route) {
+            AttendanceContent(
+                onBackClick = { navController.popBackStack() },
+                onPointClick = { navController.navigate(AppRoute.PRO_STORE.route) },
+                onHomeClick = { navController.navigateToHome() },
+            )
         }
     }
 }

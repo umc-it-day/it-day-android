@@ -3,6 +3,9 @@
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -31,6 +34,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -65,6 +71,11 @@ fun SettingsMainRoute(
                 ),
         )
     val uiState by viewModel.uiState.collectAsState()
+    var selectedProfileImageUri by remember { mutableStateOf<Uri?>(null) }
+    val profileImagePicker =
+        rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            selectedProfileImageUri = uri
+        }
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
@@ -83,8 +94,21 @@ fun SettingsMainRoute(
         }
     }
 
+    val displayState =
+        if (isGuestMode) {
+            uiState.copy(
+                profile =
+                    uiState.profile.copy(
+                        userName = "홍길동",
+                        userEmail = "guest@it-day.example",
+                    ),
+            )
+        } else {
+            uiState
+        }
+
     SettingsMainScreen(
-        uiState = uiState,
+        uiState = displayState,
         isGuestMode = isGuestMode,
         onNavigateScreen = viewModel::navigateToScreen,
         onPromotionToggle = viewModel::togglePromotionNotification,
@@ -96,6 +120,12 @@ fun SettingsMainRoute(
             onLogoutClick()
         },
         onShowNameEditDialog = viewModel::showNameEditDialog,
+        onProfileEditClick = {
+            profileImagePicker.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+            )
+        },
+        profileImageUri = selectedProfileImageUri,
         onDismissNameEditDialog = viewModel::dismissNameEditDialog,
         onEditingNameChange = viewModel::updateEditingName,
         onConfirmNameEdit = viewModel::confirmNameEdit,
@@ -119,6 +149,8 @@ fun SettingsMainScreen(
     onDismissLogoutDialog: () -> Unit,
     onConfirmLogout: () -> Unit,
     onShowNameEditDialog: () -> Unit,
+    onProfileEditClick: () -> Unit,
+    profileImageUri: Uri?,
     onDismissNameEditDialog: () -> Unit,
     onEditingNameChange: (String) -> Unit,
     onConfirmNameEdit: () -> Unit,
@@ -137,18 +169,20 @@ fun SettingsMainScreen(
         ) { screen ->
             when (screen) {
                 SettingsScreenType.Main ->
-                    SettingsMainContent(
-                        uiState = uiState,
-                        isGuestMode = isGuestMode,
-                        onNavigateScreen = onNavigateScreen,
+            SettingsMainContent(
+                uiState = uiState,
+                isGuestMode = isGuestMode,
+                onNavigateScreen = onNavigateScreen,
                         onPromotionToggle = onPromotionToggle,
                         onCharacterToggle = onCharacterToggle,
                         onShowLogoutDialog = onShowLogoutDialog,
                         onLoginClick = onLoginClick,
-                        onPrivacyPolicyClick = onPrivacyPolicyClick,
-                        onTermsOfServiceClick = onTermsOfServiceClick,
-                        onNameClick = onShowNameEditDialog,
-                    )
+                onPrivacyPolicyClick = onPrivacyPolicyClick,
+                onTermsOfServiceClick = onTermsOfServiceClick,
+                onProfileEditClick = onProfileEditClick,
+                profileImageUri = profileImageUri,
+                onNameClick = onShowNameEditDialog,
+            )
 
                 SettingsScreenType.PrivacySecurity ->
                     PrivacySecurityContent(
@@ -222,6 +256,8 @@ private fun SettingsMainContent(
     onLoginClick: () -> Unit,
     onPrivacyPolicyClick: () -> Unit,
     onTermsOfServiceClick: () -> Unit,
+    onProfileEditClick: () -> Unit,
+    profileImageUri: Uri?,
     onNameClick: () -> Unit,
 ) {
     Scaffold(
@@ -248,6 +284,8 @@ private fun SettingsMainContent(
 
             ProfileHeaderSection(
                 profile = uiState.profile,
+                profileImageUri = profileImageUri,
+                onProfileEditClick = onProfileEditClick,
                 onNameClick = onNameClick
             )
 
@@ -460,6 +498,8 @@ private fun SettingsMainScreenPreview() {
         onDismissLogoutDialog = {},
         onConfirmLogout = {},
         onShowNameEditDialog = {},
+        onProfileEditClick = {},
+        profileImageUri = null,
         onDismissNameEditDialog = {},
         onEditingNameChange = {},
         onConfirmNameEdit = {},
@@ -484,6 +524,8 @@ private fun PrivacySecurityContentPreview() {
         onDismissLogoutDialog = {},
         onConfirmLogout = {},
         onShowNameEditDialog = {},
+        onProfileEditClick = {},
+        profileImageUri = null,
         onDismissNameEditDialog = {},
         onEditingNameChange = {},
         onConfirmNameEdit = {},
@@ -508,6 +550,8 @@ private fun CustomerServiceContentPreview() {
         onDismissLogoutDialog = {},
         onConfirmLogout = {},
         onShowNameEditDialog = {},
+        onProfileEditClick = {},
+        profileImageUri = null,
         onDismissNameEditDialog = {},
         onEditingNameChange = {},
         onConfirmNameEdit = {},

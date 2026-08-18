@@ -46,6 +46,7 @@ import com.umc.itday.ui.theme.ItDayGray500
 fun GuestReportContent(
     onSignUpClick: () -> Unit,
     onAttendanceClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -57,7 +58,7 @@ fun GuestReportContent(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = ItDayDimens.Space24),
     ) {
-        ReportHeader(onAttendanceClick = onAttendanceClick)
+        ReportHeader(onAttendanceClick = onAttendanceClick, onProfileClick = onProfileClick)
         Row(
             modifier = Modifier.padding(top = ItDayDimens.Space16),
             verticalAlignment = Alignment.CenterVertically,

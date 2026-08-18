@@ -1,5 +1,6 @@
 package com.umc.itday.feature.settings.presentation
 
+import android.net.Uri
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -48,6 +49,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -62,6 +64,7 @@ import com.umc.itday.ui.theme.ItDayGray300
 import com.umc.itday.ui.theme.ItDayGray500
 import com.umc.itday.ui.theme.ItDayPrimary
 import com.umc.itday.ui.theme.ItDayWhite
+import coil3.compose.AsyncImage
 
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -102,6 +105,7 @@ internal fun SettingsTopBar(
 @Composable
 internal fun ProfileHeaderSection(
     profile: UserProfile,
+    profileImageUri: Uri? = null,
     onProfileEditClick: () -> Unit = {},
     onNameClick: () -> Unit = {},
 ) {
@@ -122,12 +126,24 @@ internal fun ProfileHeaderSection(
                         .background(ItDayGray100),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "프로필 사진",
-                    tint = ItDayGray300,
-                    modifier = Modifier.size(54.dp),
-                )
+                if (profileImageUri != null) {
+                    AsyncImage(
+                        model = profileImageUri,
+                        contentDescription = "프로필 사진",
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape),
+                        contentScale = ContentScale.Crop,
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "프로필 사진",
+                        tint = ItDayGray300,
+                        modifier = Modifier.size(54.dp),
+                    )
+                }
             }
             Box(
                 modifier =

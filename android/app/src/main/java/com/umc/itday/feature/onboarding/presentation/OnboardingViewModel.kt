@@ -11,6 +11,7 @@ import com.umc.itday.core.data.result.toUserMessage
 import com.umc.itday.feature.onboarding.domain.model.OnboardingSubmission
 import com.umc.itday.feature.onboarding.domain.model.OnboardingTerm
 import com.umc.itday.feature.onboarding.domain.model.TermAgreement
+import com.umc.itday.feature.onboarding.domain.model.TelecomGrade
 import com.umc.itday.feature.onboarding.domain.repository.OnboardingRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
@@ -52,15 +53,27 @@ class OnboardingViewModel(
                 logInfo("GET /api/terms 성공: ${termsResult.data.size}개")
             }
             if (telecomsResult is ApiResult.Success) {
-                logInfo("GET /api/telecoms 성공: ${telecomsResult.data.size}개")
+                logInfo(
+                    "GET /api/telecoms 성공: ${telecomsResult.data.size}개, " +
+                        "values=${telecomsResult.data.map { "${it.code}/${it.label}" }}",
+                )
             }
 
             _uiState.update { state ->
+                val carrierCodes =
+                    (telecomsResult as? ApiResult.Success)
+                        ?.data
+                        .orEmpty()
+                        .mapNotNull { telecom ->
+                            val carrier = carrierTypeFromApiCode(telecom.code) ?: carrierTypeFromApiCode(telecom.label)
+                            carrier?.let { it to telecom.code.ifBlank { telecom.label } }
+                        }.toMap()
+                val carriers = carrierCodes.keys.toList().ifEmpty { CarrierType.entries }
+
                 state.copy(
                     terms = (termsResult as? ApiResult.Success)?.data.orEmpty().toAgreementMap(),
-                    availableCarriers =
-                        (telecomsResult as? ApiResult.Success)?.data.orEmpty()
-                            .mapNotNull { carrierTypeFromApiCode(it.code) },
+                    availableCarriers = carriers,
+                    carrierApiCodes = carrierCodes,
                     isLoading = false,
                     errorMessage =
                         listOf(termsResult, telecomsResult)
@@ -126,10 +139,11 @@ class OnboardingViewModel(
         }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            logDebug("GET /api/telecoms/${carrier.apiCode}/grades 요청 시작")
-            when (val result = repository.getGrades(carrier.apiCode)) {
+            val telecomCode = _uiState.value.carrierApiCodes[carrier] ?: carrier.apiCode
+            logDebug("GET /api/telecoms/$telecomCode/grades 요청 시작")
+            when (val result = repository.getGradesWithFallback(carrier, telecomCode)) {
                 is ApiResult.Success -> {
-                    logInfo("GET /api/telecoms/${carrier.apiCode}/grades 성공: ${result.data.size}개")
+                    logInfo("GET /api/telecoms/$telecomCode/grades 성공: ${result.data.size}개")
                     _uiState.update { state ->
                         state.copy(
                             availableGrades =
@@ -155,7 +169,7 @@ class OnboardingViewModel(
             )
         }
 
-    fun toggleBrand(value: String) =
+    fun toggleBrand(value: Long) =
         _uiState.update { state ->
             val brands =
                 if (value in state.preferredBrands) state.preferredBrands - value
@@ -195,12 +209,13 @@ class OnboardingViewModel(
                             TermAgreement(term.id, state.isAgreed(type))
                         },
                     membershipId = membershipId,
-                    preferredBrandIds =
-                        state.availableBrands
-                            .filter { it.name in state.preferredBrands }
-                            .map { it.id },
+                    preferredBrandIds = state.preferredBrands.toList(),
                 )
-            logDebug("POST /api/members/onboarding 요청 시작")
+            logDebug(
+                "POST /api/members/onboarding 요청 시작: " +
+                    "membershipId=${submission.membershipId}, " +
+                    "preferredBrandIds=${submission.preferredBrandIds}",
+            )
             when (val result = repository.submitOnboarding(submission)) {
                 is ApiResult.Success -> {
                     logInfo("POST /api/members/onboarding 성공")
@@ -226,9 +241,26 @@ class OnboardingViewModel(
         infoLogger(message)
     }
 
-    class Factory(private val repository: OnboardingRepository) : ViewModelProvider.Factory {
+    private suspend fun OnboardingRepository.getGradesWithFallback(
+        carrier: CarrierType,
+        telecomCode: String,
+    ): ApiResult<List<TelecomGrade>> {
+        val firstResult = getGrades(telecomCode)
+        if (firstResult is ApiResult.Success || carrier != CarrierType.LGU_PLUS) return firstResult
+
+        val fallbackCode = "LGU+"
+        if (telecomCode == fallbackCode) return firstResult
+
+        logDebug("GET /api/telecoms/$telecomCode/grades 실패, $fallbackCode 로 재시도")
+        return getGrades(fallbackCode)
+    }
+
+    class Factory(
+        private val repository: OnboardingRepository,
+    ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T = OnboardingViewModel(repository) as T
+        override fun <T : ViewModel> create(modelClass: Class<T>): T =
+            OnboardingViewModel(repository = repository) as T
     }
 
     private companion object {
@@ -259,12 +291,21 @@ private val CarrierType.apiCode: String
     get() = if (this == CarrierType.LGU_PLUS) "LGU" else name
 
 private fun carrierTypeFromApiCode(value: String): CarrierType? =
-    when (value.uppercase()) {
+    when (value.normalizedCarrierValue()) {
         "SKT" -> CarrierType.SKT
         "KT" -> CarrierType.KT
-        "LGU", "LGU+", "LGU_PLUS" -> CarrierType.LGU_PLUS
+        "LGU", "LGU+", "LGUPLUS", "LGUPLUS멤버십" -> CarrierType.LGU_PLUS
+        "SKTELECOM", "SK텔레콤", "SKT멤버십" -> CarrierType.SKT
+        "KT멤버십" -> CarrierType.KT
         else -> null
     }
+
+private fun String.normalizedCarrierValue(): String =
+    trim()
+        .uppercase()
+        .replace(" ", "")
+        .replace("_", "")
+        .replace("-", "")
 
 private fun membershipGradeFromApiValue(value: String): MembershipGradeType? =
     MembershipGradeType.entries.firstOrNull { grade ->

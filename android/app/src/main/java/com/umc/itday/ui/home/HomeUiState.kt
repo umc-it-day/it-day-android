@@ -24,6 +24,9 @@ data class HomeUiState(
     val locationCoordinate: LocationCoordinate? = null,
     val isLocationRefreshing: Boolean = false,
     val isLocationUnavailable: Boolean = false,
+    val lotteryBarcode: HomeLotteryBarcodeUiModel = HomeLotteryBarcodeUiModel(),
+    val registeredMembershipBarcode: String? = null,
+    val isProMember: Boolean = false,
 )
 
 data class HomeLocationUiModel(
@@ -64,6 +67,15 @@ data class HomeBrandDayUiModel(
     val categoryText: String = "",
 )
 
+data class HomeLotteryBarcodeUiModel(
+    val number: String? = null,
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null,
+) {
+    val hasNumber: Boolean
+        get() = !number.isNullOrBlank()
+}
+
 sealed interface HomeAction {
     data object OpenCalendar : HomeAction
 
@@ -82,6 +94,8 @@ sealed interface HomeAction {
     data object DismissMembershipDialog : HomeAction
 
     data object RefreshBarcode : HomeAction
+
+    data object RefreshLotteryBarcode : HomeAction
 
     data object OpenBrandDetail : HomeAction
 
@@ -104,8 +118,6 @@ sealed interface HomeAction {
     data object OpenAdvertisement : HomeAction
 
     data object OpenMap : HomeAction
-
-    data object OpenOnboarding : HomeAction
 
     data class SelectPartnerBrand(
         val id: String,
@@ -131,11 +143,12 @@ sealed interface HomeEvent {
 
     data object OpenProChallenge : HomeEvent
 
+    data object OpenPayment : HomeEvent
+
     data object OpenAdvertisement : HomeEvent
 
     data object OpenMap : HomeEvent
 
     data object OpenBrandDetail : HomeEvent
 
-    data object OpenOnboarding : HomeEvent
 }

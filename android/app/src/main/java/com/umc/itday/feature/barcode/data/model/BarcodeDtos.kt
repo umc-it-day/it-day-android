@@ -16,3 +16,8 @@ data class BarcodeNumberRequestDto(
 data class BarcodeUsageRequestDto(
     val storeId: Long,
 )
+
+@Serializable
+data class LotteryDataDto(
+    val lotteryNum: String,
+)

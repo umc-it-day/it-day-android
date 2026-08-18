@@ -10,4 +10,6 @@ interface BarcodeRepository {
     suspend fun updateBarcode(barcodeNumber: String): ApiResult<Unit>
 
     suspend fun recordUsage(storeId: Long): ApiResult<Unit>
+
+    suspend fun getLotteryNumber(): ApiResult<String>
 }

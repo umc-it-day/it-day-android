@@ -39,6 +39,8 @@ fun ReportRoute(
     isGuestMode: Boolean,
     isProMember: Boolean = false,
     onHomeClick: () -> Unit = {},
+    onLoginClick: () -> Unit = {},
+    onSettingsClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val viewModel: ReportViewModel =
@@ -60,6 +62,8 @@ fun ReportRoute(
             isGuestMode = isGuestMode,
             isProMember = isProMember,
             onHomeClick = onHomeClick,
+            onSignUpClick = onLoginClick,
+            onProfileClick = onSettingsClick,
         )
         if (uiState.isLoading) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
@@ -80,6 +84,7 @@ fun ReportScreen(
     onPointHistoryClick: () -> Unit = {},
     onSubscribeClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {},
     isGuestMode: Boolean = false,
     isProMember: Boolean = false,
 ) {
@@ -102,6 +107,7 @@ fun ReportScreen(
                     GuestReportContent(
                         onSignUpClick = onSignUpClick,
                         onAttendanceClick = { openPage(ReportPage.Attendance) },
+                        onProfileClick = onProfileClick,
                     )
                 ReportAccess.Free ->
                     FreeReportContent(
@@ -116,12 +122,14 @@ fun ReportScreen(
                             onPointHistoryClick()
                         },
                         onAttendanceClick = { openPage(ReportPage.Attendance) },
+                        onProfileClick = onProfileClick,
                         floor = uiState.report?.unlockedFloor ?: 1,
                         pointBalance = uiState.report?.totalEarnedPoint ?: 0,
                     )
                 ReportAccess.Pro ->
                     ProReportContent(
                         onAttendanceClick = { openPage(ReportPage.Attendance) },
+                        onProfileClick = onProfileClick,
                         attendanceCount = uiState.report?.attendanceCount ?: 0,
                         monthlyPoint = uiState.report?.totalEarnedPoint ?: 0,
                         visitCount = uiState.report?.visitCount ?: 0,

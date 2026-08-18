@@ -47,7 +47,7 @@ fun ItDayNavHost(navController: NavHostController = rememberNavController()) {
                 onBackClick = { navController.popBackStack() },
                 onHomeClick = {
                     navController.navigate(AppRoute.MAIN.route) {
-                        popUpTo(AppRoute.MAIN.route) { inclusive = true }
+                        popUpTo(AppRoute.BARCODE.route) { inclusive = true }
                     }
                 },
             )
@@ -171,9 +171,6 @@ private fun MainDestination(navController: NavHostController) {
                 }
             }
         },
-        onOpenOnboarding = {
-            navController.navigate(AppRoute.ONBOARDING.route)
-        },
     )
 }
 
@@ -191,7 +188,12 @@ private fun OnboardingDestination(navController: NavHostController) {
                 ),
         )
     val onboardingViewModel: OnboardingViewModel =
-        viewModel(factory = OnboardingViewModel.Factory(context.appContainer.onboardingRepository))
+        viewModel(
+            factory =
+                OnboardingViewModel.Factory(
+                    repository = context.appContainer.onboardingRepository,
+                ),
+        )
     val uiState by onboardingViewModel.uiState.collectAsState()
 
     OnboardingScreen(
@@ -215,7 +217,7 @@ private fun OnboardingDestination(navController: NavHostController) {
         onComplete = {
             coroutineScope.launch {
                 sessionViewModel.completeOnboarding()
-                navController.navigate(AppRoute.MAIN.route) {
+                navController.navigate(AppRoute.BARCODE.route) {
                     popUpTo(AppRoute.ONBOARDING.route) { inclusive = true }
                 }
             }

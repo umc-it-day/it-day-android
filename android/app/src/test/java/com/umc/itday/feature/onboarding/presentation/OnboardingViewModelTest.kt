@@ -111,7 +111,7 @@ class OnboardingViewModelTest {
         viewModel.next()
         runCurrent()
 
-        repository.brands.forEach { viewModel.toggleBrand(it.name) }
+        repository.brands.forEach { viewModel.toggleBrand(it.id) }
         assertTrue(viewModel.uiState.value.canContinue)
         viewModel.next()
         runCurrent()
@@ -137,8 +137,8 @@ class OnboardingViewModelTest {
         viewModel.next()
         runCurrent()
 
-        viewModel.toggleBrand("스타벅스")
-        viewModel.toggleBrand("CU")
+        viewModel.toggleBrand(31L)
+        viewModel.toggleBrand(32L)
         assertFalse(viewModel.uiState.value.canContinue)
     }
 }

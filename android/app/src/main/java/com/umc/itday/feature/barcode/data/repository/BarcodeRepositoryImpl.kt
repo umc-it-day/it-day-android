@@ -32,6 +32,17 @@ class BarcodeRepositoryImpl(
     override suspend fun recordUsage(storeId: Long): ApiResult<Unit> =
         mutation { api.recordUsage(BarcodeUsageRequestDto(storeId)) }
 
+    override suspend fun getLotteryNumber(): ApiResult<String> =
+        safeApiCall {
+            val response = api.getLotteryNumber()
+            val lotteryNumber = response.data?.lotteryNum
+            if (response.success && lotteryNumber != null) {
+                ApiResult.Success(lotteryNumber)
+            } else {
+                response.failure()
+            }
+        }
+
     private suspend fun mutation(call: suspend () -> ApiResponseDto<*>): ApiResult<Unit> =
         safeApiCall {
             val response = call()
