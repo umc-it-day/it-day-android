@@ -79,9 +79,12 @@ fun MapContent(
     routePoints: List<MapCoordinate> = emptyList(),
     selectedStore: MapStoreUiModel? = null,
     showLocationUnavailable: Boolean = false,
+    showResearchButton: Boolean = false,
     mapReloadKey: Int = 0,
     onMapRetry: () -> Unit = {},
     onSearchClick: () -> Unit = {},
+    onResearchClick: () -> Unit = {},
+    onCameraMoveEnd: (MapCoordinate) -> Unit = {},
     onStoreClick: (String) -> Unit = {},
     onDirectionsClick: (String) -> Unit = {},
     onDirectionsCancel: () -> Unit = {},
@@ -133,9 +136,16 @@ fun MapContent(
                 },
                 reloadKey = mapReloadKey,
                 onRetry = onMapRetry,
+                onCameraMoveEnd = onCameraMoveEnd,
                 modifier = Modifier.fillMaxSize(),
             )
             SearchBar(onClick = onSearchClick)
+            if (showResearchButton && routePoints.isEmpty()) {
+                ResearchButton(
+                    modifier = Modifier.align(Alignment.TopCenter).padding(top = 76.dp),
+                    onClick = onResearchClick,
+                )
+            }
             if (routePoints.isNotEmpty()) {
                 RouteCancelButton(
                     modifier = Modifier.align(Alignment.TopEnd).padding(top = 84.dp, end = 20.dp),
@@ -156,6 +166,37 @@ fun MapContent(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun ResearchButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier =
+            modifier
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color.White)
+                .border(1.dp, MapHandle, RoundedCornerShape(20.dp))
+                .clickable(onClick = onClick)
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Text(
+            text = "↻",
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold,
+            color = MapPrimary,
+        )
+        Text(
+            text = stringResource(R.string.map_research_here),
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MapPrimary,
+        )
     }
 }
 
@@ -474,3 +515,5 @@ private val MapHandle = Color(0xFFD7D9DC)
 private val MapPlaceholder = Color(0xFFF1F1F1)
 private val MapPrimary = Color(0xFF637CF6)
 private val MapDiscountBackground = Color(0xFFEEF2FF)
+
+
