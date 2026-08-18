@@ -1,4 +1,4 @@
-﻿package com.umc.itday.core.network
+package com.umc.itday.core.network
 
 import com.umc.itday.BuildConfig
 import kotlinx.serialization.json.Json
@@ -34,10 +34,11 @@ object NetworkClient {
                 if (BuildConfig.DEBUG) {
                     addInterceptor(
                         HttpLoggingInterceptor().apply {
-                            level = HttpLoggingInterceptor.Level.BASIC
+                            level = HttpLoggingInterceptor.Level.BODY
                         },
                     )
                 }
+
                 authInterceptor?.let(::addInterceptor)
                 authenticator?.let(::authenticator)
             }.build()
