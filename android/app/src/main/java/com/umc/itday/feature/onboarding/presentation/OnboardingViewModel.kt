@@ -267,9 +267,32 @@ private fun carrierTypeFromApiCode(value: String): CarrierType? =
     }
 
 private fun membershipGradeFromApiValue(value: String): MembershipGradeType? =
-    MembershipGradeType.entries.firstOrNull {
-        it.name.equals(value, ignoreCase = true) || it.displayName == value
+    MembershipGradeType.entries.firstOrNull { grade ->
+        val normalizedValue = value.normalizedGradeValue()
+        val normalizedName = grade.name.normalizedGradeValue()
+        val normalizedDisplayName = grade.displayName.normalizedGradeValue()
+
+        normalizedValue == normalizedName ||
+            normalizedValue == normalizedDisplayName ||
+            normalizedValue.contains(normalizedName) ||
+            normalizedValue.contains(normalizedDisplayName)
+    } ?: when (value.normalizedGradeValue()) {
+        "브이브이아이피", "최우수" -> MembershipGradeType.VVIP
+        "브이아이피", "우수" -> MembershipGradeType.VIP
+        "다이아", "다이아몬드" -> MembershipGradeType.DIAMOND
+        "골드" -> MembershipGradeType.GOLD
+        "실버" -> MembershipGradeType.SILVER
+        "화이트" -> MembershipGradeType.WHITE
+        "일반", "기본" -> MembershipGradeType.GENERAL
+        else -> null
     }
+
+private fun String.normalizedGradeValue(): String =
+    trim()
+        .lowercase()
+        .replace("등급", "")
+        .replace("grade", "")
+        .filter { it.isLetterOrDigit() }
 
 private val MembershipGradeType.iconResId: Int
     get() =

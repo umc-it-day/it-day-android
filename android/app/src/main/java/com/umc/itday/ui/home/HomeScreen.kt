@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -21,7 +22,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.umc.itday.BuildConfig
 import com.umc.itday.core.di.appContainer
+import com.umc.itday.ui.component.ItDayButton
+import com.umc.itday.ui.component.ItDayButtonSize
+import com.umc.itday.ui.component.ItDayButtonVariant
 import com.umc.itday.ui.home.component.BrandDaySection
 import com.umc.itday.ui.home.component.CarrierComparisonBanner
 import com.umc.itday.ui.home.component.CurrentLocationRow
@@ -119,6 +124,16 @@ private fun HomeScreenContent(
             isRefreshing = uiState.isLocationRefreshing,
             onRefresh = { onAction(HomeAction.RefreshLocation) },
         )
+        if (BuildConfig.SHOW_ONBOARDING_DEBUG_ENTRY) {
+            Spacer(Modifier.height(ItDayDimens.Space16))
+            ItDayButton(
+                text = "온보딩 브랜드 이미지 확인",
+                onClick = { onAction(HomeAction.OpenOnboarding) },
+                modifier = Modifier.fillMaxWidth(),
+                variant = ItDayButtonVariant.Secondary,
+                size = ItDayButtonSize.Medium,
+            )
+        }
         Spacer(Modifier.height(ItDayDimens.Space16))
         MembershipContent(uiState, onAction)
         HomeDashboardSections(uiState, onAction)

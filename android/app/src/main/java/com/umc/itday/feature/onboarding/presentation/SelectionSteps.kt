@@ -37,10 +37,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
+import com.umc.itday.feature.onboarding.domain.model.PreferredBrand
 import com.umc.itday.ui.theme.ItDayGray100
 import com.umc.itday.ui.theme.ItDayGray300
 import com.umc.itday.ui.theme.ItDayGray500
@@ -248,38 +251,37 @@ private fun SelectableOptionCard(
 
 @Composable
 private fun BrandSections(
-    brands: List<com.umc.itday.feature.onboarding.domain.model.PreferredBrand>,
+    brands: List<PreferredBrand>,
     selectedBrands: Set<String>,
     onBrandToggle: (String) -> Unit,
 ) {
-    var cafeExpanded by rememberSaveable { mutableStateOf(true) }
-    var convenienceExpanded by rememberSaveable { mutableStateOf(true) }
+    val groupedBrands = BrandCategory.entries.mapNotNull { category ->
+        brands.filter { category.matches(it.category) }
+            .takeIf(List<PreferredBrand>::isNotEmpty)
+            ?.let { category to it }
+    }
 
-    BrandCategorySection(
-        title = "카페",
-        brands = brands.filter { it.category.isCafeCategory() }.map { it.name },
-        selectedBrands = selectedBrands,
-        expanded = cafeExpanded,
-        onExpandedChange = { cafeExpanded = !cafeExpanded },
-        onBrandToggle = onBrandToggle,
-    )
+    groupedBrands.forEachIndexed { index, (category, categoryBrands) ->
+        var expanded by rememberSaveable(category.title) { mutableStateOf(true) }
 
-    Spacer(modifier = Modifier.height(16.dp))
-
-    BrandCategorySection(
-        title = "편의점",
-        brands = brands.filterNot { it.category.isCafeCategory() }.map { it.name },
-        selectedBrands = selectedBrands,
-        expanded = convenienceExpanded,
-        onExpandedChange = { convenienceExpanded = !convenienceExpanded },
-        onBrandToggle = onBrandToggle,
-    )
+        if (index > 0) {
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+        BrandCategorySection(
+            title = category.title,
+            brands = categoryBrands,
+            selectedBrands = selectedBrands,
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded },
+            onBrandToggle = onBrandToggle,
+        )
+    }
 }
 
 @Composable
 private fun BrandCategorySection(
     title: String,
-    brands: List<String>,
+    brands: List<PreferredBrand>,
     selectedBrands: Set<String>,
     expanded: Boolean,
     onExpandedChange: () -> Unit,
@@ -316,8 +318,7 @@ private fun BrandCategorySection(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 rowBrands.forEach { brand ->
-                    val isSelected = brand in selectedBrands
-                    val icon = if (brand in CONVENIENCE_BRANDS) "🏪" else "☕"
+                    val isSelected = brand.name in selectedBrands
                     val cardBg = if (isSelected) Color(0xFFEBF2FF) else Color(0xFFF6F7F9)
                     val cardBorder = if (isSelected) ItDayPrimary else Color.Transparent
 
@@ -327,7 +328,7 @@ private fun BrandCategorySection(
                                 .weight(1f)
                                 .height(80.dp)
                                 .clip(RoundedCornerShape(14.dp))
-                                .clickable { onBrandToggle(brand) },
+                                .clickable { onBrandToggle(brand.name) },
                         shape = RoundedCornerShape(14.dp),
                         colors = CardDefaults.cardColors(containerColor = cardBg),
                         border = BorderStroke(1.5.dp, cardBorder),
@@ -342,10 +343,10 @@ private fun BrandCategorySection(
                                 modifier = Modifier.align(Alignment.Center),
                                 horizontalAlignment = Alignment.CenterHorizontally,
                             ) {
-                                Text(text = icon, fontSize = 20.sp)
+                                BrandLogo(brand = brand)
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = brand,
+                                    text = brand.name,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Medium,
                                     color = Color(0xFF191919),
@@ -369,7 +370,74 @@ private fun BrandCategorySection(
     }
 }
 
-private val CONVENIENCE_BRANDS = setOf("CU", "GS25", "세븐일레븐", "이마트24", "미니스톱")
+@Composable
+private fun BrandLogo(brand: PreferredBrand) {
+    val fallbackIcon = BrandCategory.from(brand.category).fallbackIcon
+    val imageUrl = brand.imageUrl?.takeIf(String::isNotBlank)
 
-private fun String.isCafeCategory(): Boolean =
-    contains("카페", ignoreCase = true) || contains("cafe", ignoreCase = true)
+    if (imageUrl == null) {
+        Text(text = fallbackIcon, fontSize = 20.sp)
+        return
+    }
+
+    AsyncImage(
+        model = imageUrl,
+        contentDescription = brand.name,
+        modifier =
+            Modifier
+                .size(28.dp)
+                .clip(CircleShape),
+        contentScale = ContentScale.Fit,
+        error = null,
+        fallback = null,
+    )
+}
+
+private enum class BrandCategory(
+    val title: String,
+    val fallbackIcon: String,
+    private val keywords: Set<String>,
+) {
+    Cafe(
+        title = "카페",
+        fallbackIcon = "☕",
+        keywords = setOf("cafe", "coffee", "dessert", "bakery", "카페", "커피", "디저트", "베이커리"),
+    ),
+    Convenience(
+        title = "편의점",
+        fallbackIcon = "🏪",
+        keywords = setOf("convenience", "mart", "store", "편의점", "마트"),
+    ),
+    Food(
+        title = "푸드",
+        fallbackIcon = "🍽",
+        keywords = setOf("food", "restaurant", "dining", "fastfood", "pizza", "chicken", "푸드", "외식", "음식", "식당", "피자", "치킨"),
+    ),
+    Culture(
+        title = "문화",
+        fallbackIcon = "🎬",
+        keywords = setOf("culture", "movie", "cinema", "book", "travel", "leisure", "문화", "영화", "도서", "여행", "여가"),
+    ),
+    Shopping(
+        title = "쇼핑",
+        fallbackIcon = "🛍",
+        keywords = setOf("shopping", "shop", "commerce", "fashion", "beauty", "쇼핑", "패션", "뷰티", "커머스"),
+    ),
+    Etc(
+        title = "기타",
+        fallbackIcon = "•",
+        keywords = emptySet(),
+    );
+
+    fun matches(value: String): Boolean =
+        if (this == Etc) {
+            entries.filterNot { it == Etc }.none { it.matches(value) }
+        } else {
+            keywords.any { keyword -> value.contains(keyword, ignoreCase = true) }
+        }
+
+    companion object {
+        fun from(value: String): BrandCategory =
+            entries.firstOrNull { it != Etc && it.matches(value) } ?: Etc
+    }
+}
