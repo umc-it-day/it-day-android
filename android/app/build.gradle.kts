@@ -167,7 +167,9 @@ dependencies {
     implementation(libs.kakao.user)
     implementation(libs.konfetti.compose)
     implementation(libs.play.services.location)
+    implementation(libs.zxing.core)
     implementation(platform(libs.androidx.compose.bom))
+
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
