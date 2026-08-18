@@ -171,6 +171,9 @@ private fun MainDestination(navController: NavHostController) {
                 }
             }
         },
+        onOpenOnboarding = {
+            navController.navigate(AppRoute.ONBOARDING.route)
+        },
     )
 }
 

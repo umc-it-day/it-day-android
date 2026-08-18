@@ -78,6 +78,11 @@ android {
                 configBoolean("ITDAY_DEBUG_USE_MOCK_KAKAO_LOGIN", true),
             )
             buildConfigField(
+                "boolean",
+                "SHOW_ONBOARDING_DEBUG_ENTRY",
+                configBoolean("ITDAY_SHOW_ONBOARDING_DEBUG_ENTRY", false),
+            )
+            buildConfigField(
                 "String",
                 "KAKAO_NATIVE_APP_KEY",
                 configValue("ITDAY_KAKAO_NATIVE_APP_KEY").asBuildConfigString(),
@@ -99,6 +104,11 @@ android {
                 "boolean",
                 "USE_MOCK_KAKAO_LOGIN",
                 configBoolean("ITDAY_RELEASE_USE_MOCK_KAKAO_LOGIN", false),
+            )
+            buildConfigField(
+                "boolean",
+                "SHOW_ONBOARDING_DEBUG_ENTRY",
+                "false",
             )
             buildConfigField(
                 "String",

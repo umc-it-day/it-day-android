@@ -43,6 +43,7 @@ import com.umc.itday.ui.theme.ItDayWhite
 fun MainTabScaffold(
     onLogout: () -> Unit = {},
     onLogin: () -> Unit = {},
+    onOpenOnboarding: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val isGuestMode by
@@ -78,6 +79,7 @@ fun MainTabScaffold(
             isGuestMode = isGuestMode,
             onLogout = onLogout,
             onLogin = onLogin,
+            onOpenOnboarding = onOpenOnboarding,
             modifier =
                 if (currentRoute == AppRoute.PAYMENT.route) {
                     Modifier
@@ -127,6 +129,7 @@ private fun MainTabNavHost(
     isGuestMode: Boolean,
     onLogout: () -> Unit,
     onLogin: () -> Unit,
+    onOpenOnboarding: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     NavHost(
@@ -142,6 +145,7 @@ private fun MainTabNavHost(
                         HomeEvent.OpenCalendar -> navController.navigateToTopLevelRoute(AppRoute.REPORT)
                         HomeEvent.OpenProfile -> navController.navigateToTopLevelRoute(AppRoute.SETTINGS)
                         HomeEvent.OpenLogin -> onLogout()
+                        HomeEvent.OpenOnboarding -> onOpenOnboarding()
                         else -> { /* 처리되지 않은 이벤트 */ }
                     }
                 }

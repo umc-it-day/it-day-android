@@ -105,6 +105,8 @@ sealed interface HomeAction {
 
     data object OpenMap : HomeAction
 
+    data object OpenOnboarding : HomeAction
+
     data class SelectPartnerBrand(
         val id: String,
     ) : HomeAction
@@ -134,4 +136,6 @@ sealed interface HomeEvent {
     data object OpenMap : HomeEvent
 
     data object OpenBrandDetail : HomeEvent
+
+    data object OpenOnboarding : HomeEvent
 }

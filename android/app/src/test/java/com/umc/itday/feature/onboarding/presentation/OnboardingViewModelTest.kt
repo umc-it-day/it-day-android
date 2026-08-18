@@ -1,6 +1,9 @@
 package com.umc.itday.feature.onboarding.presentation
 
 import com.umc.itday.core.data.result.ApiResult
+import com.umc.itday.core.network.NetworkClient
+import com.umc.itday.feature.auth.data.model.ApiResponseDto
+import com.umc.itday.feature.onboarding.data.model.TelecomGradeDto
 import com.umc.itday.feature.onboarding.domain.model.OnboardingSubmission
 import com.umc.itday.feature.onboarding.domain.model.OnboardingTerm
 import com.umc.itday.feature.onboarding.domain.model.PreferredBrand
@@ -74,6 +77,27 @@ class OnboardingViewModelTest {
     }
 
     @Test
+    fun `통신사 등급 응답에 설명이 없어도 파싱한다`() {
+        val response =
+            NetworkClient.json.decodeFromString<ApiResponseDto<List<TelecomGradeDto>>>(
+                """
+                {
+                  "success": true,
+                  "data": [
+                    {
+                      "membershipId": 21,
+                      "telecomGrade": "골드 등급"
+                    }
+                  ]
+                }
+                """.trimIndent(),
+            )
+
+        assertEquals("골드 등급", response.data?.single()?.telecomGrade)
+        assertEquals("", response.data?.single()?.gradeContent)
+    }
+
+    @Test
     fun `브랜드 3개와 서버 식별자를 포함해 온보딩을 제출한다`() = runTest {
         runCurrent()
         viewModel.setAgreement(AgreementType.Location, true)
@@ -141,7 +165,7 @@ private class FakeOnboardingApiRepository : OnboardingRepository {
         ApiResult.Success(listOf(Telecom("SKT", "SKT"), Telecom("KT", "KT")))
 
     override suspend fun getGrades(telecom: String) =
-        ApiResult.Success(listOf(TelecomGrade(21, "GOLD", "골드 등급")))
+        ApiResult.Success(listOf(TelecomGrade(21, "골드 등급", "")))
 
     override suspend fun getBrands() = ApiResult.Success(brands)
 

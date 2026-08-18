@@ -142,6 +142,7 @@ class HomeViewModel(
                 HomeAction.OpenAdvertisement -> HomeEvent.OpenAdvertisement
                 HomeAction.OpenMap -> HomeEvent.OpenMap
                 HomeAction.OpenBrandDetail -> HomeEvent.OpenBrandDetail
+                HomeAction.OpenOnboarding -> HomeEvent.OpenOnboarding
                 else -> return
             }
         sendEvent(event)
