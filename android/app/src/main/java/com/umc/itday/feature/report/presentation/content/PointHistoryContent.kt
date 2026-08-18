@@ -1,4 +1,4 @@
-﻿package com.umc.itday.feature.report.presentation.content
+package com.umc.itday.feature.report.presentation.content
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -48,6 +48,7 @@ data class PointHistoryUiModel(val date: String, val title: String, val detail: 
 
 @Composable
 fun PointHistoryContent(
+    pointBalance: Int = 0,
     histories: List<PointHistoryUiModel> = PointHistoryPreviewItems,
     onBackClick: () -> Unit = {},
     onAttendanceClick: () -> Unit = {},
@@ -64,7 +65,8 @@ fun PointHistoryContent(
         ItDayFlowTopBar(title = stringResource(R.string.point_title), onBackClick = onBackClick)
         Column(modifier = Modifier.padding(horizontal = ItDayDimens.Space24)) {
             Text(text = stringResource(R.string.point_my_points), fontWeight = FontWeight.Bold)
-            Text(text = stringResource(R.string.point_value, 0), color = ItDayBlue, style = MaterialTheme.typography.headlineMedium)
+            Text(text = stringResource(R.string.point_value, pointBalance), color = ItDayBlue, style = MaterialTheme.typography.headlineMedium)
+
             Text(text = stringResource(R.string.point_expiring), color = ItDayGray500, style = MaterialTheme.typography.bodySmall)
             Row(
                 modifier = Modifier.fillMaxWidth().padding(top = ItDayDimens.Space24).clip(RoundedCornerShape(16.dp)).background(ItDayBlue50).clickable(onClick = onAttendanceClick).padding(16.dp),
