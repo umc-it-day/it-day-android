@@ -1,4 +1,4 @@
-﻿package com.umc.itday.feature.map.presentation
+package com.umc.itday.feature.map.presentation
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -24,28 +24,42 @@ data class MapUiState(
     val stores: List<MapStoreUiModel> = emptyList(),
     val routePoints: List<MapCoordinate> = emptyList(),
     val selectedStoreId: String? = null,
+    val filteredClusterStoreIds: List<String>? = null,
     val sortOption: MapSortOption = MapSortOption.DISTANCE,
     val isLocationUnavailable: Boolean = false,
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
     val reloadKey: Int = 0,
+    val myLocationTrigger: Long = 0L,
 ) {
+
     val selectedStore: MapStoreUiModel?
         get() = stores.firstOrNull { it.id == selectedStoreId }
 
     val markers: List<MapMarkerUiModel>
         get() = stores.map { MapMarkerUiModel(it.id, it.position) }
 
-    val sortedStores: List<MapStoreUiModel>
-        get() =
-            when (sortOption) {
+    val displayedStores: List<MapStoreUiModel>
+        get() {
+            val list =
+                if (filteredClusterStoreIds != null) {
+                    stores.filter { it.id in filteredClusterStoreIds }
+                } else {
+                    stores
+                }
+            return when (sortOption) {
                 MapSortOption.DISTANCE ->
-                    stores.sortedBy {
+                    list.sortedBy {
                         it.distanceMeters.takeIf { value -> value >= 0 } ?: Int.MAX_VALUE
                     }
-                MapSortOption.DISCOUNT -> stores.sortedByDescending { it.discountPercent }
+                MapSortOption.DISCOUNT -> list.sortedByDescending { it.discountPercent }
             }
+        }
+
+    val sortedStores: List<MapStoreUiModel>
+        get() = displayedStores
 }
+
 
 class MapViewModel(
     private val mapRepository: MapRepository,
@@ -102,7 +116,6 @@ class MapViewModel(
                             lastSearchedCoordinate = coordinate,
                             showResearchButton = false,
                             isLoading = false,
-                            reloadKey = state.reloadKey + 1,
                         )
                     }
                 }
@@ -115,6 +128,7 @@ class MapViewModel(
                     }
                 }
             }
+
         }
     }
 
@@ -127,6 +141,19 @@ class MapViewModel(
         fetchNearbyStores(currentCenter)
     }
 
+    fun moveToMyLocation() {
+        val currentLoc = _uiState.value.currentLocation ?: return
+        _uiState.update { state ->
+            state.copy(
+                myLocationTrigger = state.myLocationTrigger + 1,
+                currentCameraCenter = currentLoc,
+                showResearchButton = false,
+            )
+        }
+        fetchNearbyStores(currentLoc)
+    }
+
+
     private companion object {
         const val TAG = "MapViewModel"
         const val MIN_SEARCH_MOVE_DELTA = 0.002 // 약 200m 이상 이동 시 재검색 버튼 노출
@@ -136,22 +163,48 @@ class MapViewModel(
         _uiState.update { it.copy(selectedStoreId = storeId) }
     }
 
+    fun selectCluster(storeIds: List<String>) {
+        if (storeIds.isEmpty()) return
+        if (storeIds.size == 1) {
+            _uiState.update { it.copy(selectedStoreId = storeIds.first(), filteredClusterStoreIds = null) }
+        } else {
+            _uiState.update { it.copy(selectedStoreId = null, filteredClusterStoreIds = storeIds) }
+        }
+    }
+
+    fun clearClusterFilter() {
+        _uiState.update { it.copy(filteredClusterStoreIds = null) }
+    }
+
     fun closeStore() {
         _uiState.update { it.copy(selectedStoreId = null) }
     }
+
 
     fun selectSort(option: MapSortOption) {
         _uiState.update { it.copy(sortOption = option) }
     }
 
     fun startDirections(storeId: String) {
-        _uiState.update { state ->
-            val start = state.currentLocation ?: return@update state
-            val destination = state.stores.firstOrNull { it.id == storeId }?.position
-                ?: return@update state
-            state.copy(routePoints = listOf(start, destination))
+        val start = _uiState.value.currentLocation ?: return
+        val destination =
+            _uiState.value.stores.firstOrNull { it.id == storeId }?.position
+                ?: return
+
+        _uiState.update { it.copy(routePoints = listOf(start, destination)) }
+
+        viewModelScope.launch {
+            when (val result = mapRepository.getDirections(start.latitude, start.longitude, destination.latitude, destination.longitude)) {
+                is ApiResult.Success -> {
+                    if (result.data.isNotEmpty()) {
+                        _uiState.update { it.copy(routePoints = result.data) }
+                    }
+                }
+                is ApiResult.Failure -> Unit
+            }
         }
     }
+
 
     fun cancelDirections() {
         _uiState.update { it.copy(routePoints = emptyList()) }

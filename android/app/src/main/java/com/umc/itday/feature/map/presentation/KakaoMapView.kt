@@ -1,4 +1,4 @@
-﻿package com.umc.itday.feature.map.presentation
+package com.umc.itday.feature.map.presentation
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -67,12 +67,13 @@ fun KakaoMapView(
     currentLocation: MapCoordinate?,
     markers: List<MapMarkerUiModel>,
     routePoints: List<MapCoordinate>,
-    onMarkerClick: (String) -> Unit,
+    onMarkerClick: (List<String>) -> Unit,
     onMapClick: () -> Unit,
     reloadKey: Int,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     onCameraMoveEnd: ((MapCoordinate) -> Unit)? = null,
+    myLocationTrigger: Long = 0L,
 ) {
     if (!KakaoMapEnvironment.isSupportedDevice) {
         MapStatusText(R.string.map_device_not_supported)
@@ -97,14 +98,15 @@ fun KakaoMapView(
     val context = LocalContext.current
     var isLoading by remember(reloadKey) { mutableStateOf(true) }
     var hasError by remember(reloadKey) { mutableStateOf(false) }
-    val mapView = remember(context, reloadKey, initialPosition) { MapView(context) }
+    val mapView = remember(context, reloadKey) { MapView(context) }
     var isMapReady by remember(mapView) { mutableStateOf(false) }
     var readyMap by remember(mapView) { mutableStateOf<KakaoMap?>(null) }
+    var hasMovedToInitialLocation by remember(mapView) { mutableStateOf(false) }
     val currentOnMapClick by rememberUpdatedState(onMapClick)
     val currentOnMarkerClick by rememberUpdatedState(onMarkerClick)
     val currentOnCameraMoveEnd by rememberUpdatedState(onCameraMoveEnd)
     val startMap =
-        remember(mapView, initialPosition) {
+        remember(mapView) {
             Runnable {
                 mapView.start(
                     object : MapLifeCycleCallback() {
@@ -131,13 +133,32 @@ fun KakaoMapView(
                             isLoading = false
                         }
 
-                        override fun getPosition(): LatLng = initialPosition.toLatLng()
+                        override fun getPosition(): LatLng = (currentLocation ?: initialPosition).toLatLng()
 
                         override fun getZoomLevel(): Int = DEFAULT_ZOOM_LEVEL
                     },
                 )
             }
         }
+
+    LaunchedEffect(readyMap, isMapReady, currentLocation) {
+        if (isMapReady && !hasMovedToInitialLocation && currentLocation != null) {
+            hasMovedToInitialLocation = true
+            readyMap?.moveCamera(
+                CameraUpdateFactory.newCenterPosition(currentLocation.toLatLng(), DEFAULT_ZOOM_LEVEL),
+                CameraAnimation.from(300),
+            )
+        }
+    }
+
+    LaunchedEffect(myLocationTrigger) {
+        if (myLocationTrigger > 0 && isMapReady && currentLocation != null) {
+            readyMap?.moveCamera(
+                CameraUpdateFactory.newCenterPosition(currentLocation.toLatLng(), DEFAULT_ZOOM_LEVEL),
+                CameraAnimation.from(300),
+            )
+        }
+    }
 
     LaunchedEffect(readyMap, markers, currentLocation) {
         readyMap?.let { map ->
@@ -156,6 +177,7 @@ fun KakaoMapView(
     LaunchedEffect(readyMap, routePoints) {
         readyMap?.showRoute(routePoints)
     }
+
 
     DisposableEffect(lifecycleOwner, mapView) {
         val observer =
@@ -269,7 +291,7 @@ private fun KakaoMap.startMarkerClustering(
     context: Context,
     currentLocation: MapCoordinate?,
     markers: List<MapMarkerUiModel>,
-    onMarkerClick: (String) -> Unit,
+    onMarkerClick: (List<String>) -> Unit,
     onCameraMoveEnd: ((MapCoordinate) -> Unit)? = null,
 ) {
     val manager = labelManager ?: return
@@ -307,10 +329,18 @@ private fun KakaoMap.startMarkerClustering(
     }
     setOnLabelClickListener { _, _, label ->
         val cluster = label.tag as? MarkerCluster ?: return@setOnLabelClickListener false
-        if (cluster.ids.size == 1) onMarkerClick(cluster.ids.first())
+        if (cluster.ids.size > 1) {
+            val currentZoom = cameraPosition?.zoomLevel ?: DEFAULT_ZOOM_LEVEL
+            moveCamera(
+                CameraUpdateFactory.newCenterPosition(cluster.position.toLatLng(), (currentZoom + 2).coerceAtMost(21)),
+                CameraAnimation.from(250),
+            )
+        }
+        onMarkerClick(cluster.ids)
         true
     }
 }
+
 
 private fun Context.markerBitmap(resourceId: Int, sizeDp: Int): Bitmap? {
     val sizePx = (sizeDp * resources.displayMetrics.density).toInt()

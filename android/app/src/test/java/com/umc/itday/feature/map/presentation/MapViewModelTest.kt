@@ -72,8 +72,12 @@ class MapViewModelTest {
         val store = viewModel.uiState.value.stores.first()
 
         viewModel.startDirections(store.id)
+        runCurrent()
 
-        assertEquals(listOf(location, store.position), viewModel.uiState.value.routePoints)
+        assertEquals(3, viewModel.uiState.value.routePoints.size)
+        assertEquals(location, viewModel.uiState.value.routePoints.first())
+        assertEquals(store.position, viewModel.uiState.value.routePoints.last())
+
         viewModel.cancelDirections()
         assertTrue(viewModel.uiState.value.routePoints.isEmpty())
     }
@@ -83,6 +87,37 @@ class MapViewModelTest {
         viewModel.selectSort(MapSortOption.DISCOUNT)
 
         assertEquals(MapSortOption.DISCOUNT, viewModel.uiState.value.sortOption)
+    }
+
+    @Test
+    fun `여러 매장이 겹친 클러스터를 선택하면 해당 매장들만 필터링된다`() = runTest {
+        val location = MapCoordinate(35.1, 129.1)
+        viewModel.onLocationFound(location)
+        runCurrent()
+
+        viewModel.selectCluster(listOf("1", "2"))
+        val state = viewModel.uiState.value
+        assertEquals(listOf("1", "2"), state.filteredClusterStoreIds)
+        assertNull(state.selectedStoreId)
+
+        viewModel.clearClusterFilter()
+        assertNull(viewModel.uiState.value.filteredClusterStoreIds)
+    }
+
+    @Test
+    fun `내 위치로 이동 함수를 호출하면 trigger와 중심 좌표가 갱신된다`() = runTest {
+        val location = MapCoordinate(35.1, 129.1)
+        viewModel.onLocationFound(location)
+        runCurrent()
+
+        viewModel.onCameraMoved(MapCoordinate(37.0, 127.0))
+        assertTrue(viewModel.uiState.value.showResearchButton)
+
+        viewModel.moveToMyLocation()
+        val state = viewModel.uiState.value
+        assertEquals(1L, state.myLocationTrigger)
+        assertEquals(location, state.currentCameraCenter)
+        assertFalse(state.showResearchButton)
     }
 }
 
@@ -106,6 +141,21 @@ private class FakeMapRepository : MapRepository {
 
     override suspend fun getStoreDetail(storeId: Long): ApiResult<MapStoreUiModel> =
         ApiResult.Success(dummyStores.first())
+
+    override suspend fun getDirections(
+        startLat: Double,
+        startLng: Double,
+        destLat: Double,
+        destLng: Double,
+    ): ApiResult<List<MapCoordinate>> =
+        ApiResult.Success(
+            listOf(
+                MapCoordinate(startLat, startLng),
+                MapCoordinate((startLat + destLat) / 2, (startLng + destLng) / 2),
+                MapCoordinate(destLat, destLng),
+            ),
+        )
 }
+
 
 

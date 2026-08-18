@@ -1,4 +1,4 @@
-﻿package com.umc.itday.feature.map.presentation
+package com.umc.itday.feature.map.presentation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,12 +39,17 @@ fun MapScreen() {
             markers = uiState.markers,
             routePoints = uiState.routePoints,
             selectedStore = uiState.selectedStore,
+            isClusterFiltered = uiState.filteredClusterStoreIds != null,
+            onClearClusterFilter = viewModel::clearClusterFilter,
             showLocationUnavailable = uiState.isLocationUnavailable,
             showResearchButton = uiState.showResearchButton,
             mapReloadKey = uiState.reloadKey,
+            myLocationTrigger = uiState.myLocationTrigger,
+            onMyLocationClick = viewModel::moveToMyLocation,
             onMapRetry = viewModel::retryMap,
             onResearchClick = viewModel::searchCurrentLocation,
             onCameraMoveEnd = viewModel::onCameraMoved,
+            onMarkerClick = viewModel::selectCluster,
             onDirectionsClick = viewModel::startDirections,
             onDirectionsCancel = viewModel::cancelDirections,
             onStoreClick = viewModel::selectStore,
@@ -52,6 +57,8 @@ fun MapScreen() {
             sortOption = uiState.sortOption,
             onSortClick = viewModel::selectSort,
         )
+
+
 
         if (uiState.isLoading) {
             Box(

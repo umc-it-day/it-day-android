@@ -1,10 +1,13 @@
-﻿package com.umc.itday.feature.map.data.repository
+package com.umc.itday.feature.map.data.repository
 
 import android.util.Log
 import com.umc.itday.core.data.result.ApiResult
 import com.umc.itday.core.data.result.AppError
 import com.umc.itday.core.data.result.AuthErrorReason
+import com.umc.itday.feature.map.data.mapper.toRoutePoints
+import com.umc.itday.feature.map.data.mapper.toUiModel
 import com.umc.itday.feature.map.data.mapper.toUiModels
+
 import com.umc.itday.feature.map.data.remote.MapApiService
 import com.umc.itday.feature.map.domain.repository.MapRepository
 import com.umc.itday.feature.map.presentation.MapCoordinate
@@ -42,29 +45,68 @@ class MapRepositoryImpl(
             val response = api.getStoreDetail(storeId)
             val data = response.data
             if (response.success && data != null) {
+                val benefitUiModels = data.benefits.map { it.toUiModel() }
                 val firstBenefit = data.benefits.firstOrNull()
                 ApiResult.Success(
                     MapStoreUiModel(
                         id = data.storeId.toString(),
                         name = data.storeName,
+                        brandName = data.brandName,
+                        categoryName = data.category,
+                        brandImg = data.brandImg?.takeIf { it.isNotBlank() },
                         position = MapCoordinate(data.latitude, data.longitude),
                         distanceMeters = data.distanceMeters ?: -1,
                         discountPercent = firstBenefit?.benefitValue ?: -1,
-                        detail = MapStoreDetailUiModel(
-                            benefit = firstBenefit?.title ?: "",
-                            benefitDescription = firstBenefit?.description ?: "",
-                            productSaving = "",
-                            monthlySaving = "",
-                            address = data.address ?: "",
-                            businessHours = data.businessHour ?: "",
-                            phoneNumber = data.telNum ?: "",
-                        )
-                    )
+                        benefitTitle = firstBenefit?.title ?: "",
+                        detail =
+                            MapStoreDetailUiModel(
+                                benefit = firstBenefit?.title ?: "",
+                                benefitDescription = firstBenefit?.description ?: "",
+                                productSaving = "",
+                                monthlySaving = "",
+                                address = data.address ?: "",
+                                businessHours = data.businessHour ?: "",
+                                phoneNumber = data.telNum ?: "",
+                                benefits = benefitUiModels,
+                            ),
+                    ),
                 )
             } else {
                 ApiResult.Failure(AppError.Server(statusCode = 200, message = response.message))
             }
         }
+
+    override suspend fun getDirections(
+        startLat: Double,
+        startLng: Double,
+        destLat: Double,
+        destLng: Double,
+    ): ApiResult<List<MapCoordinate>> =
+        runApiCall {
+            val restKey = com.umc.itday.BuildConfig.KAKAO_REST_API_KEY
+            if (restKey.isBlank()) {
+                return@runApiCall ApiResult.Success(
+                    listOf(MapCoordinate(startLat, startLng), MapCoordinate(destLat, destLng)),
+                )
+            }
+            val response =
+                api.getKakaoDirections(
+                    authorization = "KakaoAK $restKey",
+                    origin = "$startLng,$startLat",
+                    destination = "$destLng,$destLat",
+                )
+            val routePoints = response.toRoutePoints()
+            if (routePoints.isNotEmpty()) {
+                ApiResult.Success(routePoints)
+            } else {
+                ApiResult.Success(
+                    listOf(MapCoordinate(startLat, startLng), MapCoordinate(destLat, destLng)),
+                )
+            }
+
+        }
+
+
 
     private suspend fun <T> runApiCall(block: suspend () -> ApiResult<T>): ApiResult<T> =
         try {

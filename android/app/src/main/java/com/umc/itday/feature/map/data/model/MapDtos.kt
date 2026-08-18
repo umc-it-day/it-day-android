@@ -1,4 +1,4 @@
-﻿package com.umc.itday.feature.map.data.model
+package com.umc.itday.feature.map.data.model
 
 import kotlinx.serialization.Serializable
 
@@ -62,4 +62,32 @@ data class StoreDetailDto(
     val placeUrl: String? = null,
     val benefits: List<BenefitDto> = emptyList(),
 )
+
+@Serializable
+data class KakaoDirectionsResponseDto(
+    val routes: List<KakaoRouteDto> = emptyList(),
+)
+
+@Serializable
+data class KakaoRouteDto(
+    val resultCode: Int = 0,
+    val resultMsg: String = "",
+    val sections: List<KakaoSectionDto> = emptyList(),
+)
+
+@Serializable
+data class KakaoSectionDto(
+    val distance: Int = 0,
+    val duration: Int = 0,
+    val roads: List<KakaoRoadDto> = emptyList(),
+)
+
+@Serializable
+data class KakaoRoadDto(
+    val name: String = "",
+    val distance: Int = 0,
+    val duration: Int = 0,
+    val vertexes: List<Double> = emptyList(),
+)
+
 
