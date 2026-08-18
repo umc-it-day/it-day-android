@@ -11,3 +11,7 @@ ITDAY_RELEASE_USE_MOCK_KAKAO_LOGIN=false
 
 # Kakao Developers > App > Platform key > Native app key
 ITDAY_KAKAO_NATIVE_APP_KEY=
+
+# Kakao Developers > App > App Keys > REST API key
+ITDAY_KAKAO_REST_API_KEY=
+

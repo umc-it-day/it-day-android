@@ -1,4 +1,4 @@
-﻿package com.umc.itday.core.di
+package com.umc.itday.core.di
 
 import android.content.Context
 import com.umc.itday.core.auth.AuthRemoteDataSource
@@ -13,9 +13,8 @@ import com.umc.itday.core.config.AppConfig
 import com.umc.itday.core.data.mock.ItDayMockDataSource
 import com.umc.itday.core.data.repository.HomeRepository
 import com.umc.itday.core.data.repository.HomeRepositoryImpl
-import com.umc.itday.core.data.repository.MapRepository
-import com.umc.itday.core.data.repository.MapRepositoryImpl
 import com.umc.itday.core.data.repository.PaymentRepository
+
 import com.umc.itday.core.data.repository.PaymentRepositoryImpl
 import com.umc.itday.core.data.repository.SettingsRepository
 import com.umc.itday.core.data.repository.SettingsRepositoryImpl
@@ -47,9 +46,14 @@ import com.umc.itday.feature.settings.data.api.SettingsApi
 import com.umc.itday.feature.settings.data.repository.SettingsRepositoryImpl as FeatureSettingsRepositoryImpl
 import com.umc.itday.feature.settings.domain.repository.SettingsRepository as FeatureSettingsRepository
 import com.umc.itday.feature.report.data.remote.ReportApi
+
 import com.umc.itday.feature.report.data.repository.DefaultReportRepository
 import com.umc.itday.feature.report.domain.repository.ReportRepository
+import com.umc.itday.feature.map.data.remote.MapApiService
+import com.umc.itday.feature.map.data.repository.MapRepositoryImpl as FeatureMapRepositoryImpl
+import com.umc.itday.feature.map.domain.repository.MapRepository as FeatureMapRepository
 import kotlinx.coroutines.runBlocking
+
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 
@@ -132,9 +136,10 @@ class DefaultAppContainer(
         HomeRepositoryImpl(mockDataSource)
     }
 
-    override val mapRepository: MapRepository by lazy {
-        MapRepositoryImpl(mockDataSource)
+    override val mapRepository: FeatureMapRepository by lazy {
+        FeatureMapRepositoryImpl(NetworkClient.createApi<MapApiService>(retrofit))
     }
+
 
     override val barcodeRepository: BarcodeRepository by lazy {
         BarcodeRepositoryImpl(NetworkClient.createApi<BarcodeApi>(retrofit))

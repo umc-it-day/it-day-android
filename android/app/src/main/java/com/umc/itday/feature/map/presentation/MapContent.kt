@@ -1,5 +1,11 @@
-﻿package com.umc.itday.feature.map.presentation
+package com.umc.itday.feature.map.presentation
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -20,47 +26,77 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
+import coil3.network.NetworkHeaders
+import coil3.network.httpHeaders
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import com.umc.itday.BuildConfig
 import com.umc.itday.R
+
 import kotlinx.coroutines.launch
+import androidx.core.net.toUri
+
+
+data class MapBenefitUiModel(
+    val id: Long,
+    val title: String,
+    val description: String? = null,
+    val telecom: String? = null,
+    val telecomGrade: String? = null,
+)
 
 data class MapStoreUiModel(
     val id: String,
     val name: String,
-    val position: MapCoordinate,
+    val position: MapCoordinate = DefaultMapCoordinate,
+    val brandName: String? = null,
+    val categoryName: String? = null,
+    val brandImg: String? = null,
     val rating: Double = UNKNOWN_VALUE,
     val distanceMeters: Int = -1,
     val discountPercent: Int = -1,
+    val benefitTitle: String = "",
     val detail: MapStoreDetailUiModel? = null,
 )
 
 data class MapStoreDetailUiModel(
     val benefit: String,
     val benefitDescription: String,
-    val productSaving: String,
-    val monthlySaving: String,
-    val address: String,
-    val businessHours: String,
-    val phoneNumber: String,
+    val productSaving: String = "",
+    val monthlySaving: String = "",
+    val address: String = "",
+    val businessHours: String = "",
+    val phoneNumber: String = "",
+    val placeUrl: String? = null,
+    val benefits: List<MapBenefitUiModel> = emptyList(),
 )
+
+
 
 data class MapMarkerUiModel(
     val id: String,
@@ -78,10 +114,18 @@ fun MapContent(
     markers: List<MapMarkerUiModel> = emptyList(),
     routePoints: List<MapCoordinate> = emptyList(),
     selectedStore: MapStoreUiModel? = null,
+    isClusterFiltered: Boolean = false,
+    onClearClusterFilter: () -> Unit = {},
     showLocationUnavailable: Boolean = false,
+    showResearchButton: Boolean = false,
     mapReloadKey: Int = 0,
+    myLocationTrigger: Long = 0L,
+    onMyLocationClick: () -> Unit = {},
     onMapRetry: () -> Unit = {},
     onSearchClick: () -> Unit = {},
+    onResearchClick: () -> Unit = {},
+    onCameraMoveEnd: (MapCoordinate) -> Unit = {},
+    onMarkerClick: (List<String>) -> Unit = {},
     onStoreClick: (String) -> Unit = {},
     onDirectionsClick: (String) -> Unit = {},
     onDirectionsCancel: () -> Unit = {},
@@ -95,8 +139,8 @@ fun MapContent(
             skipHiddenState = true,
         )
     val coroutineScope = rememberCoroutineScope()
-    LaunchedEffect(selectedStore?.id) {
-        if (selectedStore != null) sheetState.expand()
+    LaunchedEffect(selectedStore?.id, isClusterFiltered) {
+        if (selectedStore != null || isClusterFiltered) sheetState.expand()
     }
     BottomSheetScaffold(
         modifier = modifier.fillMaxSize(),
@@ -113,7 +157,15 @@ fun MapContent(
                 }
             }
             if (selectedStore == null) {
-                StoreSheet(stores, sortOption, onSortClick, onStoreClick, directions)
+                StoreSheet(
+                    stores = stores,
+                    sortOption = sortOption,
+                    isClusterFiltered = isClusterFiltered,
+                    onClearClusterFilter = onClearClusterFilter,
+                    onSortClick = onSortClick,
+                    onStoreClick = onStoreClick,
+                    onDirectionsClick = directions,
+                )
             } else {
                 StoreDetailSheet(selectedStore, directions, onStoreClose)
             }
@@ -126,16 +178,29 @@ fun MapContent(
                 currentLocation = currentLocation,
                 markers = markers,
                 routePoints = routePoints,
-                onMarkerClick = onStoreClick,
+                onMarkerClick = onMarkerClick,
                 onMapClick = {
                     onStoreClose()
+                    onClearClusterFilter()
                     coroutineScope.launch { sheetState.partialExpand() }
                 },
                 reloadKey = mapReloadKey,
                 onRetry = onMapRetry,
+                onCameraMoveEnd = onCameraMoveEnd,
+                myLocationTrigger = myLocationTrigger,
                 modifier = Modifier.fillMaxSize(),
             )
             SearchBar(onClick = onSearchClick)
+            if (showResearchButton && routePoints.isEmpty()) {
+                ResearchButton(
+                    modifier = Modifier.align(Alignment.TopCenter).padding(top = 76.dp),
+                    onClick = onResearchClick,
+                )
+            }
+            MyLocationButton(
+                modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = 124.dp, end = 16.dp),
+                onClick = onMyLocationClick,
+            )
             if (routePoints.isNotEmpty()) {
                 RouteCancelButton(
                     modifier = Modifier.align(Alignment.TopEnd).padding(top = 84.dp, end = 20.dp),
@@ -159,11 +224,70 @@ fun MapContent(
     }
 }
 
+
+
+@Composable
+private fun ResearchButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier =
+            modifier
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color.White)
+                .border(1.dp, MapHandle, RoundedCornerShape(20.dp))
+                .clickable(onClick = onClick)
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Text(
+            text = "↻",
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold,
+            color = MapPrimary,
+        )
+        Text(
+            text = stringResource(R.string.map_research_here),
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MapPrimary,
+        )
+    }
+}
+
+@Composable
+private fun MyLocationButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier =
+            modifier
+                .size(46.dp)
+                .clip(CircleShape)
+                .background(Color.White)
+                .border(1.dp, MapHandle, CircleShape)
+                .clickable(onClick = onClick)
+                .padding(11.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Image(
+            painter = painterResource(R.drawable.ic_my_location),
+            contentDescription = "내 위치",
+            modifier = Modifier.size(24.dp),
+        )
+    }
+}
+
+
 @Composable
 private fun RouteCancelButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
+
     Text(
         text = stringResource(R.string.map_directions_cancel),
         modifier =
@@ -215,6 +339,8 @@ private fun SearchBar(onClick: () -> Unit) {
 private fun StoreSheet(
     stores: List<MapStoreUiModel>,
     sortOption: MapSortOption,
+    isClusterFiltered: Boolean,
+    onClearClusterFilter: () -> Unit,
     onSortClick: (MapSortOption) -> Unit,
     onStoreClick: (String) -> Unit,
     onDirectionsClick: (String) -> Unit,
@@ -226,12 +352,34 @@ private fun StoreSheet(
                 .heightIn(min = 420.dp)
                 .padding(horizontal = 20.dp, vertical = 12.dp),
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FilterChip(stringResource(R.string.map_sort_distance), sortOption == MapSortOption.DISTANCE) {
-                onSortClick(MapSortOption.DISTANCE)
+        if (isClusterFiltered) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "이 위치의 매장 (${stores.size}개)",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = "전체 목록 ✕",
+                    fontSize = 13.sp,
+                    color = MapPrimary,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable { onClearClusterFilter() }.padding(4.dp),
+                )
             }
-            FilterChip(stringResource(R.string.map_sort_discount), sortOption == MapSortOption.DISCOUNT) {
-                onSortClick(MapSortOption.DISCOUNT)
+        } else {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilterChip(stringResource(R.string.map_sort_distance), sortOption == MapSortOption.DISTANCE) {
+                    onSortClick(MapSortOption.DISTANCE)
+                }
+                FilterChip(stringResource(R.string.map_sort_discount), sortOption == MapSortOption.DISCOUNT) {
+                    onSortClick(MapSortOption.DISCOUNT)
+                }
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -248,6 +396,7 @@ private fun StoreSheet(
         }
     }
 }
+
 
 @Composable
 private fun FilterChip(
@@ -298,16 +447,42 @@ private fun StoreIdentity(
     imageSize: Int = 56,
 ) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        Image(
-            painter = painterResource(R.drawable.map_store_placeholder),
-            contentDescription = null,
-            modifier = Modifier.size(imageSize.dp).clip(CircleShape).background(MapPlaceholder),
-        )
+        if (!store.brandImg.isNullOrBlank()) {
+            AsyncImage(
+                model = store.brandImg,
+                contentDescription = store.name,
+                placeholder = painterResource(R.drawable.map_store_placeholder),
+                error = painterResource(R.drawable.map_store_placeholder),
+                contentScale = ContentScale.Fit,
+                modifier =
+                    Modifier
+                        .size(imageSize.dp)
+                        .clip(CircleShape)
+                        .background(Color.White)
+                        .border(1.dp, MapHandle, CircleShape)
+                        .padding(4.dp),
+            )
+        } else {
+            Image(
+                painter = painterResource(R.drawable.map_store_placeholder),
+                contentDescription = null,
+                modifier = Modifier.size(imageSize.dp).clip(CircleShape).background(MapPlaceholder),
+            )
+        }
         Column(modifier = Modifier.padding(start = 12.dp)) {
-            Text(store.name, fontWeight = FontWeight.Bold)
+            Text(
+                text = store.name,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
             val details = store.detailText()
             if (details.isNotEmpty()) {
-                Text(details, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    text = details,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 13.sp,
+                )
             }
             Text(
                 text = store.discountText(),
@@ -318,6 +493,10 @@ private fun StoreIdentity(
                         .background(MapDiscountBackground)
                         .padding(horizontal = 8.dp, vertical = 3.dp),
                 color = MapPrimary,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }
@@ -330,11 +509,12 @@ private fun StoreDetailSheet(
     onClose: () -> Unit,
 ) {
     val detail = store.detail ?: return
+
     Column(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .heightIn(min = 620.dp)
+                .heightIn(min = 520.dp)
                 .verticalScroll(rememberScrollState())
                 .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -346,24 +526,179 @@ private fun StoreDetailSheet(
             DetailAction("×", MapHandle, onClose)
         }
         BenefitCard(detail)
-        SavingCard(detail)
-        Text(stringResource(R.string.map_store_information), fontWeight = FontWeight.Bold)
-        Text("⌖  ${detail.address}", color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text("◷  ${detail.businessHours}", color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text("☎  ${detail.phoneNumber}", color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Box(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .height(100.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(MapPlaceholder),
-            contentAlignment = Alignment.Center,
+
+        StoreInfoSection(store = store)
+    }
+}
+
+@Composable
+private fun StoreInfoSection(
+    store: MapStoreUiModel,
+    modifier: Modifier = Modifier,
+) {
+    val detail = store.detail ?: return
+    val context = LocalContext.current
+    val lat = store.position.latitude
+    val lng = store.position.longitude
+    val staticMapUrl = "https://dapi.kakao.com/v2/maps/staticmap?center=$lng,$lat&level=3&size=320x260&markers=type:default|pos:$lng,$lat"
+    val kakaoMapWebUrl =
+        store.detail.placeUrl?.takeIf { it.isNotBlank() }
+            ?: "https://map.kakao.com/link/map/${Uri.encode(store.name)},$lat,$lng"
+
+    val imageRequest =
+        remember(staticMapUrl, BuildConfig.KAKAO_REST_API_KEY) {
+            ImageRequest.Builder(context)
+                .data(staticMapUrl)
+                .apply {
+                    val restKey = BuildConfig.KAKAO_REST_API_KEY
+                    if (restKey.isNotBlank()) {
+                        httpHeaders(
+                            NetworkHeaders.Builder()
+                                .set("Authorization", "KakaoAK $restKey")
+                                .build(),
+                        )
+                    }
+                }
+                .crossfade(true)
+                .build()
+        }
+
+    val openKakaoMap = {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(kakaoMapWebUrl))
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(context, "지도를 열 수 없습니다.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.map_store_information),
+            fontWeight = FontWeight.Bold,
+            fontSize = 17.sp,
+            color = Color(0xFF1E293B),
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(stringResource(R.string.map_mini_map_placeholder))
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                if (detail.address.isNotBlank()) {
+                    Row(
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(6.dp))
+                                .clickable {
+                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+                                    clipboard?.setPrimaryClip(ClipData.newPlainText("Store Address", detail.address))
+                                    Toast.makeText(context, "주소가 복사되었습니다.", Toast.LENGTH_SHORT).show()
+                                }
+                                .padding(vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.ic_store_pin),
+                            contentDescription = "주소",
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Text(
+                            text = detail.address,
+                            color = Color(0xFF475569),
+                            fontSize = 13.sp,
+                            modifier = Modifier.padding(start = 8.dp),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+
+                if (detail.businessHours.isNotBlank()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.ic_store_clock),
+                            contentDescription = "영업시간",
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Text(
+                            text = detail.businessHours,
+                            color = Color(0xFF475569),
+                            fontSize = 13.sp,
+                            modifier = Modifier.padding(start = 8.dp),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+
+                if (detail.phoneNumber.isNotBlank()) {
+                    Row(
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(6.dp))
+                                .clickable {
+                                    try {
+                                        val dialIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${detail.phoneNumber}"))
+                                        context.startActivity(dialIntent)
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "전화 앱을 열 수 없습니다.", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                                .padding(vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.ic_store_phone),
+                            contentDescription = "전화번호",
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Text(
+                            text = detail.phoneNumber,
+                            color = Color(0xFF475569),
+                            fontSize = 13.sp,
+                            modifier = Modifier.padding(start = 8.dp),
+                        )
+                    }
+                }
+            }
+
+            Box(
+                modifier =
+                    Modifier
+                        .size(width = 110.dp, height = 96.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MapPlaceholder)
+                        .clickable(onClick = openKakaoMap),
+                contentAlignment = Alignment.Center,
+            ) {
+                AsyncImage(
+                    model = imageRequest,
+                    contentDescription = "${store.name} 위치 지도",
+                    contentScale = ContentScale.Crop,
+                    placeholder = painterResource(R.drawable.map_store_placeholder),
+                    error = painterResource(R.drawable.map_store_placeholder),
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
         }
     }
 }
+
+
+
 
 @Composable
 private fun DetailAction(
@@ -387,46 +722,77 @@ private fun DetailAction(
 
 @Composable
 private fun BenefitCard(detail: MapStoreDetailUiModel) {
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(MapDiscountBackground).padding(18.dp)) {
-        Text(stringResource(R.string.map_vip_benefit), color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(detail.benefit, color = MapPrimary, fontWeight = FontWeight.Bold)
-        Text(detail.benefitDescription, fontWeight = FontWeight.Bold)
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(MapDiscountBackground)
+            .padding(18.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text("통신사 멤버십 혜택", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
+        if (detail.benefits.isNotEmpty()) {
+            detail.benefits.take(5).forEach { benefit ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    val telecomLabel = listOfNotNull(benefit.telecom, benefit.telecomGrade).joinToString(" ")
+                    if (telecomLabel.isNotBlank()) {
+                        Text(
+                            text = telecomLabel,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MapPrimary,
+                            modifier =
+                                Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(Color.White)
+                                    .padding(horizontal = 6.dp, vertical = 3.dp),
+                        )
+                    }
+                    Text(
+                        text = benefit.title,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 13.sp,
+                        color = Color(0xFF1E293B),
+                        modifier = Modifier.weight(1f).padding(start = 8.dp),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+        } else {
+            Text(detail.benefit, color = MapPrimary, fontWeight = FontWeight.Bold)
+            if (detail.benefitDescription.isNotBlank()) {
+                Text(detail.benefitDescription, fontWeight = FontWeight.Bold)
+            }
+        }
     }
 }
 
-@Composable
-private fun SavingCard(detail: MapStoreDetailUiModel) {
-    Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(MapPlaceholder).padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-    ) {
-        Column {
-            Text(stringResource(R.string.map_product_basis))
-            Text(detail.productSaving, fontWeight = FontWeight.Bold)
-        }
-        Column {
-            Text(stringResource(R.string.map_monthly_here))
-            Text(detail.monthlySaving, fontWeight = FontWeight.Bold)
-        }
-    }
-}
 
 @Composable
 private fun MapStoreUiModel.detailText(): String {
-    val ratingText = rating.takeIf { it >= 0 }?.let { "★ $it" } ?: stringResource(R.string.map_value_unknown)
-    val distanceText =
-        distanceMeters.takeIf { it >= 0 }?.let { "${it}m 거리" }
-            ?: stringResource(R.string.map_distance_unknown)
-    return "$ratingText · $distanceText"
+    val category = categoryName ?: ""
+    val distance =
+        when {
+            distanceMeters < 0 -> ""
+            distanceMeters < 1000 -> "${distanceMeters}m"
+            else -> String.format("%.1fkm", distanceMeters / 1000.0)
+        }
+    return listOf(category, distance).filter { it.isNotBlank() }.joinToString(" • ")
 }
 
 @Composable
 private fun MapStoreUiModel.discountText(): String =
-    if (discountPercent >= 0) {
-        stringResource(R.string.map_discount_percent, discountPercent)
-    } else {
-        stringResource(R.string.map_discount_unknown)
+    when {
+        benefitTitle.isNotBlank() -> benefitTitle
+        discountPercent > 0 -> stringResource(R.string.map_discount_percent, discountPercent)
+        !detail?.benefit.isNullOrBlank() -> detail!!.benefit
+        else -> stringResource(R.string.map_discount_unknown)
     }
+
 
 @Preview(showBackground = true)
 @Composable
@@ -474,3 +840,5 @@ private val MapHandle = Color(0xFFD7D9DC)
 private val MapPlaceholder = Color(0xFFF1F1F1)
 private val MapPrimary = Color(0xFF637CF6)
 private val MapDiscountBackground = Color(0xFFEEF2FF)
+
+

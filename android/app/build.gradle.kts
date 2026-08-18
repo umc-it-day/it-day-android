@@ -87,6 +87,11 @@ android {
                 "KAKAO_NATIVE_APP_KEY",
                 configValue("ITDAY_KAKAO_NATIVE_APP_KEY").asBuildConfigString(),
             )
+            buildConfigField(
+                "String",
+                "KAKAO_REST_API_KEY",
+                configValue("ITDAY_KAKAO_REST_API_KEY").asBuildConfigString(),
+            )
             buildConfigField("String", "APP_ENV", "debug".asBuildConfigString())
         }
         release {
@@ -115,7 +120,13 @@ android {
                 "KAKAO_NATIVE_APP_KEY",
                 configValue("ITDAY_KAKAO_NATIVE_APP_KEY").asBuildConfigString(),
             )
+            buildConfigField(
+                "String",
+                "KAKAO_REST_API_KEY",
+                configValue("ITDAY_KAKAO_REST_API_KEY").asBuildConfigString(),
+            )
             buildConfigField("String", "APP_ENV", "release".asBuildConfigString())
+
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

@@ -1,4 +1,4 @@
-﻿package com.umc.itday.feature.map.presentation
+package com.umc.itday.feature.map.presentation
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -67,11 +67,13 @@ fun KakaoMapView(
     currentLocation: MapCoordinate?,
     markers: List<MapMarkerUiModel>,
     routePoints: List<MapCoordinate>,
-    onMarkerClick: (String) -> Unit,
+    onMarkerClick: (List<String>) -> Unit,
     onMapClick: () -> Unit,
     reloadKey: Int,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
+    onCameraMoveEnd: ((MapCoordinate) -> Unit)? = null,
+    myLocationTrigger: Long = 0L,
 ) {
     if (!KakaoMapEnvironment.isSupportedDevice) {
         MapStatusText(R.string.map_device_not_supported)
@@ -96,12 +98,15 @@ fun KakaoMapView(
     val context = LocalContext.current
     var isLoading by remember(reloadKey) { mutableStateOf(true) }
     var hasError by remember(reloadKey) { mutableStateOf(false) }
-    val mapView = remember(context, reloadKey, initialPosition) { MapView(context) }
+    val mapView = remember(context, reloadKey) { MapView(context) }
     var isMapReady by remember(mapView) { mutableStateOf(false) }
     var readyMap by remember(mapView) { mutableStateOf<KakaoMap?>(null) }
+    var hasMovedToInitialLocation by remember(mapView) { mutableStateOf(false) }
     val currentOnMapClick by rememberUpdatedState(onMapClick)
+    val currentOnMarkerClick by rememberUpdatedState(onMarkerClick)
+    val currentOnCameraMoveEnd by rememberUpdatedState(onCameraMoveEnd)
     val startMap =
-        remember(mapView, initialPosition, currentLocation, markers, onMarkerClick) {
+        remember(mapView) {
             Runnable {
                 mapView.start(
                     object : MapLifeCycleCallback() {
@@ -118,17 +123,17 @@ fun KakaoMapView(
                             readyMap = kakaoMap
                             kakaoMap.setOnMapClickListener { _, _, _, _ -> currentOnMapClick() }
                             kakaoMap.startMarkerClustering(
+                                context = context,
                                 currentLocation = currentLocation,
                                 markers = markers,
-                                currentLocationIcon = context.markerBitmap(R.drawable.ic_home_location, 38),
-                                markerIcon = { count -> context.clusterMarkerBitmap(count) },
-                                onMarkerClick = onMarkerClick,
+                                onMarkerClick = { currentOnMarkerClick(it) },
+                                onCameraMoveEnd = { currentOnCameraMoveEnd?.invoke(it) },
                             )
                             isMapReady = true
                             isLoading = false
                         }
 
-                        override fun getPosition(): LatLng = initialPosition.toLatLng()
+                        override fun getPosition(): LatLng = (currentLocation ?: initialPosition).toLatLng()
 
                         override fun getZoomLevel(): Int = DEFAULT_ZOOM_LEVEL
                     },
@@ -136,9 +141,43 @@ fun KakaoMapView(
             }
         }
 
+    LaunchedEffect(readyMap, isMapReady, currentLocation) {
+        if (isMapReady && !hasMovedToInitialLocation && currentLocation != null) {
+            hasMovedToInitialLocation = true
+            readyMap?.moveCamera(
+                CameraUpdateFactory.newCenterPosition(currentLocation.toLatLng(), DEFAULT_ZOOM_LEVEL),
+                CameraAnimation.from(300),
+            )
+        }
+    }
+
+    LaunchedEffect(myLocationTrigger) {
+        if (myLocationTrigger > 0 && isMapReady && currentLocation != null) {
+            readyMap?.moveCamera(
+                CameraUpdateFactory.newCenterPosition(currentLocation.toLatLng(), DEFAULT_ZOOM_LEVEL),
+                CameraAnimation.from(300),
+            )
+        }
+    }
+
+    LaunchedEffect(readyMap, markers, currentLocation) {
+        readyMap?.let { map ->
+            if (isMapReady) {
+                map.startMarkerClustering(
+                    context = context,
+                    currentLocation = currentLocation,
+                    markers = markers,
+                    onMarkerClick = { currentOnMarkerClick(it) },
+                    onCameraMoveEnd = { currentOnCameraMoveEnd?.invoke(it) },
+                )
+            }
+        }
+    }
+
     LaunchedEffect(readyMap, routePoints) {
         readyMap?.showRoute(routePoints)
     }
+
 
     DisposableEffect(lifecycleOwner, mapView) {
         val observer =
@@ -249,15 +288,18 @@ val DefaultMapCoordinate = MapCoordinate(latitude = 37.385, longitude = 126.645)
 private fun MapCoordinate.toLatLng(): LatLng = LatLng.from(latitude, longitude)
 
 private fun KakaoMap.startMarkerClustering(
+    context: Context,
     currentLocation: MapCoordinate?,
     markers: List<MapMarkerUiModel>,
-    currentLocationIcon: Bitmap?,
-    markerIcon: (Int) -> Bitmap?,
-    onMarkerClick: (String) -> Unit,
+    onMarkerClick: (List<String>) -> Unit,
+    onCameraMoveEnd: ((MapCoordinate) -> Unit)? = null,
 ) {
     val manager = labelManager ?: return
     val layer = manager.layer ?: return
     val iconCache = mutableMapOf<Int, Bitmap?>()
+    val currentLocationIcon = context.markerBitmap(R.drawable.ic_home_location, 38)
+    val markerIcon: (Int) -> Bitmap? = { count -> context.clusterMarkerBitmap(count) }
+
     fun renderMarkers() {
         layer.removeAll()
         currentLocationIcon?.let { icon ->
@@ -280,13 +322,25 @@ private fun KakaoMap.startMarkerClustering(
         }
     }
     renderMarkers()
-    setOnCameraMoveEndListener { _, _, _ -> renderMarkers() }
+    setOnCameraMoveEndListener { _, cameraPosition, _ ->
+        renderMarkers()
+        val pos = cameraPosition.position
+        onCameraMoveEnd?.invoke(MapCoordinate(pos.latitude, pos.longitude))
+    }
     setOnLabelClickListener { _, _, label ->
         val cluster = label.tag as? MarkerCluster ?: return@setOnLabelClickListener false
-        if (cluster.ids.size == 1) onMarkerClick(cluster.ids.first())
+        if (cluster.ids.size > 1) {
+            val currentZoom = cameraPosition?.zoomLevel ?: DEFAULT_ZOOM_LEVEL
+            moveCamera(
+                CameraUpdateFactory.newCenterPosition(cluster.position.toLatLng(), (currentZoom + 2).coerceAtMost(21)),
+                CameraAnimation.from(250),
+            )
+        }
+        onMarkerClick(cluster.ids)
         true
     }
 }
+
 
 private fun Context.markerBitmap(resourceId: Int, sizeDp: Int): Bitmap? {
     val sizePx = (sizeDp * resources.displayMetrics.density).toInt()
@@ -367,3 +421,4 @@ private const val CURRENT_LOCATION_LABEL_ID = "current-location"
 private const val CLUSTER_RADIUS_DP = 72.0
 private const val ROUTE_CAMERA_PADDING_RATIO = 0.22f
 private const val ROUTE_CAMERA_ANIMATION_MS = 500
+
