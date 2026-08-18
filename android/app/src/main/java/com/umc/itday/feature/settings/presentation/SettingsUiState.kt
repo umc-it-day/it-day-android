@@ -7,16 +7,17 @@ enum class SettingsScreenType {
 }
 
 data class UserProfile(
-    val userName: String = "김예진",
-    val userEmail: String = "asdfg1234@it-day.example.edu",
+    val userName: String = "",
+    val userEmail: String = "",
 )
 
 data class MembershipInfo(
-    val carrier: String = "SKT",
-    val grade: String = "VIP",
-    val isPro: Boolean = true,
-    val barcodeNumber: String = "1234 5678 9012 3456",
+    val carrier: String = "",
+    val grade: String = "",
+    val isPro: Boolean = false,
+    val barcodeNumber: String = "",
 )
+
 
 data class FaqItem(
     val id: Int,

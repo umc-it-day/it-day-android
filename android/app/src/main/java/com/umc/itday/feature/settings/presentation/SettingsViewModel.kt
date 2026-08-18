@@ -1,4 +1,4 @@
-﻿package com.umc.itday.feature.settings.presentation
+package com.umc.itday.feature.settings.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -24,49 +24,66 @@ class SettingsViewModel(
 
     private val _events = Channel<SettingsUiEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
+    private var isGuest: Boolean = false
 
-    init {
-        loadSettings()
+    fun setGuestMode(isGuestMode: Boolean) {
+        isGuest = isGuestMode
+        if (isGuestMode) {
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    errorMessage = null,
+                    profile = UserProfile(userName = "게스트", userEmail = "로그인이 필요합니다"),
+                    membership = MembershipInfo(carrier = "미등록", grade = "게스트", isPro = false, barcodeNumber = "-"),
+                )
+            }
+        } else {
+            loadSettings()
+        }
     }
 
     fun loadSettings() {
+        if (isGuest) return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            
+
             val profileResult = settingsRepository.getUserProfile()
             val membershipResult = settingsRepository.getMembershipInfo()
 
             _uiState.update { state ->
                 var newState = state.copy(isLoading = false)
-                
+
                 if (profileResult is ApiResult.Success) {
-                    newState = newState.copy(
-                        profile = UserProfile(
-                            userName = profileResult.data.name,
-                            userEmail = profileResult.data.email
+                    newState =
+                        newState.copy(
+                            profile =
+                                UserProfile(
+                                    userName = profileResult.data.name,
+                                    userEmail = profileResult.data.email,
+                                ),
                         )
-                    )
-                } else if (profileResult is ApiResult.Failure) {
-                    // 프로필 로딩 실패 처리
+                } else if (profileResult is ApiResult.Failure && !isGuest) {
                     viewModelScope.launch {
                         _events.send(SettingsUiEvent.ShowMessage("프로필 정보를 불러오는데 실패했습니다."))
                     }
                 }
-                
+
                 if (membershipResult is ApiResult.Success) {
-                    newState = newState.copy(
-                        membership = state.membership.copy(
-                            carrier = membershipResult.data.telecomLabel,
-                            grade = membershipResult.data.telecomGrade
+                    newState =
+                        newState.copy(
+                            membership =
+                                state.membership.copy(
+                                    carrier = membershipResult.data.telecomLabel,
+                                    grade = membershipResult.data.telecomGrade,
+                                    isPro = true,
+                                ),
                         )
-                    )
-                } else if (membershipResult is ApiResult.Failure) {
-                    // 멤버십 로딩 실패 처리
                 }
                 newState
             }
         }
     }
+
 
     fun navigateToScreen(screen: SettingsScreenType) {
         _uiState.update { it.copy(currentScreen = screen) }

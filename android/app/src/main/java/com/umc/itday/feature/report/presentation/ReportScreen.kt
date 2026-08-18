@@ -1,16 +1,16 @@
-﻿package com.umc.itday.feature.report.presentation
+package com.umc.itday.feature.report.presentation
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -19,13 +19,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.umc.itday.feature.report.presentation.content.GuestReportContent
-import com.umc.itday.feature.report.presentation.content.FreeReportContent
+import com.umc.itday.core.di.appContainer
 import com.umc.itday.feature.report.presentation.content.AttendanceContent
+import com.umc.itday.feature.report.presentation.content.FreeReportContent
+import com.umc.itday.feature.report.presentation.content.GuestReportContent
 import com.umc.itday.feature.report.presentation.content.PointHistoryContent
 import com.umc.itday.feature.report.presentation.content.ProReportContent
 import com.umc.itday.feature.report.presentation.content.StoreContent
-import com.umc.itday.core.di.appContainer
 
 private enum class ReportPage(val route: String) {
     Main("report/main"),
@@ -45,13 +45,17 @@ fun ReportRoute(
         viewModel(
             factory = ReportViewModel.Factory(
                 repository = context.appContainer.reportRepository,
+                localPreferencesDataSource = context.appContainer.localPreferencesDataSource,
             ),
         )
+
     val uiState by viewModel.uiState.collectAsState()
     val errorMessage = uiState.errorMessage
 
     LaunchedEffect(isGuestMode) {
-        if (!isGuestMode && uiState.report == null) viewModel.loadLatestMonthlyReport()
+        if (!isGuestMode) {
+            viewModel.loadInitialData()
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -60,13 +64,14 @@ fun ReportRoute(
             isGuestMode = isGuestMode,
             isProMember = isProMember,
             onHomeClick = onHomeClick,
+            onAttendanceSubmit = { viewModel.checkAttendance() },
         )
         if (uiState.isLoading) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-        } else if (errorMessage != null && uiState.report == null) {
+        } else if (errorMessage != null && uiState.report == null && uiState.attendance == null) {
             Column(modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(errorMessage)
-                Button(onClick = viewModel::loadLatestMonthlyReport) { Text("다시 시도") }
+                Button(onClick = viewModel::loadInitialData) { Text("다시 시도") }
             }
         }
     }
@@ -80,6 +85,7 @@ fun ReportScreen(
     onPointHistoryClick: () -> Unit = {},
     onSubscribeClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
+    onAttendanceSubmit: () -> Unit = {},
     isGuestMode: Boolean = false,
     isProMember: Boolean = false,
 ) {
@@ -117,13 +123,13 @@ fun ReportScreen(
                         },
                         onAttendanceClick = { openPage(ReportPage.Attendance) },
                         floor = uiState.report?.unlockedFloor ?: 1,
-                        pointBalance = uiState.report?.totalEarnedPoint ?: 0,
+                        pointBalance = uiState.pointBalance,
                     )
                 ReportAccess.Pro ->
                     ProReportContent(
                         onAttendanceClick = { openPage(ReportPage.Attendance) },
                         attendanceCount = uiState.report?.attendanceCount ?: 0,
-                        monthlyPoint = uiState.report?.totalEarnedPoint ?: 0,
+                        monthlyPoint = uiState.pointBalance,
                         visitCount = uiState.report?.visitCount ?: 0,
                         discountUseCount = uiState.report?.visitCount ?: 0,
                     )
@@ -140,16 +146,29 @@ fun ReportScreen(
         }
         composable(ReportPage.PointHistory.route) {
             PointHistoryContent(
+                pointBalance = uiState.pointBalance,
+                histories = uiState.pointHistories,
                 onBackClick = { navController.popBackStack() },
                 onAttendanceClick = { openPage(ReportPage.Attendance) },
             )
         }
+
         composable(ReportPage.Attendance.route) {
             AttendanceContent(
+                monthlyPoints = uiState.monthlyEarnedPoint,
+                consecutiveDays = uiState.consecutiveDays,
+                sevenDaysBonus = uiState.sevenDayBonus,
+                fifteenDaysBonus = uiState.fifteenDayBonus,
+                thirtyDaysBonus = uiState.thirtyDayBonus,
+                isAttendanceSubmitting = uiState.isAttendanceSubmitting,
+                isAttendanceCompleted = uiState.isAttendanceCompleted,
+                attendanceSuccessMessage = uiState.attendanceSuccessMessage,
+                onAttendanceClick = onAttendanceSubmit,
                 onBackClick = { navController.popBackStack() },
                 onPointClick = { openPage(ReportPage.PointHistory) },
                 onHomeClick = onHomeClick,
             )
+
         }
     }
 }

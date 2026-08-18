@@ -8,9 +8,15 @@ data class BarcodeDataDto(
 )
 
 @Serializable
+data class LotteryDataDto(
+    val lotteryNum: String,
+)
+
+@Serializable
 data class BarcodeNumberRequestDto(
     val barcodeNum: String,
 )
+
 
 @Serializable
 data class BarcodeUsageRequestDto(

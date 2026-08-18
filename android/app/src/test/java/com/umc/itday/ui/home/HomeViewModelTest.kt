@@ -1,4 +1,4 @@
-﻿package com.umc.itday.ui.home
+package com.umc.itday.ui.home
 
 import com.umc.itday.core.location.LocationCoordinate
 import com.umc.itday.core.location.LocationRepository
@@ -109,6 +109,87 @@ class HomeViewModelTest {
         assertEquals(MembershipState.Guest, viewModel.uiState.value.membershipState)
         assertFalse(viewModel.uiState.value.showProSection)
     }
+
+    @Test
+    fun `AddBrandBenefit 액션은 홈 화면 혜택 목록에 해당 브랜드를 추가하고 로컬 저장소에 저장한다`() = runTest {
+        val fakeLocal = FakeLocalPreferencesDataSource()
+        val viewModel = HomeViewModel(HomePreviewData.noBenefits, localPreferencesDataSource = fakeLocal)
+        val brand = com.umc.itday.feature.onboarding.domain.model.PreferredBrand(
+            id = 100L,
+            name = "스타벅스",
+            category = "카페",
+        )
+
+        viewModel.onAction(HomeAction.AddBrandBenefit(brand))
+        runCurrent()
+
+        val state = viewModel.uiState.value
+        assertEquals(1, state.benefits.size)
+        assertEquals("스타벅스", state.benefits.first().brandName)
+        assertEquals("사이즈업 또는 아메리카노 무료", state.benefits.first().benefitText)
+        assertTrue(fakeLocal.savedBrandNames.contains("스타벅스"))
+    }
+
+
+    @Test
+    fun `loadBarcodeAndLottery 호출 시 lotteryNum으로 바코드값을 설정하고 유저 바코드 번호를 바인딩한다`() = runTest {
+        val fakeBarcodeRepo = FakeBarcodeRepository()
+        val viewModel = HomeViewModel(HomePreviewData.barcodeDisabled, barcodeRepository = fakeBarcodeRepo)
+
+        viewModel.loadBarcodeAndLottery()
+        runCurrent()
+
+        val state = viewModel.uiState.value
+        assertEquals("87654321", state.membership?.barcodeValue)
+        assertEquals("1234567890123456", state.membership?.userBarcodeNumber)
+    }
+}
+
+private class FakeBarcodeRepository : com.umc.itday.feature.barcode.domain.repository.BarcodeRepository {
+    override suspend fun getBarcode(): com.umc.itday.core.data.result.ApiResult<String> =
+        com.umc.itday.core.data.result.ApiResult.Success("1234567890123456")
+
+    override suspend fun getLottery(): com.umc.itday.core.data.result.ApiResult<String> =
+        com.umc.itday.core.data.result.ApiResult.Success("87654321")
+
+    override suspend fun registerBarcode(barcodeNumber: String): com.umc.itday.core.data.result.ApiResult<Unit> =
+        com.umc.itday.core.data.result.ApiResult.Success(Unit)
+
+    override suspend fun updateBarcode(barcodeNumber: String): com.umc.itday.core.data.result.ApiResult<Unit> =
+        com.umc.itday.core.data.result.ApiResult.Success(Unit)
+
+    override suspend fun recordUsage(storeId: Long): com.umc.itday.core.data.result.ApiResult<Unit> =
+        com.umc.itday.core.data.result.ApiResult.Success(Unit)
+}
+
+
+private class FakeLocalPreferencesDataSource : com.umc.itday.core.local.LocalPreferencesDataSource {
+    val savedBrandNames = mutableSetOf<String>()
+    private val _brandFlow = kotlinx.coroutines.flow.MutableStateFlow<Set<String>>(emptySet())
+    override val preferredBrandNames: kotlinx.coroutines.flow.Flow<Set<String>> = _brandFlow
+    override val lastAttendanceDate: kotlinx.coroutines.flow.Flow<String> = kotlinx.coroutines.flow.flowOf("")
+
+    override val isLoggedIn: kotlinx.coroutines.flow.Flow<Boolean> = kotlinx.coroutines.flow.flowOf(false)
+    override val isOnboardingCompleted: kotlinx.coroutines.flow.Flow<Boolean> = kotlinx.coroutines.flow.flowOf(false)
+    override val isGuestMode: kotlinx.coroutines.flow.Flow<Boolean> = kotlinx.coroutines.flow.flowOf(false)
+
+    override suspend fun setLoggedIn(loggedIn: Boolean) {}
+    override suspend fun setOnboardingCompleted(completed: Boolean) {}
+    override suspend fun setGuestMode(enabled: Boolean) {}
+    override suspend fun clearUserSessionPreferences() {}
+    override suspend fun setLastAttendanceDate(date: String) {}
+
+    override suspend fun setPreferredBrandNames(brands: Set<String>) {
+
+        savedBrandNames.clear()
+        savedBrandNames.addAll(brands)
+        _brandFlow.value = savedBrandNames
+    }
+
+    override suspend fun addPreferredBrandName(brandName: String) {
+        savedBrandNames.add(brandName)
+        _brandFlow.value = savedBrandNames
+    }
 }
 
 private class FakeLocationRepository : LocationRepository {
@@ -125,3 +206,4 @@ private class FakeLocationRepository : LocationRepository {
         longitude: Double,
     ): String = "테스트 주소"
 }
+

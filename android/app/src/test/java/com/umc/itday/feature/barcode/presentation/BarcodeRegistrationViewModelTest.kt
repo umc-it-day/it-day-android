@@ -69,7 +69,10 @@ private class FakeBarcodeRepository : BarcodeRepository {
 
     override suspend fun getBarcode(): ApiResult<String> = ApiResult.Success("1234567890123456")
 
+    override suspend fun getLottery(): ApiResult<String> = ApiResult.Success("12345678")
+
     override suspend fun registerBarcode(barcodeNumber: String): ApiResult<Unit> {
+
         registeredBarcode = barcodeNumber
         return registerResult
     }

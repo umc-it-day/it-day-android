@@ -1,4 +1,4 @@
-﻿package com.umc.itday.ui.home
+package com.umc.itday.ui.home
 
 import com.umc.itday.R
 
@@ -13,11 +13,12 @@ object HomePreviewData {
         HomeMembershipUiModel(
             carrier = "SKT",
             grade = "VIP",
-            brandName = "스타벅스 영남대점",
-            benefitText = "10% 할인 또는 디저트 할인",
+            brandName = "제휴 매장 선택",
+            benefitText = "통신사 제휴 할인 혜택",
             barcodeValue = "1234 5667 9012 3456",
             pointText = "4,855 P",
         )
+
 
     private val brands =
         listOf(
@@ -69,15 +70,16 @@ object HomePreviewData {
             membershipState = MembershipState.BarcodeEnabled,
             location = location,
             membership = membership,
-            partnerBrands = brands,
-            benefits = benefits,
-            brandDays = brandDays,
+            partnerBrands = emptyList(),
+            benefits = emptyList(),
+            brandDays = emptyList(),
         )
 
     val barcodeDisabled =
         barcodeEnabled.copy(
             membershipState = MembershipState.BarcodeDisabled,
             benefits = emptyList(),
+            partnerBrands = emptyList(),
         )
 
     val notRegistered =
@@ -85,7 +87,9 @@ object HomePreviewData {
             membershipState = MembershipState.NotRegistered,
             membership = null,
             benefits = emptyList(),
+            partnerBrands = emptyList(),
         )
+
 
     val guest =
         notRegistered.copy(

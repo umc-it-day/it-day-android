@@ -19,6 +19,7 @@ kakaoMaps = "2.13.5"
 kakaoSdk = "2.24.0"
 konfetti = "2.0.5"
 playServicesLocation = "21.4.0"
+zxing = "3.5.3"
 ktlintPlugin = "14.2.0"
 detektPlugin = "2.0.0-alpha.5"
 
@@ -45,7 +46,9 @@ kakao-maps = { group = "com.kakao.maps.open", name = "android", version.ref = "k
 kakao-user = { group = "com.kakao.sdk", name = "v2-user", version.ref = "kakaoSdk" }
 konfetti-compose = { group = "nl.dionsegijn", name = "konfetti-compose", version.ref = "konfetti" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }

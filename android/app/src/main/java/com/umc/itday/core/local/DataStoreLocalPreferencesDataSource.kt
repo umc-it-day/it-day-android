@@ -1,4 +1,4 @@
-﻿package com.umc.itday.core.local
+package com.umc.itday.core.local
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -21,7 +21,14 @@ class DataStoreLocalPreferencesDataSource(
     override val isGuestMode: Flow<Boolean> =
         dataStore.booleanValue(LocalPreferenceKeys.IsGuestMode, defaultValue = false)
 
+    override val preferredBrandNames: Flow<Set<String>> =
+        dataStore.stringSetValue(LocalPreferenceKeys.PreferredBrandNames, defaultValue = emptySet())
+
+    override val lastAttendanceDate: Flow<String> =
+        dataStore.stringValue(LocalPreferenceKeys.LastAttendanceDate, defaultValue = "")
+
     override suspend fun setLoggedIn(loggedIn: Boolean) {
+
         dataStore.edit { preferences ->
             preferences.setLoggedInPreference(loggedIn)
         }
@@ -39,11 +46,56 @@ class DataStoreLocalPreferencesDataSource(
         }
     }
 
+    override suspend fun setPreferredBrandNames(brands: Set<String>) {
+        dataStore.edit { preferences ->
+            preferences.setPreferredBrandNamesPreference(brands)
+        }
+    }
+
+    override suspend fun addPreferredBrandName(brandName: String) {
+        dataStore.edit { preferences ->
+            preferences.addPreferredBrandNamePreference(brandName)
+        }
+    }
+
+    override suspend fun setLastAttendanceDate(date: String) {
+        dataStore.edit { preferences ->
+            preferences[LocalPreferenceKeys.LastAttendanceDate] = date
+        }
+    }
+
     override suspend fun clearUserSessionPreferences() {
         dataStore.edit { preferences ->
             preferences.clearUserSessionPreferences()
         }
     }
+
+    private fun DataStore<Preferences>.stringValue(
+        key: Preferences.Key<String>,
+        defaultValue: String,
+    ): Flow<String> =
+        data
+            .catch { exception ->
+                if (exception is IOException) {
+                    emit(emptyPreferences())
+                } else {
+                    throw exception
+                }
+            }.map { preferences -> preferences[key] ?: defaultValue }
+
+
+    private fun DataStore<Preferences>.stringSetValue(
+        key: Preferences.Key<Set<String>>,
+        defaultValue: Set<String>,
+    ): Flow<Set<String>> =
+        data
+            .catch { exception ->
+                if (exception is IOException) {
+                    emit(emptyPreferences())
+                } else {
+                    throw exception
+                }
+            }.map { preferences -> preferences[key] ?: defaultValue }
 
     private fun DataStore<Preferences>.booleanValue(
         key: Preferences.Key<Boolean>,
@@ -58,3 +110,4 @@ class DataStoreLocalPreferencesDataSource(
                 }
             }.map { preferences -> preferences[key] ?: defaultValue }
 }
+

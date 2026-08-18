@@ -4,6 +4,7 @@ import com.umc.itday.feature.auth.data.model.ApiResponseDto
 import com.umc.itday.feature.barcode.data.model.BarcodeDataDto
 import com.umc.itday.feature.barcode.data.model.BarcodeNumberRequestDto
 import com.umc.itday.feature.barcode.data.model.BarcodeUsageRequestDto
+import com.umc.itday.feature.barcode.data.model.LotteryDataDto
 import kotlinx.serialization.json.JsonElement
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -14,8 +15,12 @@ interface BarcodeApi {
     @GET("api/members/me/barcode")
     suspend fun getBarcode(): ApiResponseDto<BarcodeDataDto>
 
+    @GET("api/members/me/lottery")
+    suspend fun getLottery(): ApiResponseDto<LotteryDataDto>
+
     @POST("api/members/me/barcode")
     suspend fun registerBarcode(
+
         @Body request: BarcodeNumberRequestDto,
     ): ApiResponseDto<JsonElement>
 

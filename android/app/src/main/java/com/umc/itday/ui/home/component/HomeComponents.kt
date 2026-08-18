@@ -1,4 +1,4 @@
-﻿@file:Suppress("TooManyFunctions")
+@file:Suppress("TooManyFunctions")
 
 package com.umc.itday.ui.home.component
 
@@ -29,6 +29,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -48,6 +49,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import coil3.compose.AsyncImage
 import com.umc.itday.R
@@ -205,6 +207,8 @@ fun MembershipBarcodeCard(
     onBrandClick: (String) -> Unit,
     onRefresh: () -> Unit,
     onBrandDetailClick: () -> Unit,
+    onAddBrandClick: () -> Unit = onBrandDetailClick,
+    onViewMapClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     ItDayCard(
@@ -245,12 +249,13 @@ fun MembershipBarcodeCard(
                     Spacer(Modifier.height(ItDayDimens.Space12))
                     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                         Text(
-                            if (barcodeEnabled) membership.barcodeValue else "1234 5667 9012 3456",
+                            if (barcodeEnabled) formatBarcodeNumber(membership.userBarcodeNumber) else "1234 5667 9012 3456",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
                         )
                     }
                 }
+
                 Spacer(Modifier.height(ItDayDimens.Space8))
                 BarcodeMeta(
                     enabled = barcodeEnabled,
@@ -274,7 +279,12 @@ fun MembershipBarcodeCard(
                 }
             }
         }
-        MembershipStoreFooter(brands, onBrandClick)
+        MembershipStoreFooter(
+            brands = brands,
+            onBrandClick = onBrandClick,
+            onAddBrandClick = onAddBrandClick,
+            onViewMapClick = onViewMapClick,
+        )
     }
 }
 
@@ -282,17 +292,75 @@ fun MembershipBarcodeCard(
 private fun MembershipStoreFooter(
     brands: List<HomePartnerBrandUiModel>,
     onBrandClick: (String) -> Unit,
+    onAddBrandClick: () -> Unit = {},
+    onViewMapClick: () -> Unit = {},
 ) {
     Spacer(Modifier.height(28.dp))
     HorizontalDivider(color = ItDayGray300)
     Spacer(Modifier.height(ItDayDimens.Space16))
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         Text("이 매장이 아닌가요?", fontWeight = FontWeight.Bold)
-        Text("지도에서 보기", color = HomePrimary, fontWeight = FontWeight.Bold)
+        Text(
+            "지도에서 보기",
+            color = HomePrimary,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.clickable(onClick = onViewMapClick),
+        )
     }
-    Spacer(Modifier.height(ItDayDimens.Space24))
-    PartnerBrandRow(brands = brands, onBrandClick = onBrandClick)
+    Spacer(Modifier.height(20.dp))
+    if (brands.isEmpty()) {
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(ItDayWhite)
+                    .clickable(onClick = onAddBrandClick)
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "등록된 제휴 브랜드가 없어요",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = Color(0xFF191919),
+                )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = "선호 브랜드를 추가하고 혜택을 확인해보세요",
+                    color = ItDayGray500,
+                    fontSize = 12.sp,
+                )
+            }
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = Color(0xFFEBF2FF),
+                modifier = Modifier.clickable(onClick = onAddBrandClick),
+            ) {
+                Text(
+                    text = "+ 추가하기",
+                    color = HomePrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                )
+            }
+        }
+    } else {
+        PartnerBrandRow(
+            brands = brands,
+            onBrandClick = onBrandClick,
+            onAddBrandClick = onAddBrandClick,
+        )
+    }
 }
+
 
 @Composable
 private fun MembershipStoreHeader(
@@ -300,15 +368,22 @@ private fun MembershipStoreHeader(
     brand: HomePartnerBrandUiModel?,
     onClick: () -> Unit,
 ) {
+    val storeName = brand?.displayName ?: membership.brandName
+    val benefitDesc =
+        brand?.let { com.umc.itday.core.util.BrandBenefitHelper.getBenefitSummary(it.displayName) }
+            ?: membership.benefitText
+
     Row(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        brand?.let { BrandMark(brand = it) }
-        Spacer(Modifier.width(ItDayDimens.Space12))
+        if (brand != null) {
+            BrandMark(brand = brand)
+            Spacer(Modifier.width(ItDayDimens.Space12))
+        }
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(membership.brandName, fontWeight = FontWeight.Bold)
+                Text(storeName, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.width(ItDayDimens.Space4))
                 Icon(
                     painter = painterResource(R.drawable.ic_chevron_right),
@@ -318,13 +393,14 @@ private fun MembershipStoreHeader(
                 )
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(membership.benefitText, color = ItDayGray500, style = MaterialTheme.typography.bodySmall)
+                Text(benefitDesc, color = ItDayGray500, style = MaterialTheme.typography.bodySmall)
                 Spacer(Modifier.width(ItDayDimens.Space8))
                 ItDayBadge(text = "D-6", variant = ItDayBadgeVariant.Blue)
             }
         }
     }
 }
+
 
 @Composable
 private fun BarcodeMeta(
@@ -393,35 +469,64 @@ private fun MockBarcode(
     enabled: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    Canvas(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .height(72.dp)
-                .semantics {
-                    contentDescription =
-                        if (enabled) "멤버십 바코드 $value" else "비활성화된 멤버십 바코드"
-                },
-    ) {
-        val unit = size.width / BARCODE_UNIT_COUNT
-        repeat(BARCODE_BAR_COUNT) { index ->
-            val width = if (index % BARCODE_WIDE_INTERVAL == 0) unit * BARCODE_WIDE_FACTOR else unit
-            val x = index * unit * BARCODE_X_FACTOR
-            drawLine(
-                color = Color.Black.copy(alpha = if (enabled) 1f else 0.65f),
-                start = Offset(x, 0f),
-                end = Offset(x, size.height),
-                strokeWidth = width,
-                cap = StrokeCap.Butt,
-            )
+    val barcodeBitmap =
+        remember(value) {
+            com.umc.itday.core.util.BarcodeGenerator.generateBarcode(value)
+        }
+
+    if (barcodeBitmap != null) {
+        Image(
+            bitmap = barcodeBitmap,
+            contentDescription = if (enabled) "멤버십 바코드 $value" else "비활성화된 멤버십 바코드",
+            modifier =
+                modifier
+                    .fillMaxWidth()
+                    .height(72.dp),
+            contentScale = ContentScale.FillBounds,
+            alpha = if (enabled) 1f else 0.65f,
+        )
+    } else {
+        Canvas(
+            modifier =
+                modifier
+                    .fillMaxWidth()
+                    .height(72.dp)
+                    .semantics {
+                        contentDescription =
+                            if (enabled) "멤버십 바코드 $value" else "비활성화된 멤버십 바코드"
+                    },
+        ) {
+            val unit = size.width / BARCODE_UNIT_COUNT
+            repeat(BARCODE_BAR_COUNT) { index ->
+                val width = if (index % BARCODE_WIDE_INTERVAL == 0) unit * BARCODE_WIDE_FACTOR else unit
+                val x = index * unit * BARCODE_X_FACTOR
+                drawLine(
+                    color = Color.Black.copy(alpha = if (enabled) 1f else 0.65f),
+                    start = Offset(x, 0f),
+                    end = Offset(x, size.height),
+                    strokeWidth = width,
+                    cap = StrokeCap.Butt,
+                )
+            }
         }
     }
 }
+
+private fun formatBarcodeNumber(number: String): String {
+    val clean = number.filter { it.isDigit() }
+    return if (clean.length == 16) {
+        clean.chunked(4).joinToString(" ")
+    } else {
+        number
+    }
+}
+
 
 @Composable
 fun PartnerBrandRow(
     brands: List<HomePartnerBrandUiModel>,
     onBrandClick: (String) -> Unit,
+    onAddBrandClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     if (brands.isEmpty()) {
@@ -430,7 +535,8 @@ fun PartnerBrandRow(
     }
     LazyRow(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         items(brands, key = { it.id }) { brand ->
             Column(
@@ -446,6 +552,7 @@ fun PartnerBrandRow(
                     brand.displayName,
                     color = if (brand.selected) HomePrimary else ItDayGray500,
                     style = MaterialTheme.typography.labelSmall,
+                    fontWeight = if (brand.selected) FontWeight.Bold else FontWeight.Normal,
                 )
                 if (brand.selected) {
                     Spacer(Modifier.height(2.dp))
@@ -453,8 +560,40 @@ fun PartnerBrandRow(
                 }
             }
         }
+        item {
+            Column(
+                modifier =
+                    Modifier
+                        .clickable(onClick = onAddBrandClick)
+                        .padding(horizontal = ItDayDimens.Space4),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Box(
+                    modifier =
+                        Modifier
+                            .size(46.dp)
+                            .clip(CircleShape)
+                            .background(ItDayWhite),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "+",
+                        color = HomePrimary,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+                Spacer(Modifier.height(ItDayDimens.Space4))
+                Text(
+                    "추가",
+                    color = ItDayGray500,
+                    style = MaterialTheme.typography.labelSmall,
+                )
+            }
+        }
     }
 }
+
 
 @Composable
 private fun BrandMark(brand: HomePartnerBrandUiModel) {
@@ -466,23 +605,39 @@ private fun BrandMark(brand: HomePartnerBrandUiModel) {
                 .background(ItDayWhite),
         contentAlignment = Alignment.Center,
     ) {
-        if (brand.logoUrl != null) {
+        val resolvedLogoRes =
+            com.umc.itday.core.util.BrandBenefitHelper.getBrandLogoRes(brand.displayName)
+                ?: if (brand.logoRes != 0 && brand.logoRes != com.umc.itday.R.drawable.logo_brand_starbucks) brand.logoRes else null
+
+        if (!brand.logoUrl.isNullOrBlank()) {
             AsyncImage(
                 model = brand.logoUrl,
                 contentDescription = brand.displayName,
-                modifier = Modifier.size(40.dp),
+                placeholder = painterResource(R.drawable.map_store_placeholder),
+                error = painterResource(R.drawable.map_store_placeholder),
+                fallback = painterResource(R.drawable.map_store_placeholder),
+                modifier = Modifier.size(40.dp).clip(CircleShape),
+                contentScale = ContentScale.Fit,
+            )
+        } else if (resolvedLogoRes != null) {
+            Image(
+                painter = painterResource(resolvedLogoRes),
+                contentDescription = brand.displayName,
+                modifier = Modifier.size(40.dp).clip(CircleShape),
                 contentScale = ContentScale.Fit,
             )
         } else {
             Image(
-                painter = painterResource(brand.logoRes),
-                contentDescription = brand.displayName,
-                modifier = Modifier.size(40.dp),
+                painter = painterResource(R.drawable.map_store_placeholder),
+                contentDescription = "${brand.displayName} 이미지 로딩 실패",
+                modifier = Modifier.size(40.dp).clip(CircleShape),
                 contentScale = ContentScale.Fit,
             )
         }
     }
 }
+
+
 
 @Composable
 fun CarrierComparisonBanner(
@@ -757,6 +912,7 @@ fun ItDayProSection(
                 symbolRes = R.drawable.img_home_pro_gift_box,
                 color = HomeProStore,
                 onClick = onStoreClick,
+                badge = "오픈 예정",
                 modifier = Modifier.weight(1f),
             )
             ProCard(
@@ -769,6 +925,7 @@ fun ItDayProSection(
                 modifier = Modifier.weight(1f),
             )
         }
+
     }
 }
 

@@ -1,4 +1,4 @@
-﻿package com.umc.itday.feature.settings.presentation
+package com.umc.itday.feature.settings.presentation
 
 import android.content.Intent
 import android.net.Uri
@@ -19,7 +19,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
+
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
@@ -66,6 +68,10 @@ fun SettingsMainRoute(
         )
     val uiState by viewModel.uiState.collectAsState()
 
+    LaunchedEffect(isGuestMode) {
+        viewModel.setGuestMode(isGuestMode)
+    }
+
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
@@ -82,6 +88,7 @@ fun SettingsMainRoute(
             }
         }
     }
+
 
     SettingsMainScreen(
         uiState = uiState,
@@ -213,6 +220,7 @@ private fun BoxWrapper(
 
 @Composable
 private fun SettingsMainContent(
+
     uiState: SettingsUiState,
     isGuestMode: Boolean,
     onNavigateScreen: (SettingsScreenType) -> Unit,
@@ -224,85 +232,85 @@ private fun SettingsMainContent(
     onTermsOfServiceClick: () -> Unit,
     onNameClick: () -> Unit,
 ) {
-    Scaffold(
-        containerColor = ItDayWhite,
-    ) { innerPadding ->
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp),
-        ) {
-            Spacer(modifier = Modifier.height(16.dp))
+    Column(
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(ItDayWhite)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp),
+    ) {
+        Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = "설정",
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF191919),
-            )
+        Text(
+            text = "설정",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF191919),
+        )
 
-            Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-            ProfileHeaderSection(
-                profile = uiState.profile,
-                onNameClick = onNameClick
-            )
+        ProfileHeaderSection(
+            profile = uiState.profile,
+            isGuestMode = isGuestMode,
+            onNameClick = onNameClick,
+        )
 
-            Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-            MembershipInfoCard(membership = uiState.membership)
+        MembershipInfoCard(
+            membership = uiState.membership,
+            isGuestMode = isGuestMode,
+        )
 
-            Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-            NotificationCardSection(
-                promotionEnabled = uiState.promotionNotification,
-                characterEnabled = uiState.characterNotification,
-                onPromotionToggle = onPromotionToggle,
-                onCharacterToggle = onCharacterToggle,
-            )
+        NotificationCardSection(
+            promotionEnabled = uiState.promotionNotification,
+            characterEnabled = uiState.characterNotification,
+            onPromotionToggle = onPromotionToggle,
+            onCharacterToggle = onCharacterToggle,
+        )
 
-            Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-            SettingsMenuGroup(
-                items =
-                    listOf(
-                        "개인정보 및 보안" to { onNavigateScreen(SettingsScreenType.PrivacySecurity) },
-                    ),
-            )
+        SettingsMenuGroup(
+            items =
+                listOf(
+                    "개인정보 및 보안" to { onNavigateScreen(SettingsScreenType.PrivacySecurity) },
+                ),
+        )
 
-            Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-            SettingsMenuGroup(
-                title = "기타",
-                items =
-                    listOf(
-                        "고객센터" to { onNavigateScreen(SettingsScreenType.CustomerService) },
-                        if (isGuestMode) {
-                            "로그인하기" to onLoginClick
-                        } else {
-                            "로그아웃" to onShowLogoutDialog
-                        },
-                    ),
-            )
+        SettingsMenuGroup(
+            title = "기타",
+            items =
+                listOf(
+                    "고객센터" to { onNavigateScreen(SettingsScreenType.CustomerService) },
+                    if (isGuestMode) {
+                        "로그인하기" to onLoginClick
+                    } else {
+                        "로그아웃" to onShowLogoutDialog
+                    },
+                ),
+        )
 
-            Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-            SettingsMenuGroup(
-                title = "정보",
-                items =
-                    listOf(
-                        "앱 버전" to {},
-                        "개인정보 처리방침" to onPrivacyPolicyClick,
-                        "서비스 이용약관" to onTermsOfServiceClick,
-                    ),
-                trailingTexts = mapOf("앱 버전" to uiState.appVersion),
-            )
+        SettingsMenuGroup(
+            title = "정보",
+            items =
+                listOf(
+                    "앱 버전" to {},
+                    "개인정보 처리방침" to onPrivacyPolicyClick,
+                    "서비스 이용약관" to onTermsOfServiceClick,
+                ),
+            trailingTexts = mapOf("앱 버전" to uiState.appVersion),
+        )
 
-            Spacer(modifier = Modifier.height(32.dp))
-        }
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 
@@ -313,90 +321,87 @@ private fun PrivacySecurityContent(
     onTermsOfServiceClick: () -> Unit,
     onWithdrawClick: () -> Unit,
 ) {
-    Scaffold(
-        containerColor = ItDayWhite,
-        topBar = {
-            SettingsTopBar(
-                title = "개인정보 및 보안",
-                onBackClick = onBackClick,
-            )
-        },
-    ) { innerPadding ->
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp),
+    Column(
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(ItDayWhite)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp),
+    ) {
+        SettingsTopBar(
+            title = "개인정보 및 보안",
+            onBackClick = onBackClick,
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                ShieldGraphicIllustration()
-                Spacer(modifier = Modifier.padding(start = 16.dp))
-                Column {
-                    Text(
-                        text = "보안 상태",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF191919),
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "계정이 안전하게 보호되고 있습니다.",
-                        fontSize = 13.sp,
-                        color = ItDayGray500,
-                    )
-                }
+            ShieldGraphicIllustration()
+            Spacer(modifier = Modifier.padding(start = 16.dp))
+            Column {
+                Text(
+                    text = "보안 상태",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF191919),
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "계정이 안전하게 보호되고 있습니다.",
+                    fontSize = 13.sp,
+                    color = ItDayGray500,
+                )
             }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            SettingsMenuGroup(
-                title = "보안 및 설정",
-                items =
-                    listOf(
-                        "개인정보 처리방침" to onPrivacyPolicyClick,
-                        "서비스 이용약관" to onTermsOfServiceClick,
-                    ),
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = ItDayGray100),
-            ) {
-                Column(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .clickable(onClick = onWithdrawClick)
-                            .padding(20.dp),
-                ) {
-                    Text(
-                        text = "탈퇴하기",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFFF3B30),
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "모든 데이터가 삭제되며 복구할 수 없습니다.",
-                fontSize = 12.sp,
-                color = ItDayGray500,
-                modifier = Modifier.padding(start = 8.dp),
-            )
         }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        SettingsMenuGroup(
+            title = "보안 및 설정",
+            items =
+                listOf(
+                    "개인정보 처리방침" to onPrivacyPolicyClick,
+                    "서비스 이용약관" to onTermsOfServiceClick,
+                ),
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = ItDayGray100),
+        ) {
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable(onClick = onWithdrawClick)
+                        .padding(20.dp),
+            ) {
+                Text(
+                    text = "탈퇴하기",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFFF3B30),
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "모든 데이터가 삭제되며 복구할 수 없습니다.",
+            fontSize = 12.sp,
+            color = ItDayGray500,
+            modifier = Modifier.padding(start = 8.dp),
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 
@@ -406,46 +411,44 @@ private fun CustomerServiceContent(
     onToggleFaq: (Int) -> Unit,
     onBackClick: () -> Unit,
 ) {
-    Scaffold(
-        containerColor = ItDayWhite,
-        topBar = {
-            SettingsTopBar(onBackClick = onBackClick)
-        },
-    ) { innerPadding ->
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp),
-        ) {
-            Spacer(modifier = Modifier.height(8.dp))
+    Column(
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(ItDayWhite)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp),
+    ) {
+        SettingsTopBar(onBackClick = onBackClick)
 
-            Text(
-                text = "무엇을 도와드릴까요?",
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF191919),
-            )
+        Spacer(modifier = Modifier.height(8.dp))
 
-            Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = "무엇을 도와드릴까요?",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF191919),
+        )
 
-            Text(
-                text = "It-Day 팀이 언제나 여러분을 도와드립니다.",
-                fontSize = 14.sp,
-                color = ItDayGray500,
-            )
+        Spacer(modifier = Modifier.height(6.dp))
 
-            Spacer(modifier = Modifier.height(32.dp))
+        Text(
+            text = "It-Day 팀이 언제나 여러분을 도와드립니다.",
+            fontSize = 14.sp,
+            color = ItDayGray500,
+        )
 
-            FaqListCard(
-                faqList = faqList,
-                onToggleFaq = onToggleFaq,
-            )
-        }
+        Spacer(modifier = Modifier.height(32.dp))
+
+        FaqListCard(
+            faqList = faqList,
+            onToggleFaq = onToggleFaq,
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
+
 
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true)
 @Composable

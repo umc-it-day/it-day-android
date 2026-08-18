@@ -119,7 +119,20 @@ class MapViewModelTest {
         assertEquals(location, state.currentCameraCenter)
         assertFalse(state.showResearchButton)
     }
+
+    @Test
+    fun `searchByKeyword 호출 시 장소 검색 API를 통해 매장 목록이 갱신된다`() = runTest {
+        viewModel.searchByKeyword("스타벅스")
+        runCurrent()
+
+        val state = viewModel.uiState.value
+        assertEquals(1, state.stores.size)
+        assertEquals("스타벅스", state.stores.first().name)
+        assertFalse(state.isLoading)
+        assertFalse(state.showResearchButton)
+    }
 }
+
 
 private class FakeMapRepository : MapRepository {
     val dummyStores =

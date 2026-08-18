@@ -105,6 +105,40 @@ class MapViewModel(
         fetchNearbyStores(currentCenter)
     }
 
+    fun searchByKeyword(query: String) {
+        if (query.isBlank()) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            when (val result = mapRepository.searchPlaces(query)) {
+                is ApiResult.Success -> {
+                    val stores = result.data
+                    val firstStoreCenter = stores.firstOrNull()?.position
+                    _uiState.update { state ->
+                        state.copy(
+                            stores = stores,
+                            mapCenter = firstStoreCenter ?: state.mapCenter,
+                            currentCameraCenter = firstStoreCenter ?: state.currentCameraCenter,
+                            selectedStoreId = null,
+                            showResearchButton = false,
+                            isLoading = false,
+                        )
+                    }
+
+                }
+
+                is ApiResult.Failure -> {
+                    _uiState.update { state ->
+                        state.copy(
+                            isLoading = false,
+                            errorMessage = result.error.toUserMessage(),
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+
     private fun fetchNearbyStores(coordinate: MapCoordinate) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
