@@ -95,6 +95,7 @@ class MapRepositoryImpl(
                     origin = "$startLng,$startLat",
                     destination = "$destLng,$destLat",
                 )
+            
             val routePoints = response.toRoutePoints()
             if (routePoints.isNotEmpty()) {
                 ApiResult.Success(routePoints)
