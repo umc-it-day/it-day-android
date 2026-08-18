@@ -1,4 +1,4 @@
-﻿package com.umc.itday.ui.home
+package com.umc.itday.ui.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -44,15 +44,12 @@ fun HomeRoute(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel =
         viewModel(
-            factory =
-                HomeViewModel.factory(
-                    locationRepository = LocalContext.current.appContainer.locationRepository,
-                    memberRepository = LocalContext.current.appContainer.memberRepository,
-                ),
+            factory = HomeViewModel.factory(LocalContext.current.appContainer.locationRepository),
         ),
     isGuestMode: Boolean = false,
     onEvent: (HomeEvent) -> Unit = {},
 ) {
+
 
     val uiState by viewModel.uiState.collectAsState()
     var showCarrierComparison by remember { mutableStateOf(false) }
