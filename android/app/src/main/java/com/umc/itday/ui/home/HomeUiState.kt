@@ -1,4 +1,4 @@
-﻿package com.umc.itday.ui.home
+package com.umc.itday.ui.home
 
 import androidx.annotation.DrawableRes
 import com.umc.itday.core.location.LocationCoordinate
@@ -37,8 +37,10 @@ data class HomeMembershipUiModel(
     val brandName: String,
     val benefitText: String,
     val barcodeValue: String,
+    val userBarcodeNumber: String = barcodeValue,
     val pointText: String,
 )
+
 
 data class HomePartnerBrandUiModel(
     val id: String,
@@ -107,6 +109,10 @@ sealed interface HomeAction {
 
     data object OpenOnboarding : HomeAction
 
+    data class AddBrandBenefit(
+        val brand: com.umc.itday.feature.onboarding.domain.model.PreferredBrand,
+    ) : HomeAction
+
     data class SelectPartnerBrand(
         val id: String,
     ) : HomeAction
@@ -135,7 +141,13 @@ sealed interface HomeEvent {
 
     data object OpenMap : HomeEvent
 
+    data class ShowMessage(
+        val message: String,
+    ) : HomeEvent
+
     data object OpenBrandDetail : HomeEvent
 
     data object OpenOnboarding : HomeEvent
 }
+
+

@@ -31,8 +31,8 @@ import com.umc.itday.ui.home.component.BrandDaySection
 import com.umc.itday.ui.home.component.CarrierComparisonBanner
 import com.umc.itday.ui.home.component.CurrentLocationRow
 import com.umc.itday.ui.home.component.GuestMembershipCard
-import com.umc.itday.ui.home.component.HomeAdvertisement
 import com.umc.itday.ui.home.component.HomeTopBar
+
 import com.umc.itday.ui.home.component.ItDayProSection
 import com.umc.itday.ui.home.component.MembershipBarcodeCard
 import com.umc.itday.ui.home.component.MembershipBenefitHeader
@@ -47,25 +47,40 @@ import com.umc.itday.ui.theme.ItDayWhite
 @Composable
 fun HomeRoute(
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel =
-        viewModel(
-            factory = HomeViewModel.factory(LocalContext.current.appContainer.locationRepository),
-        ),
     isGuestMode: Boolean = false,
     onEvent: (HomeEvent) -> Unit = {},
 ) {
+    val container = LocalContext.current.appContainer
+    val viewModel: HomeViewModel =
+        viewModel(
+            factory =
+                HomeViewModel.factory(
+                    locationRepository = container.locationRepository,
+                    localPreferencesDataSource = container.localPreferencesDataSource,
+                    barcodeRepository = container.barcodeRepository,
+                    onboardingRepository = container.onboardingRepository,
+                ),
+        )
 
 
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     var showCarrierComparison by remember { mutableStateOf(false) }
     var showPartnerDetail by remember { mutableStateOf(false) }
 
     LaunchedEffect(viewModel) {
         viewModel.loadLocation()
+        if (!isGuestMode) {
+            viewModel.loadBarcodeAndLottery()
+        }
         viewModel.events.collect { event ->
+
             when (event) {
                 HomeEvent.OpenCarrierComparison -> showCarrierComparison = true
                 HomeEvent.OpenBrandDetail -> showPartnerDetail = true
+                is HomeEvent.ShowMessage -> {
+                    android.widget.Toast.makeText(context, event.message, android.widget.Toast.LENGTH_SHORT).show()
+                }
                 else -> onEvent(event)
             }
         }
@@ -77,8 +92,15 @@ fun HomeRoute(
     if (showCarrierComparison) {
         CarrierComparisonScreen(onBack = { showCarrierComparison = false })
     } else if (showPartnerDetail) {
-        PartnerBrandDetailScreen(onBack = { showPartnerDetail = false })
+        PartnerBrandDetailScreen(
+            onBack = { showPartnerDetail = false },
+            onBrandClick = { brand ->
+                viewModel.onAction(HomeAction.AddBrandBenefit(brand))
+            },
+        )
     } else {
+
+
         HomeScreen(
             uiState = uiState,
             onAction = viewModel::onAction,
@@ -152,14 +174,10 @@ private fun HomeDashboardSections(
     uiState: HomeUiState,
     onAction: (HomeAction) -> Unit,
 ) {
-    Spacer(Modifier.height(ItDayDimens.Space24))
-    if (uiState.membershipState == MembershipState.Guest) {
-        HomeAdvertisement(onClick = { onAction(HomeAction.OpenAdvertisement) })
-    } else {
-        CarrierComparisonBanner(onClick = { onAction(HomeAction.OpenCarrierComparison) })
-    }
-    Spacer(Modifier.height(ItDayDimens.Space24))
+    // CarrierComparisonBanner(onClick = { onAction(HomeAction.OpenCarrierComparison) })
+    // Spacer(Modifier.height(ItDayDimens.Space24))
     MembershipBenefitHeader(onMyMembership = { onAction(HomeAction.OpenMyMembership) })
+
     Spacer(Modifier.height(ItDayDimens.Space16))
     MembershipBenefitSection(
         benefits = uiState.benefits,
@@ -178,12 +196,8 @@ private fun HomeDashboardSections(
         )
     }
     Spacer(Modifier.height(ItDayDimens.Space24))
-    HomeAdvertisement(
-        onClick = { onAction(HomeAction.OpenAdvertisement) },
-        mint = uiState.membershipState == MembershipState.Guest,
-    )
-    Spacer(Modifier.height(ItDayDimens.Space24))
 }
+
 
 @Composable
 private fun MembershipContent(
@@ -212,6 +226,8 @@ private fun MembershipContent(
                     onBrandClick = { onAction(HomeAction.SelectPartnerBrand(it)) },
                     onRefresh = { onAction(HomeAction.RefreshBarcode) },
                     onBrandDetailClick = { onAction(HomeAction.OpenBrandDetail) },
+                    onAddBrandClick = { onAction(HomeAction.OpenBrandDetail) },
+                    onViewMapClick = { onAction(HomeAction.OpenMap) },
                 )
             }
         MembershipState.BarcodeEnabled -> {
@@ -226,8 +242,11 @@ private fun MembershipContent(
                 onBrandClick = { onAction(HomeAction.SelectPartnerBrand(it)) },
                 onRefresh = { onAction(HomeAction.RefreshBarcode) },
                 onBrandDetailClick = { onAction(HomeAction.OpenBrandDetail) },
+                onAddBrandClick = { onAction(HomeAction.OpenBrandDetail) },
+                onViewMapClick = { onAction(HomeAction.OpenMap) },
             )
         }
+
     }
 }
 

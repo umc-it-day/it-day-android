@@ -1,4 +1,4 @@
-﻿package com.umc.itday.ui.navigation
+package com.umc.itday.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -191,7 +191,14 @@ private fun OnboardingDestination(navController: NavHostController) {
                 ),
         )
     val onboardingViewModel: OnboardingViewModel =
-        viewModel(factory = OnboardingViewModel.Factory(context.appContainer.onboardingRepository))
+        viewModel(
+            factory =
+                OnboardingViewModel.Factory(
+                    repository = context.appContainer.onboardingRepository,
+                    localPreferencesDataSource = context.appContainer.localPreferencesDataSource,
+                ),
+        )
+
     val uiState by onboardingViewModel.uiState.collectAsState()
 
     OnboardingScreen(

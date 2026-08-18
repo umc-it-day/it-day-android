@@ -1,4 +1,4 @@
-﻿package com.umc.itday.ui.navigation
+package com.umc.itday.ui.navigation
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.padding
@@ -146,14 +146,19 @@ private fun MainTabNavHost(
                         HomeEvent.OpenProfile -> navController.navigateToTopLevelRoute(AppRoute.SETTINGS)
                         HomeEvent.OpenLogin -> onLogout()
                         HomeEvent.OpenOnboarding -> onOpenOnboarding()
+                        HomeEvent.OpenMap -> navController.navigateToTopLevelRoute(AppRoute.MAP)
+                        HomeEvent.OpenProChallenge -> navController.navigateToTopLevelRoute(AppRoute.REPORT)
                         else -> { /* 처리되지 않은 이벤트 */ }
                     }
+
                 }
             )
         }
         composable(AppRoute.MAP.route) {
             MapScreen()
         }
+
+
         composable(AppRoute.REPORT.route) {
             ReportRoute(
                 isGuestMode = isGuestMode,
