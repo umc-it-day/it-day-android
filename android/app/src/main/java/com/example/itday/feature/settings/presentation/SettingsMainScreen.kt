@@ -97,21 +97,22 @@ fun SettingsMainRoute(
 @Composable
 fun SettingsMainScreen(
     uiState: SettingsUiState,
-    onNavigateScreen: (SettingsScreenType) -> Unit,
-    onPromotionToggle: (Boolean) -> Unit,
-    onCharacterToggle: (Boolean) -> Unit,
-    onShowLogoutDialog: () -> Unit,
-    onDismissLogoutDialog: () -> Unit,
-    onConfirmLogout: () -> Unit,
-    onShowEditNameDialog: () -> Unit,
-    onDismissEditNameDialog: () -> Unit,
-    onConfirmUpdateName: (String) -> Unit,
-    onToggleFaq: (Int) -> Unit,
-    onPrivacyPolicyClick: () -> Unit,
-    onTermsOfServiceClick: () -> Unit,
-    onWithdrawClick: () -> Unit,
+    onNavigateScreen: (SettingsScreenType) -> Unit = {},
+    onPromotionToggle: (Boolean) -> Unit = {},
+    onCharacterToggle: (Boolean) -> Unit = {},
+    onShowLogoutDialog: () -> Unit = {},
+    onDismissLogoutDialog: () -> Unit = {},
+    onConfirmLogout: () -> Unit = {},
+    onShowEditNameDialog: () -> Unit = {},
+    onDismissEditNameDialog: () -> Unit = {},
+    onConfirmUpdateName: (String) -> Unit = {},
+    onToggleFaq: (Int) -> Unit = {},
+    onPrivacyPolicyClick: () -> Unit = {},
+    onTermsOfServiceClick: () -> Unit = {},
+    onWithdrawClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+
     BoxWrapper(modifier = modifier) {
         AnimatedContent(
             targetState = uiState.currentScreen,
@@ -414,16 +415,6 @@ private fun CustomerServiceContent(
 private fun SettingsMainScreenPreview() {
     SettingsMainScreen(
         uiState = SettingsUiState(),
-        onNavigateScreen = {},
-        onPromotionToggle = {},
-        onCharacterToggle = {},
-        onShowLogoutDialog = {},
-        onDismissLogoutDialog = {},
-        onConfirmLogout = {},
-        onToggleFaq = {},
-        onPrivacyPolicyClick = {},
-        onTermsOfServiceClick = {},
-        onWithdrawClick = {},
     )
 }
 
@@ -432,16 +423,6 @@ private fun SettingsMainScreenPreview() {
 private fun PrivacySecurityContentPreview() {
     SettingsMainScreen(
         uiState = SettingsUiState(currentScreen = SettingsScreenType.PrivacySecurity),
-        onNavigateScreen = {},
-        onPromotionToggle = {},
-        onCharacterToggle = {},
-        onShowLogoutDialog = {},
-        onDismissLogoutDialog = {},
-        onConfirmLogout = {},
-        onToggleFaq = {},
-        onPrivacyPolicyClick = {},
-        onTermsOfServiceClick = {},
-        onWithdrawClick = {},
     )
 }
 
@@ -450,18 +431,9 @@ private fun PrivacySecurityContentPreview() {
 private fun CustomerServiceContentPreview() {
     SettingsMainScreen(
         uiState = SettingsUiState(currentScreen = SettingsScreenType.CustomerService),
-        onNavigateScreen = {},
-        onPromotionToggle = {},
-        onCharacterToggle = {},
-        onShowLogoutDialog = {},
-        onDismissLogoutDialog = {},
-        onConfirmLogout = {},
-        onToggleFaq = {},
-        onPrivacyPolicyClick = {},
-        onTermsOfServiceClick = {},
-        onWithdrawClick = {},
     )
 }
+
 
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true)
 @Composable
