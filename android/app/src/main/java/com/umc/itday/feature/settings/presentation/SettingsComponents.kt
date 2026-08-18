@@ -102,14 +102,17 @@ internal fun SettingsTopBar(
 @Composable
 internal fun ProfileHeaderSection(
     profile: UserProfile,
+    isGuestMode: Boolean = false,
     onProfileEditClick: () -> Unit = {},
     onNameClick: () -> Unit = {},
 ) {
+    val displayName = if (isGuestMode) "게스트" else profile.userName.ifBlank { "사용자" }
+    val displayEmail = if (isGuestMode) "로그인이 필요합니다" else profile.userEmail.ifBlank { "이메일 정보 없음" }
+
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // ... (profile picture part) ...
         Box(
             modifier = Modifier.size(80.dp),
             contentAlignment = Alignment.BottomEnd,
@@ -129,20 +132,22 @@ internal fun ProfileHeaderSection(
                     modifier = Modifier.size(54.dp),
                 )
             }
-            Box(
-                modifier =
-                    Modifier
-                        .size(24.dp)
-                        .clip(CircleShape)
-                        .background(ItDayPrimary)
-                        .clickable { onProfileEditClick() },
-                contentAlignment = Alignment.Center,
-            ) {
-                Image(
-                    painter = painterResource(com.umc.itday.R.drawable.ic_settings_camera),
-                    contentDescription = "사진 수정",
-                    modifier = Modifier.size(14.dp),
-                )
+            if (!isGuestMode) {
+                Box(
+                    modifier =
+                        Modifier
+                            .size(24.dp)
+                            .clip(CircleShape)
+                            .background(ItDayPrimary)
+                            .clickable { onProfileEditClick() },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Image(
+                        painter = painterResource(com.umc.itday.R.drawable.ic_settings_camera),
+                        contentDescription = "사진 수정",
+                        modifier = Modifier.size(14.dp),
+                    )
+                }
             }
         }
 
@@ -152,28 +157,28 @@ internal fun ProfileHeaderSection(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .clickable { onNameClick() }
+                    .then(if (!isGuestMode) Modifier.clickable { onNameClick() } else Modifier)
                     .padding(vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-
             Text(text = "이름", fontSize = 14.sp, color = ItDayGray500)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = profile.userName,
+                    text = displayName,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF191919),
                 )
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = ItDayGray300,
-                )
+                if (!isGuestMode) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = ItDayGray300,
+                    )
+                }
             }
         }
-
 
         Row(
             modifier =
@@ -186,22 +191,32 @@ internal fun ProfileHeaderSection(
             Text(text = "이메일", fontSize = 14.sp, color = ItDayGray500)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = profile.userEmail,
+                    text = displayEmail,
                     fontSize = 13.sp,
                     color = ItDayGray500,
                 )
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = ItDayGray300,
-                )
+                if (!isGuestMode) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = ItDayGray300,
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-internal fun MembershipInfoCard(membership: MembershipInfo) {
+internal fun MembershipInfoCard(
+    membership: MembershipInfo,
+    isGuestMode: Boolean = false,
+) {
+    val displayCarrier = if (isGuestMode) "미등록" else membership.carrier.ifBlank { "미등록" }
+    val displayGrade = if (isGuestMode) "게스트" else membership.grade.ifBlank { "일반" }
+    val displayBarcode = if (isGuestMode) "로그인 후 멤버십을 등록해 보세요" else membership.barcodeNumber.ifBlank { "바코드 정보 없음" }
+    val showPro = !isGuestMode && membership.isPro
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -215,20 +230,20 @@ internal fun MembershipInfoCard(membership: MembershipInfo) {
             ) {
                 Column {
                     Text(
-                        text = membership.carrier,
+                        text = displayCarrier,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = ItDayPrimary,
+                        color = if (isGuestMode) ItDayGray500 else ItDayPrimary,
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = membership.grade,
+                        text = displayGrade,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = Color(0xFF191919),
                     )
                     Spacer(modifier = Modifier.height(6.dp))
-                    if (membership.isPro) {
+                    if (showPro) {
                         Box(
                             modifier =
                                 Modifier
@@ -266,10 +281,10 @@ internal fun MembershipInfoCard(membership: MembershipInfo) {
             Text(text = "바코드 번호", fontSize = 13.sp, color = ItDayGray500)
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = membership.barcodeNumber,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF191919),
+                text = displayBarcode,
+                fontSize = if (isGuestMode) 13.sp else 16.sp,
+                fontWeight = if (isGuestMode) FontWeight.Normal else FontWeight.Bold,
+                color = if (isGuestMode) ItDayGray500 else Color(0xFF191919),
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -281,10 +296,10 @@ internal fun MembershipInfoCard(membership: MembershipInfo) {
             ) {
                 Text(text = "통신사", fontSize = 13.sp, color = ItDayGray500)
                 Text(
-                    text = membership.carrier,
+                    text = displayCarrier,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = ItDayPrimary,
+                    color = if (isGuestMode) ItDayGray500 else ItDayPrimary,
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -294,15 +309,16 @@ internal fun MembershipInfoCard(membership: MembershipInfo) {
             ) {
                 Text(text = "멤버십 등급", fontSize = 13.sp, color = ItDayGray500)
                 Text(
-                    text = membership.grade,
+                    text = displayGrade,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = ItDayPrimary,
+                    color = if (isGuestMode) ItDayGray500 else ItDayPrimary,
                 )
             }
         }
     }
 }
+
 
 @Composable
 internal fun NotificationCardSection(

@@ -1,4 +1,4 @@
-﻿package com.umc.itday.feature.settings.presentation
+package com.umc.itday.feature.settings.presentation
 
 import com.umc.itday.core.data.result.ApiResult
 import com.umc.itday.feature.auth.domain.model.LoginSession
@@ -38,12 +38,25 @@ class SettingsViewModelTest {
     fun `initial uiState has default values`() {
         val state = viewModel.uiState.value
         assertEquals(SettingsScreenType.Main, state.currentScreen)
-        assertEquals("김예진", state.profile.userName)
-        assertEquals("SKT", state.membership.carrier)
+        assertEquals("", state.profile.userName)
+        assertEquals("", state.membership.carrier)
         assertTrue(state.promotionNotification)
         assertFalse(state.characterNotification)
         assertFalse(state.showLogoutDialog)
     }
+
+    @Test
+    fun `setGuestMode true sets guest user profile and membership without API call`() {
+        viewModel.setGuestMode(true)
+        val state = viewModel.uiState.value
+
+        assertEquals("게스트", state.profile.userName)
+        assertEquals("로그인이 필요합니다", state.profile.userEmail)
+        assertEquals("미등록", state.membership.carrier)
+        assertEquals("게스트", state.membership.grade)
+        assertFalse(state.membership.isPro)
+    }
+
 
     @Test
     fun `navigateToScreen changes currentScreen in state`() {

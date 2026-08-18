@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 
 class OnboardingViewModel(
     private val repository: OnboardingRepository,
+    private val localPreferencesDataSource: com.umc.itday.core.local.LocalPreferencesDataSource? = null,
     private val debugLogger: (String) -> Unit = { message ->
         if (BuildConfig.DEBUG) Log.d(TAG, message)
     },
@@ -43,10 +44,11 @@ class OnboardingViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             logDebug("GET /api/terms, GET /api/telecoms 요청 시작")
-            val terms = async { repository.getTerms() }
-            val telecoms = async { repository.getTelecoms() }
-            val termsResult = terms.await()
-            val telecomsResult = telecoms.await()
+            val termsDeferred = async { repository.getTerms() }
+            val telecomsDeferred = async { repository.getTelecoms() }
+
+            val termsResult = termsDeferred.await()
+            val telecomsResult = telecomsDeferred.await()
 
             if (termsResult is ApiResult.Success) {
                 logInfo("GET /api/terms 성공: ${termsResult.data.size}개")
@@ -107,7 +109,10 @@ class OnboardingViewModel(
             )
         }
 
+    fun previous() = back()
+
     fun onLocationResult(granted: Boolean) {
+
         if (granted) {
             _uiState.update { it.copy(step = OnboardingUiState.CARRIER_STEP, locationError = false) }
         } else {
@@ -124,6 +129,40 @@ class OnboardingViewModel(
                 availableGrades = emptyList(),
             )
         }
+        loadGrades(carrier)
+    }
+
+    fun selectMembershipGrade(grade: MembershipGradeType) =
+        _uiState.update { state ->
+            state.copy(
+                selectedMembershipGrade = grade,
+                selectedMembershipId = state.availableGrades.firstOrNull { it.type == grade }?.membershipId,
+            )
+        }
+
+    fun toggleBrand(value: String) =
+        _uiState.update { state ->
+            val brands =
+                if (value in state.preferredBrands) state.preferredBrands - value
+                else state.preferredBrands + value
+            state.copy(preferredBrands = brands)
+        }
+
+    fun retry() {
+        when (_uiState.value.step) {
+            OnboardingUiState.TERMS_STEP -> loadInitialData()
+            OnboardingUiState.MEMBERSHIP_STEP -> _uiState.value.selectedCarrier?.let { loadGrades(it) }
+            OnboardingUiState.BRAND_STEP -> {
+                if (_uiState.value.availableBrands.isEmpty()) {
+                    loadBrands()
+                } else {
+                    submitOnboarding()
+                }
+            }
+        }
+    }
+
+    private fun loadGrades(carrier: CarrierType) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             logDebug("GET /api/telecoms/${carrier.apiCode}/grades 요청 시작")
@@ -147,26 +186,11 @@ class OnboardingViewModel(
         }
     }
 
-    fun selectMembershipGrade(grade: MembershipGradeType) =
-        _uiState.update { state ->
-            state.copy(
-                selectedMembershipGrade = grade,
-                selectedMembershipId = state.availableGrades.firstOrNull { it.type == grade }?.membershipId,
-            )
-        }
-
-    fun toggleBrand(value: String) =
-        _uiState.update { state ->
-            val brands =
-                if (value in state.preferredBrands) state.preferredBrands - value
-                else state.preferredBrands + value
-            state.copy(preferredBrands = brands)
-        }
-
     fun showTerms(type: AgreementType) = _uiState.update { it.copy(showingTerms = type) }
     fun hideTerms() = _uiState.update { it.copy(showingTerms = null) }
 
     private fun loadBrands() {
+
         if (_uiState.value.availableBrands.isNotEmpty()) return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
@@ -204,6 +228,7 @@ class OnboardingViewModel(
             when (val result = repository.submitOnboarding(submission)) {
                 is ApiResult.Success -> {
                     logInfo("POST /api/members/onboarding 성공")
+                    localPreferencesDataSource?.setPreferredBrandNames(state.preferredBrands)
                     _uiState.update { it.copy(isSubmitting = false) }
                     _events.send(OnboardingUiEvent.Complete)
                 }
@@ -226,9 +251,13 @@ class OnboardingViewModel(
         infoLogger(message)
     }
 
-    class Factory(private val repository: OnboardingRepository) : ViewModelProvider.Factory {
+    class Factory(
+        private val repository: OnboardingRepository,
+        private val localPreferencesDataSource: com.umc.itday.core.local.LocalPreferencesDataSource? = null,
+    ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T = OnboardingViewModel(repository) as T
+        override fun <T : ViewModel> create(modelClass: Class<T>): T =
+            OnboardingViewModel(repository, localPreferencesDataSource) as T
     }
 
     private companion object {
