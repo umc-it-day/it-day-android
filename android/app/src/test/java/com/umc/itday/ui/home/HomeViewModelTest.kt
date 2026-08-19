@@ -143,15 +143,21 @@ class HomeViewModelTest {
 
     @Test
     fun `loadBarcodeAndLottery 호출 시 lotteryNum으로 바코드값을 설정하고 유저 바코드 번호를 바인딩한다`() = runTest {
-        val fakeBarcodeRepo = FakeBarcodeRepository()
-        val viewModel = HomeViewModel(HomePreviewData.barcodeDisabled, barcodeRepository = fakeBarcodeRepo)
+        val dispatcher = UnconfinedTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val fakeBarcodeRepo = FakeBarcodeRepository()
+            val viewModel = HomeViewModel(HomePreviewData.barcodeDisabled, barcodeRepository = fakeBarcodeRepo)
 
-        viewModel.loadBarcodeAndLottery()
-        runCurrent()
+            viewModel.loadBarcodeAndLottery()
+            runCurrent()
 
-        val state = viewModel.uiState.value
-        assertEquals("8765432187654321", state.membership?.barcodeValue)
-        assertEquals("1234567890123456", state.membership?.userBarcodeNumber)
+            val state = viewModel.uiState.value
+            assertEquals("8765432187654321", state.membership?.barcodeValue)
+            assertEquals("1234567890123456", state.membership?.userBarcodeNumber)
+        } finally {
+            Dispatchers.resetMain()
+        }
     }
 }
 
