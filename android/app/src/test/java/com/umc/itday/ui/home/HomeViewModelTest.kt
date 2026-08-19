@@ -70,7 +70,15 @@ class HomeViewModelTest {
 
     @Test
     fun `브랜드 선택은 하나의 브랜드만 선택한다`() {
-        val viewModel = HomeViewModel(HomePreviewData.barcodeEnabled)
+        val state =
+            HomePreviewData.barcodeEnabled.copy(
+                partnerBrands =
+                    listOf(
+                        HomePartnerBrandUiModel("starbucks", "스타벅스", 0, selected = true),
+                        HomePartnerBrandUiModel("cu", "CU", 0),
+                    ),
+            )
+        val viewModel = HomeViewModel(state)
 
         viewModel.onAction(HomeAction.SelectPartnerBrand("cu"))
 
@@ -122,12 +130,13 @@ class HomeViewModelTest {
         )
 
         viewModel.onAction(HomeAction.AddBrandBenefit(brand))
-        runCurrent()
 
         val state = viewModel.uiState.value
         assertEquals(1, state.benefits.size)
         assertEquals("스타벅스", state.benefits.first().brandName)
         assertEquals("사이즈업 또는 아메리카노 무료", state.benefits.first().benefitText)
+
+        runCurrent()
         assertTrue(fakeLocal.savedBrandNames.contains("스타벅스"))
     }
 
@@ -141,7 +150,7 @@ class HomeViewModelTest {
         runCurrent()
 
         val state = viewModel.uiState.value
-        assertEquals("87654321", state.membership?.barcodeValue)
+        assertEquals("8765432187654321", state.membership?.barcodeValue)
         assertEquals("1234567890123456", state.membership?.userBarcodeNumber)
     }
 }
@@ -151,7 +160,7 @@ private class FakeBarcodeRepository : com.umc.itday.feature.barcode.domain.repos
         com.umc.itday.core.data.result.ApiResult.Success("1234567890123456")
 
     override suspend fun getLottery(): com.umc.itday.core.data.result.ApiResult<String> =
-        com.umc.itday.core.data.result.ApiResult.Success("87654321")
+        com.umc.itday.core.data.result.ApiResult.Success("8765432187654321")
 
     override suspend fun registerBarcode(barcodeNumber: String): com.umc.itday.core.data.result.ApiResult<Unit> =
         com.umc.itday.core.data.result.ApiResult.Success(Unit)

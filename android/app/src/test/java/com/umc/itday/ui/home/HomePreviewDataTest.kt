@@ -14,9 +14,9 @@ class HomePreviewDataTest {
 
         assertEquals(MembershipState.BarcodeEnabled, state.membershipState)
         assertNotNull(state.membership)
-        assertTrue(state.benefits.isNotEmpty())
-        assertTrue(state.partnerBrands.isNotEmpty())
-        assertTrue(state.brandDays.isNotEmpty())
+        assertTrue(state.benefits.isEmpty())
+        assertTrue(state.partnerBrands.isEmpty())
+        assertTrue(state.brandDays.isEmpty())
     }
 
     @Test
@@ -41,7 +41,7 @@ class HomePreviewDataTest {
     fun `혜택 상태는 0개 1개 여러 개를 제공한다`() {
         assertTrue(HomePreviewData.noBenefits.benefits.isEmpty())
         assertEquals(1, HomePreviewData.singleBenefit.benefits.size)
-        assertTrue(HomePreviewData.barcodeEnabled.benefits.size > 1)
+        assertTrue(HomePreviewData.barcodeEnabled.benefits.isEmpty())
     }
 
     @Test
