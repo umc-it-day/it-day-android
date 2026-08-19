@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.umc.itday.core.data.result.ApiResult
 import com.umc.itday.core.data.result.toUserMessage
+import com.umc.itday.core.config.TermsConstants
 import com.umc.itday.feature.auth.domain.repository.AuthRepository
 import com.umc.itday.feature.settings.domain.repository.SettingsRepository
 import kotlinx.coroutines.channels.Channel
@@ -126,15 +127,25 @@ class SettingsViewModel(
     }
 
     fun openPrivacyPolicy() {
-        viewModelScope.launch {
-            _events.send(SettingsUiEvent.OpenExternalUrl("https://example.com/privacy"))
+        _uiState.update {
+            it.copy(
+                termsDialogTitle = "개인정보 처리방침",
+                termsDialogContent = TermsConstants.PRIVACY_TERMS_DETAIL,
+            )
         }
     }
 
     fun openTermsOfService() {
-        viewModelScope.launch {
-            _events.send(SettingsUiEvent.OpenExternalUrl("https://example.com/terms"))
+        _uiState.update {
+            it.copy(
+                termsDialogTitle = "서비스 이용약관",
+                termsDialogContent = TermsConstants.SERVICE_TERMS_DETAIL,
+            )
         }
+    }
+
+    fun dismissTermsDialog() {
+        _uiState.update { it.copy(termsDialogTitle = null, termsDialogContent = null) }
     }
 
     fun updateName(newName: String) {

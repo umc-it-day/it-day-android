@@ -163,6 +163,8 @@ fun ReportScreen(
                 isAttendanceSubmitting = uiState.isAttendanceSubmitting,
                 isAttendanceCompleted = uiState.isAttendanceCompleted,
                 attendanceSuccessMessage = uiState.attendanceSuccessMessage,
+                completedAttendanceDays = uiState.completedAttendanceDays,
+                latestEarnedPoint = uiState.latestAttendanceEarnedPoint,
                 onAttendanceClick = onAttendanceSubmit,
                 onBackClick = { navController.popBackStack() },
                 onPointClick = { openPage(ReportPage.PointHistory) },

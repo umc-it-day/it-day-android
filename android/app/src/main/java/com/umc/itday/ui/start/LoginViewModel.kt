@@ -10,6 +10,7 @@ import com.umc.itday.core.auth.KakaoLoginResult
 import com.umc.itday.core.data.result.ApiResult
 import com.umc.itday.core.data.result.toUserMessage
 import com.umc.itday.core.local.LocalPreferencesDataSource
+import com.umc.itday.core.network.NetworkMonitor
 import com.umc.itday.feature.auth.domain.repository.AuthRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,6 +35,7 @@ class LoginViewModel(
     private val kakaoLoginClient: KakaoLoginClient,
     private val authRepository: AuthRepository,
     private val localPreferencesDataSource: LocalPreferencesDataSource,
+    private val networkMonitor: NetworkMonitor,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
@@ -43,6 +45,10 @@ class LoginViewModel(
 
     fun loginWithKakao(context: Context) {
         if (_uiState.value.isLoading) return
+        if (!networkMonitor.isCurrentlyConnected()) {
+            _uiState.value = LoginUiState(errorMessage = "네트워크 연결 후 다시 시도해 주세요.")
+            return
+        }
 
         viewModelScope.launch {
             _uiState.value = LoginUiState(isLoading = true)
@@ -86,9 +92,10 @@ class LoginViewModel(
         private val kakaoLoginClient: KakaoLoginClient,
         private val authRepository: AuthRepository,
         private val localPreferencesDataSource: LocalPreferencesDataSource,
+        private val networkMonitor: NetworkMonitor,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            LoginViewModel(kakaoLoginClient, authRepository, localPreferencesDataSource) as T
+            LoginViewModel(kakaoLoginClient, authRepository, localPreferencesDataSource, networkMonitor) as T
     }
 }

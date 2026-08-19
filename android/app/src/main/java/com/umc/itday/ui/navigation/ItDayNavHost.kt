@@ -98,6 +98,7 @@ private fun LoginDestination(navController: NavHostController) {
                     context.appContainer.kakaoLoginClient,
                     context.appContainer.authRepository,
                     localPreferencesDataSource,
+                    context.appContainer.networkMonitor,
                 ),
         )
     val sessionViewModel: SessionViewModel =

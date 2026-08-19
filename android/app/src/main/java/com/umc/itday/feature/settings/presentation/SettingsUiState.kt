@@ -36,6 +36,8 @@ data class SettingsUiState(
     val characterNotification: Boolean = false,
     val showLogoutDialog: Boolean = false,
     val showNameEditDialog: Boolean = false,
+    val termsDialogTitle: String? = null,
+    val termsDialogContent: String? = null,
     val editingName: String = "",
     val isWithdrawing: Boolean = false,
 
