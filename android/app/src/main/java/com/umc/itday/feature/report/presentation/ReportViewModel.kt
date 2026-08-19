@@ -8,9 +8,11 @@ import com.umc.itday.core.data.result.toUserMessage
 import com.umc.itday.core.local.LocalPreferencesDataSource
 import com.umc.itday.feature.report.domain.model.ReportPeriodType
 import com.umc.itday.feature.report.domain.repository.ReportRepository
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -23,6 +25,9 @@ class ReportViewModel(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ReportUiState())
     val uiState: StateFlow<ReportUiState> = _uiState.asStateFlow()
+
+    private val _events = Channel<ReportUiEvent>(Channel.BUFFERED)
+    val events = _events.receiveAsFlow()
 
     init {
         observeAttendancePersistence()
@@ -117,6 +122,12 @@ class ReportViewModel(
                     _uiState.update { it.copy(errorMessage = result.error.toUserMessage()) }
                 }
             }
+        }
+    }
+
+    fun showStorePreparingMessage() {
+        viewModelScope.launch {
+            _events.send(ReportUiEvent.ShowMessage("상점 기능은 준비중이에요! 곧 오픈될 예정입니다."))
         }
     }
 

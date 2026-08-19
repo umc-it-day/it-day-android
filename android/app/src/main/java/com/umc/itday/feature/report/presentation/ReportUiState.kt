@@ -135,3 +135,7 @@ data class ReportUiState(
 
 
 enum class ReportAccess { Guest, Free, Pro }
+
+sealed interface ReportUiEvent {
+    data class ShowMessage(val message: String) : ReportUiEvent
+}

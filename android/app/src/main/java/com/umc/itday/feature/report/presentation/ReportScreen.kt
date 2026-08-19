@@ -1,5 +1,6 @@
 package com.umc.itday.feature.report.presentation
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -52,6 +53,16 @@ fun ReportRoute(
     val uiState by viewModel.uiState.collectAsState()
     val errorMessage = uiState.errorMessage
 
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is ReportUiEvent.ShowMessage -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
     LaunchedEffect(isGuestMode) {
         if (!isGuestMode) {
             viewModel.loadInitialData()
@@ -65,6 +76,7 @@ fun ReportRoute(
             isProMember = isProMember,
             onHomeClick = onHomeClick,
             onAttendanceSubmit = { viewModel.checkAttendance() },
+            onShopClick = viewModel::showStorePreparingMessage,
         )
         if (uiState.isLoading) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
@@ -114,7 +126,6 @@ fun ReportScreen(
                         categories = uiState.categories,
                         topStores = uiState.topStores,
                         onShopClick = {
-                            openPage(ReportPage.Store)
                             onShopClick()
                         },
                         onPointHistoryClick = {
