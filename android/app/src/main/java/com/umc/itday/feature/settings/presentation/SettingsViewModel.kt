@@ -65,7 +65,7 @@ class SettingsViewModel(
                         )
                 } else if (profileResult is ApiResult.Failure && !isGuest) {
                     viewModelScope.launch {
-                        _events.send(SettingsUiEvent.ShowMessage("프로필 정보를 불러오는데 실패했습니다."))
+                        _events.send(SettingsUiEvent.ShowMessage(profileResult.error.toUserMessage()))
                     }
                 }
 
@@ -79,6 +79,11 @@ class SettingsViewModel(
                                     isPro = true,
                                 ),
                         )
+                }
+                if (membershipResult is ApiResult.Failure && !isGuest) {
+                    viewModelScope.launch {
+                        _events.send(SettingsUiEvent.ShowMessage(membershipResult.error.toUserMessage()))
+                    }
                 }
                 newState
             }
@@ -161,7 +166,9 @@ class SettingsViewModel(
                 _events.send(SettingsUiEvent.ShowMessage("이름이 변경되었습니다."))
             } else {
                 _uiState.update { it.copy(isLoading = false) }
-                _events.send(SettingsUiEvent.ShowMessage("이름 변경에 실패했습니다. 다시 시도해주세요."))
+                val message = (result as? ApiResult.Failure)?.error?.toUserMessage()
+                    ?: "이름 변경에 실패했습니다. 다시 시도해주세요."
+                _events.send(SettingsUiEvent.ShowMessage(message))
             }
         }
     }
@@ -175,7 +182,9 @@ class SettingsViewModel(
                 loadSettings()
             } else {
                 _uiState.update { it.copy(isLoading = false) }
-                _events.send(SettingsUiEvent.ShowMessage("멤버십 정보 변경에 실패했습니다."))
+                val message = (result as? ApiResult.Failure)?.error?.toUserMessage()
+                    ?: "멤버십 정보 변경에 실패했습니다."
+                _events.send(SettingsUiEvent.ShowMessage(message))
             }
         }
     }
