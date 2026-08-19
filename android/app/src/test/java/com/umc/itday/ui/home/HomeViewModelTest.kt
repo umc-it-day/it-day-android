@@ -117,6 +117,7 @@ class HomeViewModelTest {
         val brand = com.umc.itday.feature.onboarding.domain.model.PreferredBrand(
             id = 100L,
             name = "스타벅스",
+            imageUrl = null,
             category = "카페",
         )
 
