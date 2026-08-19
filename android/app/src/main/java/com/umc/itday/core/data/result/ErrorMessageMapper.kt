@@ -2,7 +2,7 @@
 
 fun AppError.toUserMessage(): String =
     when (this) {
-        is AppError.Network -> "네트워크 연결을 확인해주세요."
+        is AppError.Network -> "네트워크 연결 후 다시 시도해 주세요."
         is AppError.Server -> message ?: "서버 요청을 처리하지 못했습니다. 잠시 후 다시 시도해주세요."
         is AppError.Auth ->
             when (reason) {

@@ -70,7 +70,15 @@ class HomeViewModelTest {
 
     @Test
     fun `브랜드 선택은 하나의 브랜드만 선택한다`() {
-        val viewModel = HomeViewModel(HomePreviewData.barcodeEnabled)
+        val state =
+            HomePreviewData.barcodeEnabled.copy(
+                partnerBrands =
+                    listOf(
+                        HomePartnerBrandUiModel("starbucks", "스타벅스", 0, selected = true),
+                        HomePartnerBrandUiModel("cu", "CU", 0),
+                    ),
+            )
+        val viewModel = HomeViewModel(state)
 
         viewModel.onAction(HomeAction.SelectPartnerBrand("cu"))
 
@@ -117,31 +125,39 @@ class HomeViewModelTest {
         val brand = com.umc.itday.feature.onboarding.domain.model.PreferredBrand(
             id = 100L,
             name = "스타벅스",
+            imageUrl = null,
             category = "카페",
         )
 
         viewModel.onAction(HomeAction.AddBrandBenefit(brand))
-        runCurrent()
 
         val state = viewModel.uiState.value
         assertEquals(1, state.benefits.size)
         assertEquals("스타벅스", state.benefits.first().brandName)
         assertEquals("사이즈업 또는 아메리카노 무료", state.benefits.first().benefitText)
+
+        runCurrent()
         assertTrue(fakeLocal.savedBrandNames.contains("스타벅스"))
     }
 
 
     @Test
     fun `loadBarcodeAndLottery 호출 시 lotteryNum으로 바코드값을 설정하고 유저 바코드 번호를 바인딩한다`() = runTest {
-        val fakeBarcodeRepo = FakeBarcodeRepository()
-        val viewModel = HomeViewModel(HomePreviewData.barcodeDisabled, barcodeRepository = fakeBarcodeRepo)
+        val dispatcher = UnconfinedTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val fakeBarcodeRepo = FakeBarcodeRepository()
+            val viewModel = HomeViewModel(HomePreviewData.barcodeDisabled, barcodeRepository = fakeBarcodeRepo)
 
-        viewModel.loadBarcodeAndLottery()
-        runCurrent()
+            viewModel.loadBarcodeAndLottery()
+            runCurrent()
 
-        val state = viewModel.uiState.value
-        assertEquals("87654321", state.membership?.barcodeValue)
-        assertEquals("1234567890123456", state.membership?.userBarcodeNumber)
+            val state = viewModel.uiState.value
+            assertEquals("8765432187654321", state.membership?.barcodeValue)
+            assertEquals("1234567890123456", state.membership?.userBarcodeNumber)
+        } finally {
+            Dispatchers.resetMain()
+        }
     }
 }
 
@@ -150,7 +166,7 @@ private class FakeBarcodeRepository : com.umc.itday.feature.barcode.domain.repos
         com.umc.itday.core.data.result.ApiResult.Success("1234567890123456")
 
     override suspend fun getLottery(): com.umc.itday.core.data.result.ApiResult<String> =
-        com.umc.itday.core.data.result.ApiResult.Success("87654321")
+        com.umc.itday.core.data.result.ApiResult.Success("8765432187654321")
 
     override suspend fun registerBarcode(barcodeNumber: String): com.umc.itday.core.data.result.ApiResult<Unit> =
         com.umc.itday.core.data.result.ApiResult.Success(Unit)

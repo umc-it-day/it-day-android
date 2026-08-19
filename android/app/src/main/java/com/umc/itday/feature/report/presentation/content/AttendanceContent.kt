@@ -22,6 +22,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -65,6 +66,8 @@ fun AttendanceContent(
     isAttendanceSubmitting: Boolean = false,
     isAttendanceCompleted: Boolean = false,
     attendanceSuccessMessage: String? = null,
+    completedAttendanceDays: Set<Int> = emptySet(),
+    latestEarnedPoint: Int = 0,
     onBackClick: () -> Unit = {},
     onPointClick: () -> Unit = {},
     onAttendanceClick: () -> Unit = {},
@@ -74,6 +77,12 @@ fun AttendanceContent(
 
     var selectedMonth by rememberSaveable { mutableIntStateOf(0) }
     var showCompletionDialog by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(attendanceSuccessMessage) {
+        if (attendanceSuccessMessage != null) {
+            showCompletionDialog = true
+        }
+    }
 
     Column(
         modifier =
@@ -119,7 +128,7 @@ fun AttendanceContent(
                 BonusStamp(R.string.attendance_perfect, thirtyDaysBonus || consecutiveDays >= 30)
             }
             HorizontalDivider(color = ItDayGray100)
-            AttendanceCalendar(consecutiveDays = consecutiveDays)
+            AttendanceCalendar(completedDays = completedAttendanceDays)
             Row(
                 modifier =
                     Modifier
@@ -155,7 +164,6 @@ fun AttendanceContent(
             enabled = !isAttendanceSubmitting && !isAttendanceCompleted,
             onClick = {
                 onAttendanceClick()
-                showCompletionDialog = true
             },
             modifier = Modifier.fillMaxWidth().padding(top = ItDayDimens.Space24),
         )
@@ -163,7 +171,7 @@ fun AttendanceContent(
     }
     if (showCompletionDialog) {
         AttendanceCompletionDialog(
-            earnedPoint = 10,
+            earnedPoint = latestEarnedPoint,
             onHomeClick = {
                 showCompletionDialog = false
                 onHomeClick()
@@ -222,6 +230,14 @@ private fun AttendanceCompletionDialog(
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                 )
+                if (earnedPoint > 0) {
+                    Text(
+                        text = "+${earnedPoint}P 적립",
+                        modifier = Modifier.padding(top = ItDayDimens.Space8),
+                        color = ItDayBlue,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
                 ItDayButton(
                     text = stringResource(R.string.attendance_go_home),
                     onClick = onHomeClick,
@@ -348,7 +364,7 @@ private fun BonusStamp(labelRes: Int, completed: Boolean) {
 }
 
 @Composable
-private fun AttendanceCalendar(consecutiveDays: Int) {
+private fun AttendanceCalendar(completedDays: Set<Int>) {
     val calendar = Calendar.getInstance()
     val today = calendar.get(Calendar.DAY_OF_MONTH)
     val maxDays = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
@@ -356,10 +372,6 @@ private fun AttendanceCalendar(consecutiveDays: Int) {
     // 이번 달 1일의 요일 오프셋 구하기 (일요일: 0, 월요일: 1, ..., 토요일: 6)
     val firstDayCalendar = (calendar.clone() as Calendar).apply { set(Calendar.DAY_OF_MONTH, 1) }
     val firstDayOffset = firstDayCalendar.get(Calendar.DAY_OF_WEEK) - Calendar.SUNDAY
-
-    // 오늘 날짜 및 연속 출석일수 기준으로 출석 완료된 날짜 세트 구성
-    val startDay = maxOf(1, today - consecutiveDays + 1)
-    val completedDays = if (consecutiveDays > 0) (startDay..today).toSet() else emptySet()
 
     Row(
         modifier = Modifier.fillMaxWidth().padding(top = ItDayDimens.Space16),

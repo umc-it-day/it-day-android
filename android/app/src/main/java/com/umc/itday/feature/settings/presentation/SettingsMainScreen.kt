@@ -45,6 +45,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.umc.itday.core.di.appContainer
+import com.umc.itday.ui.component.ItDayTermsDialog
 import com.umc.itday.ui.theme.ItDayGray100
 import com.umc.itday.ui.theme.ItDayGray500
 import com.umc.itday.ui.theme.ItDayPrimary
@@ -110,6 +111,7 @@ fun SettingsMainRoute(
         onToggleFaq = viewModel::toggleFaqItem,
         onPrivacyPolicyClick = viewModel::openPrivacyPolicy,
         onTermsOfServiceClick = viewModel::openTermsOfService,
+        onDismissTermsDialog = viewModel::dismissTermsDialog,
         onWithdrawClick = viewModel::withdraw,
         modifier = modifier,
     )
@@ -133,6 +135,7 @@ fun SettingsMainScreen(
     onToggleFaq: (Int) -> Unit,
     onPrivacyPolicyClick: () -> Unit,
     onTermsOfServiceClick: () -> Unit,
+    onDismissTermsDialog: () -> Unit,
     onWithdrawClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -187,6 +190,14 @@ fun SettingsMainScreen(
                 onNameChange = onEditingNameChange,
                 onConfirm = onConfirmNameEdit,
                 onDismiss = onDismissNameEditDialog,
+            )
+        }
+
+        if (uiState.termsDialogTitle != null && uiState.termsDialogContent != null) {
+            ItDayTermsDialog(
+                title = uiState.termsDialogTitle,
+                content = uiState.termsDialogContent,
+                onDismiss = onDismissTermsDialog,
             )
         }
 
@@ -470,6 +481,7 @@ private fun SettingsMainScreenPreview() {
         onToggleFaq = {},
         onPrivacyPolicyClick = {},
         onTermsOfServiceClick = {},
+        onDismissTermsDialog = {},
         onWithdrawClick = {},
     )
 }
@@ -494,6 +506,7 @@ private fun PrivacySecurityContentPreview() {
         onToggleFaq = {},
         onPrivacyPolicyClick = {},
         onTermsOfServiceClick = {},
+        onDismissTermsDialog = {},
         onWithdrawClick = {},
     )
 }
@@ -518,6 +531,7 @@ private fun CustomerServiceContentPreview() {
         onToggleFaq = {},
         onPrivacyPolicyClick = {},
         onTermsOfServiceClick = {},
+        onDismissTermsDialog = {},
         onWithdrawClick = {},
     )
 }

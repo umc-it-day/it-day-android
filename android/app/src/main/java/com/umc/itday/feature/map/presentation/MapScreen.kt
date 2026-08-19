@@ -1,5 +1,6 @@
 package com.umc.itday.feature.map.presentation
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
@@ -18,7 +19,8 @@ import com.umc.itday.core.di.appContainer
 fun MapScreen(
     initialQuery: String? = null,
 ) {
-    val container = LocalContext.current.appContainer
+    val context = LocalContext.current
+    val container = context.appContainer
     val viewModel: MapViewModel = viewModel(
         factory = MapViewModel.Factory(container.mapRepository)
     )
@@ -28,6 +30,12 @@ fun MapScreen(
         networkMonitor.isOnline.collectAsState(
             initial = networkMonitor.isCurrentlyConnected(),
         )
+
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     LaunchedEffect(initialQuery) {
         if (!initialQuery.isNullOrBlank()) {

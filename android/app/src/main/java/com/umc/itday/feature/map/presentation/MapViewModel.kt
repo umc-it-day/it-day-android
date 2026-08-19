@@ -234,7 +234,9 @@ class MapViewModel(
                         _uiState.update { it.copy(routePoints = result.data) }
                     }
                 }
-                is ApiResult.Failure -> Unit
+                is ApiResult.Failure -> {
+                    _uiState.update { it.copy(errorMessage = result.error.toUserMessage()) }
+                }
             }
         }
     }

@@ -45,6 +45,29 @@ data class ReportUiState(
     val isAttendanceCompleted: Boolean
         get() = isTodayAttended || attendance != null
 
+    val completedAttendanceDays: Set<Int>
+        get() {
+            val dayFromAttendance =
+                attendance
+                    ?.attendanceDate
+                    ?.substringAfterLast("-", missingDelimiterValue = "")
+                    ?.toIntOrNull()
+
+            val today =
+                java.util.Calendar
+                    .getInstance()
+                    .get(java.util.Calendar.DAY_OF_MONTH)
+
+            return when {
+                dayFromAttendance != null -> setOf(dayFromAttendance)
+                isTodayAttended -> setOf(today)
+                else -> emptySet()
+            }
+        }
+
+    val latestAttendanceEarnedPoint: Int
+        get() = attendance?.earnedPoint ?: 0
+
 
     val pointHistories: List<com.umc.itday.feature.report.presentation.content.PointHistoryUiModel>
         get() {
@@ -112,3 +135,7 @@ data class ReportUiState(
 
 
 enum class ReportAccess { Guest, Free, Pro }
+
+sealed interface ReportUiEvent {
+    data class ShowMessage(val message: String) : ReportUiEvent
+}
