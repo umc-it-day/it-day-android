@@ -40,6 +40,7 @@ interface AppContainer {
     val barcodeRepository: BarcodeRepository
     val reportRepository: ReportRepository
     val onboardingRepository: OnboardingRepository
+    val guestOnboardingRepository: OnboardingRepository
     val paymentRepository: PaymentRepository
     val settingsRepository: SettingsRepository
     val featureSettingsRepository: FeatureSettingsRepository

@@ -111,6 +111,15 @@ class SettingsViewModel(
         _uiState.update { it.copy(showLogoutDialog = false) }
     }
 
+    fun showWithdrawConfirmation() {
+        if (isGuest) return
+        _uiState.update { it.copy(showWithdrawDialog = true) }
+    }
+
+    fun dismissWithdrawConfirmation() {
+        _uiState.update { it.copy(showWithdrawDialog = false) }
+    }
+
     fun showNameEditDialog() {
         _uiState.update { it.copy(showNameEditDialog = true, editingName = it.profile.userName) }
     }
@@ -193,18 +202,28 @@ class SettingsViewModel(
         if (_uiState.value.isWithdrawing) return
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isWithdrawing = true, errorMessage = null) }
+            _uiState.update {
+                it.copy(
+                    isLoading = true,
+                    isWithdrawing = true,
+                    showWithdrawDialog = false,
+                    errorMessage = null,
+                )
+            }
             when (val result = authRepository.withdraw()) {
                 is ApiResult.Success -> {
                     _events.send(SettingsUiEvent.UserWithdrawn)
                 }
                 is ApiResult.Failure -> {
+                    val message = result.error.toUserMessage()
                     _uiState.update {
                         it.copy(
+                            isLoading = false,
                             isWithdrawing = false,
-                            errorMessage = result.error.toUserMessage(),
+                            errorMessage = message,
                         )
                     }
+                    _events.send(SettingsUiEvent.ShowMessage(message))
                 }
             }
         }
