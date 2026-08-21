@@ -1,4 +1,4 @@
-﻿@file:Suppress("MagicNumber")
+@file:Suppress("MagicNumber")
 
 package com.umc.itday.feature.payment.presentation
 
@@ -18,7 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import com.umc.itday.ui.component.ItDayPulseIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,10 +38,9 @@ fun PaymentOpeningScreen(
     onOpenDirectly: () -> Unit,
 ) {
     PaymentProviderFrame(onBack = onBack) {
-        CircularProgressIndicator(
-            modifier = Modifier.size(40.dp),
+        ItDayPulseIndicator(
+            size = 40.dp,
             color = Color.White,
-            strokeWidth = 2.dp,
         )
         Spacer(modifier = Modifier.height(34.dp))
         StatusMessage(

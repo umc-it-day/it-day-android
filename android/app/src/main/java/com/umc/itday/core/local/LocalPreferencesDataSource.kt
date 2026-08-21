@@ -23,5 +23,3 @@ interface LocalPreferencesDataSource {
 
     suspend fun clearUserSessionPreferences()
 }
-
-

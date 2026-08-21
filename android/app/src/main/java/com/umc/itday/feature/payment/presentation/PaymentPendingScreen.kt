@@ -1,4 +1,4 @@
-﻿@file:Suppress("MagicNumber")
+@file:Suppress("MagicNumber")
 
 package com.umc.itday.feature.payment.presentation
 
@@ -19,6 +19,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.umc.itday.ui.component.ItDayLoadingOverlay
 import com.umc.itday.R
 import com.umc.itday.ui.theme.ItDayTheme
 
@@ -39,22 +40,11 @@ fun PaymentPendingScreen(onBack: () -> Unit) {
         Box(
             modifier =
                 Modifier
-                    .fillMaxSize()
-                    .background(Color(0x33000000)),
+                    .fillMaxSize(),
             contentAlignment = Alignment.Center,
         ) {
-            CircularProgressIndicator(
-                modifier =
-                    Modifier.semantics {
-                        contentDescription = "\uACB0\uC81C \uB300\uAE30 \uC911"
-                    },
-                color = Color(0xFF4075F5),
-            )
-            Text(
-                text = stringResource(R.string.payment_pending_description),
-                modifier = Modifier.padding(top = 88.dp),
-                color = Color(0xFF4F5662),
-                style = MaterialTheme.typography.bodyMedium,
+            ItDayLoadingOverlay(
+                message = stringResource(R.string.payment_pending_description)
             )
         }
     }

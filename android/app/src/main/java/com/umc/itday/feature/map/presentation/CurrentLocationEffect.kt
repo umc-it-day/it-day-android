@@ -1,4 +1,4 @@
-﻿package com.umc.itday.feature.map.presentation
+package com.umc.itday.feature.map.presentation
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -48,4 +48,3 @@ fun CurrentLocationEffect(
         }
     }
 }
-

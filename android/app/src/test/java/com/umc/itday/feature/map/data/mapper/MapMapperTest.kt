@@ -120,7 +120,3 @@ class MapMapperTest {
         assertEquals(129.06, points[1].longitude, 0.0001)
     }
 }
-
-
-
-

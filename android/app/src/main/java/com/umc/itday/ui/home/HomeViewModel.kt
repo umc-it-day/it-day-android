@@ -108,6 +108,7 @@ class HomeViewModel(
 
                 _uiState.update { state ->
                     val existingBrands = state.partnerBrands.associateBy { it.displayName }
+                    val existingBenefits = state.benefits.associateBy { it.brandName }
                     val previouslySelected = state.partnerBrands.firstOrNull { it.selected }?.displayName
                     val updatedPartnerBrands =
                         brandNames.mapIndexed { index, name ->
@@ -139,12 +140,13 @@ class HomeViewModel(
                         }
                     val updatedBenefits =
                         brandNames.mapIndexed { index, name ->
-                            HomeBenefitUiModel(
-                                id = name,
-                                rank = index + 1,
-                                brandName = name,
-                                benefitText = com.umc.itday.core.util.BrandBenefitHelper.getBenefitSummary(name),
-                            )
+                            existingBenefits[name]?.copy(rank = index + 1)
+                                ?: HomeBenefitUiModel(
+                                    id = name,
+                                    rank = index + 1,
+                                    brandName = name,
+                                    benefitText = com.umc.itday.core.util.BrandBenefitHelper.getBenefitSummary(name),
+                                )
                         }
                     state.copy(
                         partnerBrands = updatedPartnerBrands,
@@ -372,4 +374,3 @@ class HomeViewModel(
             }
     }
 }
-

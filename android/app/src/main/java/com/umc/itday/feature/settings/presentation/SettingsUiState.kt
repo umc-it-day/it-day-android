@@ -49,4 +49,3 @@ data class SettingsUiState(
             FaqItem(3, "위치 권한을 허용했는데도 안돼요"),
         ),
 )
-

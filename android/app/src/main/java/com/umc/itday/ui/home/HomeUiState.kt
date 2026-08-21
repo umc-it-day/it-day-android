@@ -149,5 +149,3 @@ sealed interface HomeEvent {
 
     data object OpenOnboarding : HomeEvent
 }
-
-

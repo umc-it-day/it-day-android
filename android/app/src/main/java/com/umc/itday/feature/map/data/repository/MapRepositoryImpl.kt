@@ -125,4 +125,3 @@ class MapRepositoryImpl(
             ApiResult.Failure(AppError.Unknown(error))
         }
 }
-

@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import coil3.compose.AsyncImage
+import com.umc.itday.ui.component.ItDayPulseIndicator
 import com.umc.itday.R
 import com.umc.itday.ui.component.ItDayBadge
 import com.umc.itday.ui.component.ItDayBadgeVariant
@@ -154,7 +155,7 @@ private fun RefreshLocationButton(
         contentAlignment = Alignment.Center,
     ) {
         if (isRefreshing) {
-            CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp)
+            ItDayPulseIndicator(size = 12.dp)
         } else {
             Image(
                 painter = painterResource(R.drawable.ic_home_location_refresh),

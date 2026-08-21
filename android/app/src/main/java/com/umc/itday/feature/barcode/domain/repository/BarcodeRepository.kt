@@ -13,4 +13,3 @@ interface BarcodeRepository {
 
     suspend fun recordUsage(storeId: Long): ApiResult<Unit>
 }
-

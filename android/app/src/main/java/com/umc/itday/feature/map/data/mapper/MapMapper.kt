@@ -135,6 +135,3 @@ private fun String.toKoreanCategory(): String =
         "LIFE" -> "생활/편의"
         else -> this
     }
-
-
-

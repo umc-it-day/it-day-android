@@ -52,3 +52,8 @@ On Windows use `gradlew.bat`. If a task is not configured, report that fact; do 
 - Use `<type>: <Korean subject>` for commits. Use `[Feature] 제목` 등 `.github/pull_request_template.md`의 형식 for PR titles.
 - Preserve unrelated user changes.
 - Test business logic, mappings, and ViewModel state transitions when behavior changes.
+
+## AI Agent Behavior
+
+- **Timeout**: Limit long-running operations (e.g., extensive code search, background tasks) to **15 seconds** by default. If a task exceeds this, report progress and request permission to continue.
+- **Verification**: Prioritize running small, focused tests over full project builds unless necessary.

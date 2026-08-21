@@ -222,4 +222,3 @@ private class FakeLocationRepository : LocationRepository {
         longitude: Double,
     ): String = "테스트 주소"
 }
-

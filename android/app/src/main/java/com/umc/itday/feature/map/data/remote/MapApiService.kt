@@ -42,5 +42,3 @@ interface MapApiService {
         @Query("priority") priority: String = "RECOMMEND",
     ): KakaoDirectionsResponseDto
 }
-
-
