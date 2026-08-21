@@ -35,6 +35,7 @@ data class SettingsUiState(
     val promotionNotification: Boolean = true,
     val characterNotification: Boolean = false,
     val showLogoutDialog: Boolean = false,
+    val showWithdrawDialog: Boolean = false,
     val showNameEditDialog: Boolean = false,
     val termsDialogTitle: String? = null,
     val termsDialogContent: String? = null,

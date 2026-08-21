@@ -8,9 +8,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.umc.itday.core.di.appContainer
 import com.umc.itday.feature.onboarding.presentation.OnboardingScreen
 import com.umc.itday.feature.onboarding.presentation.OnboardingViewModel
@@ -36,8 +38,20 @@ fun ItDayNavHost(navController: NavHostController = rememberNavController()) {
         composable(AppRoute.LOGIN.route) {
             LoginDestination(navController = navController)
         }
-        composable(AppRoute.ONBOARDING.route) {
-            OnboardingDestination(navController = navController)
+        composable(
+            route = "${AppRoute.ONBOARDING.route}?guest={guest}",
+            arguments =
+                listOf(
+                    navArgument("guest") {
+                        type = NavType.BoolType
+                        defaultValue = false
+                    },
+                ),
+        ) { backStackEntry ->
+            OnboardingDestination(
+                navController = navController,
+                isGuestEntry = backStackEntry.arguments?.getBoolean("guest") == true,
+            )
         }
         composable(AppRoute.MAIN.route) {
             MainDestination(navController = navController)
@@ -131,7 +145,7 @@ private fun LoginDestination(navController: NavHostController) {
         onGuestClick = {
             coroutineScope.launch {
                 sessionViewModel.enterGuestMode()
-                navController.navigate(AppRoute.MAIN.route) {
+                navController.navigate("${AppRoute.ONBOARDING.route}?guest=true") {
                     popUpTo(AppRoute.LOGIN.route) { inclusive = true }
                 }
             }
@@ -179,7 +193,10 @@ private fun MainDestination(navController: NavHostController) {
 }
 
 @Composable
-private fun OnboardingDestination(navController: NavHostController) {
+private fun OnboardingDestination(
+    navController: NavHostController,
+    isGuestEntry: Boolean = false,
+) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val sessionViewModel: SessionViewModel =
@@ -193,9 +210,15 @@ private fun OnboardingDestination(navController: NavHostController) {
         )
     val onboardingViewModel: OnboardingViewModel =
         viewModel(
+            key = "onboarding-${if (isGuestEntry) "guest" else "member"}",
             factory =
                 OnboardingViewModel.Factory(
-                    repository = context.appContainer.onboardingRepository,
+                    repository =
+                        if (isGuestEntry) {
+                            context.appContainer.guestOnboardingRepository
+                        } else {
+                            context.appContainer.onboardingRepository
+                        },
                     localPreferencesDataSource = context.appContainer.localPreferencesDataSource,
                 ),
         )

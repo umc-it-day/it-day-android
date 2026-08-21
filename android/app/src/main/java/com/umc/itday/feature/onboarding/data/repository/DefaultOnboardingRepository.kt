@@ -95,6 +95,63 @@ class DefaultOnboardingRepository(
         ApiResult.Failure(AppError.Server(statusCode = 200, message = message))
 }
 
+class GuestOnboardingRepository(
+    private val api: OnboardingApi,
+) : OnboardingRepository {
+    override suspend fun getTerms(): ApiResult<List<OnboardingTerm>> =
+        ApiResult.Success(
+            listOf(
+                OnboardingTerm(1L, "위치 기반 서비스 이용 동의", "주변 혜택 안내를 위한 위치 이용에 동의합니다.", true),
+                OnboardingTerm(2L, "개인정보 수집 및 이용 동의", "서비스 이용을 위한 최소한의 개인정보 처리에 동의합니다.", true),
+                OnboardingTerm(3L, "알림 수신 동의", "혜택 및 이벤트 알림 수신에 동의합니다.", false),
+            ),
+        )
+
+    override suspend fun getTelecoms(): ApiResult<List<Telecom>> =
+        ApiResult.Success(
+            listOf(
+                Telecom("SKT", "SKT"),
+                Telecom("KT", "KT"),
+                Telecom("LGU", "LG U+"),
+            ),
+        )
+
+    override suspend fun getGrades(telecom: String): ApiResult<List<TelecomGrade>> =
+        ApiResult.Success(
+            when (telecom.uppercase()) {
+                "SKT" ->
+                    listOf(
+                        TelecomGrade(1001L, "VVIP", ""),
+                        TelecomGrade(1002L, "VIP", ""),
+                        TelecomGrade(1003L, "GOLD", ""),
+                        TelecomGrade(1004L, "SILVER", ""),
+                        TelecomGrade(1005L, "WHITE", ""),
+                        TelecomGrade(1006L, "GENERAL", ""),
+                    )
+                "KT" ->
+                    listOf(
+                        TelecomGrade(2001L, "VIP", ""),
+                        TelecomGrade(2002L, "GOLD", ""),
+                        TelecomGrade(2003L, "SILVER", ""),
+                    )
+                else ->
+                    listOf(
+                        TelecomGrade(3001L, "VVIP", ""),
+                        TelecomGrade(3002L, "VIP", ""),
+                        TelecomGrade(3003L, "DIAMOND", ""),
+                        TelecomGrade(3004L, "GOLD", ""),
+                        TelecomGrade(3005L, "GENERAL", ""),
+                    )
+            },
+        )
+
+    override suspend fun getBrands(): ApiResult<List<PreferredBrand>> =
+        DefaultOnboardingRepository(api).getBrands()
+
+    override suspend fun submitOnboarding(submission: OnboardingSubmission): ApiResult<Unit> =
+        ApiResult.Success(Unit)
+}
+
 private fun JsonElement.gradeItems(): List<JsonObject> =
     when (this) {
         is JsonArray -> mapNotNull { it as? JsonObject }

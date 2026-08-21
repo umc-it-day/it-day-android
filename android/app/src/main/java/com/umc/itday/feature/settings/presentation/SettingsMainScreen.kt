@@ -103,6 +103,8 @@ fun SettingsMainRoute(
             viewModel.dismissLogoutConfirmation()
             onLogoutClick()
         },
+        onShowWithdrawDialog = viewModel::showWithdrawConfirmation,
+        onDismissWithdrawDialog = viewModel::dismissWithdrawConfirmation,
         onShowNameEditDialog = viewModel::showNameEditDialog,
         onDismissNameEditDialog = viewModel::dismissNameEditDialog,
         onEditingNameChange = viewModel::updateEditingName,
@@ -127,6 +129,8 @@ fun SettingsMainScreen(
     onShowLogoutDialog: () -> Unit,
     onDismissLogoutDialog: () -> Unit,
     onConfirmLogout: () -> Unit,
+    onShowWithdrawDialog: () -> Unit,
+    onDismissWithdrawDialog: () -> Unit,
     onShowNameEditDialog: () -> Unit,
     onDismissNameEditDialog: () -> Unit,
     onEditingNameChange: (String) -> Unit,
@@ -165,7 +169,7 @@ fun SettingsMainScreen(
                         onBackClick = { onNavigateScreen(SettingsScreenType.Main) },
                         onPrivacyPolicyClick = onPrivacyPolicyClick,
                         onTermsOfServiceClick = onTermsOfServiceClick,
-                        onWithdrawClick = onWithdrawClick,
+                        onWithdrawClick = onShowWithdrawDialog,
                     )
 
                 SettingsScreenType.CustomerService ->
@@ -181,6 +185,13 @@ fun SettingsMainScreen(
             LogoutConfirmDialog(
                 onLogout = onConfirmLogout,
                 onDismiss = onDismissLogoutDialog,
+            )
+        }
+
+        if (!isGuestMode && uiState.showWithdrawDialog) {
+            WithdrawConfirmDialog(
+                onWithdraw = onWithdrawClick,
+                onDismiss = onDismissWithdrawDialog,
             )
         }
 
@@ -473,6 +484,8 @@ private fun SettingsMainScreenPreview() {
         onShowLogoutDialog = {},
         onDismissLogoutDialog = {},
         onConfirmLogout = {},
+        onShowWithdrawDialog = {},
+        onDismissWithdrawDialog = {},
         onShowNameEditDialog = {},
         onDismissNameEditDialog = {},
         onEditingNameChange = {},
@@ -498,6 +511,8 @@ private fun PrivacySecurityContentPreview() {
         onShowLogoutDialog = {},
         onDismissLogoutDialog = {},
         onConfirmLogout = {},
+        onShowWithdrawDialog = {},
+        onDismissWithdrawDialog = {},
         onShowNameEditDialog = {},
         onDismissNameEditDialog = {},
         onEditingNameChange = {},
@@ -523,6 +538,8 @@ private fun CustomerServiceContentPreview() {
         onShowLogoutDialog = {},
         onDismissLogoutDialog = {},
         onConfirmLogout = {},
+        onShowWithdrawDialog = {},
+        onDismissWithdrawDialog = {},
         onShowNameEditDialog = {},
         onDismissNameEditDialog = {},
         onEditingNameChange = {},

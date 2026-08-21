@@ -590,6 +590,76 @@ internal fun LogoutConfirmDialog(
 }
 
 @Composable
+internal fun WithdrawConfirmDialog(
+    onWithdraw: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = ItDayWhite),
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = "정말 탈퇴하시겠습니까?",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF4A1010),
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = "탈퇴하면 계정과 이용 데이터가 삭제되며\n복구할 수 없습니다.",
+                    fontSize = 14.sp,
+                    color = ItDayGray500,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 20.sp,
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Button(
+                    onClick = onWithdraw,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFFF3B30),
+                            contentColor = ItDayWhite,
+                        ),
+                ) {
+                    Text(text = "탈퇴하기", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Button(
+                    onClick = onDismiss,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = ItDayGray100,
+                            contentColor = ItDayGray500,
+                        ),
+                ) {
+                    Text(text = "취소", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                }
+            }
+        }
+    }
+}
+
+@Composable
 internal fun CrownGraphicIllustration() {
     androidx.compose.foundation.Image(
         painter = androidx.compose.ui.res.painterResource(com.umc.itday.R.drawable.img_settings_crown),

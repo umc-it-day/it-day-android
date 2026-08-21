@@ -38,6 +38,7 @@ import com.umc.itday.feature.auth.data.repository.DefaultAuthRepository
 import com.umc.itday.feature.auth.domain.repository.AuthRepository
 import com.umc.itday.feature.onboarding.data.remote.OnboardingApi
 import com.umc.itday.feature.onboarding.data.repository.DefaultOnboardingRepository
+import com.umc.itday.feature.onboarding.data.repository.GuestOnboardingRepository
 import com.umc.itday.feature.onboarding.domain.repository.OnboardingRepository
 import com.umc.itday.feature.barcode.data.api.BarcodeApi
 import com.umc.itday.feature.barcode.data.repository.BarcodeRepositoryImpl
@@ -154,6 +155,10 @@ class DefaultAppContainer(
 
     override val onboardingRepository: OnboardingRepository by lazy {
         DefaultOnboardingRepository(NetworkClient.createApi<OnboardingApi>(retrofit))
+    }
+
+    override val guestOnboardingRepository: OnboardingRepository by lazy {
+        GuestOnboardingRepository(NetworkClient.createApi<OnboardingApi>(retrofit))
     }
 
     override val paymentRepository: PaymentRepository by lazy {

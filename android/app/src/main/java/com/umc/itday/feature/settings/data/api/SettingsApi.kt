@@ -9,7 +9,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.PATCH
 
-interface SettingsApi {
+interface  SettingsApi {
     @GET("api/members/me/membership")
     suspend fun getMembershipInfo(): ApiResponseDto<MembershipInfoDto>
 
