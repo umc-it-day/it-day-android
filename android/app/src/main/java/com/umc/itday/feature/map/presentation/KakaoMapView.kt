@@ -6,7 +6,6 @@ import android.graphics.Canvas
 import android.graphics.Color as AndroidColor
 import android.graphics.Paint
 import android.graphics.Typeface
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -96,7 +95,6 @@ fun KakaoMapView(
     }
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
-    var isLoading by remember(reloadKey) { mutableStateOf(true) }
     var hasError by remember(reloadKey) { mutableStateOf(false) }
     val mapView = remember(context, reloadKey) { MapView(context) }
     var isMapReady by remember(mapView) { mutableStateOf(false) }
@@ -114,7 +112,6 @@ fun KakaoMapView(
 
                         override fun onMapError(error: Exception) {
                             isMapReady = false
-                            isLoading = false
                             hasError = true
                         }
                     },
@@ -130,7 +127,6 @@ fun KakaoMapView(
                                 onCameraMoveEnd = { currentOnCameraMoveEnd?.invoke(it) },
                             )
                             isMapReady = true
-                            isLoading = false
                         }
 
                         override fun getPosition(): LatLng = (currentLocation ?: initialPosition).toLatLng()
@@ -206,29 +202,12 @@ fun KakaoMapView(
                 modifier = Modifier.fillMaxSize(),
             )
         }
-        when {
-            hasError -> MapErrorState(R.string.map_load_error, false, onRetry)
-            isLoading -> MapLoadingOverlay()
+        if (hasError) {
+            MapErrorState(R.string.map_load_error, false, onRetry)
         }
     }
 }
 
-@Composable
-private fun MapLoadingOverlay() {
-    Column(
-        modifier = Modifier.fillMaxSize().background(Color.White),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Image(
-            painter = painterResource(R.drawable.itday_logo),
-            contentDescription = null,
-            modifier = Modifier.size(72.dp),
-        )
-        Spacer(modifier = Modifier.height(20.dp))
-        CircularProgressIndicator()
-    }
-}
 
 @Composable
 private fun MapErrorState(
@@ -325,7 +304,9 @@ private fun KakaoMap.startMarkerClustering(
     setOnCameraMoveEndListener { _, cameraPosition, _ ->
         renderMarkers()
         val pos = cameraPosition.position
-        onCameraMoveEnd?.invoke(MapCoordinate(pos.latitude, pos.longitude))
+        if (!pos.latitude.isNaN() && !pos.longitude.isNaN()) {
+            onCameraMoveEnd?.invoke(MapCoordinate(pos.latitude, pos.longitude))
+        }
     }
     setOnLabelClickListener { _, _, label ->
         val cluster = label.tag as? MarkerCluster ?: return@setOnLabelClickListener false
@@ -387,24 +368,46 @@ private fun KakaoMap.showRoute(points: List<MapCoordinate>) {
 }
 
 private fun KakaoMap.cluster(markers: List<MapMarkerUiModel>): List<MarkerCluster> {
-    val groups = mutableListOf<MutableList<MapMarkerUiModel>>()
-    markers.forEach { marker ->
-        val point = toScreenPoint(marker.position.toLatLng()) ?: return@forEach
-        val group = groups.firstOrNull { existing ->
-            val anchor = toScreenPoint(existing.first().position.toLatLng()) ?: return@firstOrNull false
-            val distance = hypot((point.x - anchor.x).toDouble(), (point.y - anchor.y).toDouble())
-            distance <= CLUSTER_RADIUS_DP * mapDpScale
-        }
-        if (group == null) groups += mutableListOf(marker) else group += marker
+    if (markers.isEmpty()) return emptyList()
+
+    val scale = mapDpScale
+    val clusterRadiusPx = CLUSTER_RADIUS_DP * scale
+
+    // 1. 모든 마커의 화면 좌표를 미리 단 한 번만 계산 (네이티브 호출 최소화)
+    val markerWithPoints = markers.mapNotNull { marker ->
+        val point = toScreenPoint(marker.position.toLatLng())
+        // 비정상적인 좌표나 null인 경우 제외
+        if (point == null) null
+        else marker to point
     }
+
+    val groups = mutableListOf<MutableList<Pair<MapMarkerUiModel, android.graphics.Point>>>()
+
+    markerWithPoints.forEach { (marker, point) ->
+        // 2. 이미 계산된 앵커 좌표를 사용하여 거리 계산 (O(N^2) 루프 내 네이티브 호출 제거)
+        val group = groups.firstOrNull { existing ->
+            val anchorPoint = existing.first().second
+            val dx = (point.x - anchorPoint.x).toDouble()
+            val dy = (point.y - anchorPoint.y).toDouble()
+            hypot(dx, dy) <= clusterRadiusPx
+        }
+
+        if (group == null) {
+            groups.add(mutableListOf(marker to point))
+        } else {
+            group.add(marker to point)
+        }
+    }
+
     return groups.map { group ->
+        val groupMarkers = group.map { it.first }
         MarkerCluster(
-            id = "cluster-${group.joinToString("-") { it.id }}",
-            ids = group.map { it.id },
+            id = "cluster-${groupMarkers.first().id}-${groupMarkers.size}",
+            ids = groupMarkers.map { it.id },
             position =
                 MapCoordinate(
-                    latitude = group.map { it.position.latitude }.average(),
-                    longitude = group.map { it.position.longitude }.average(),
+                    latitude = groupMarkers.map { it.position.latitude }.average(),
+                    longitude = groupMarkers.map { it.position.longitude }.average(),
                 ),
         )
     }
@@ -421,4 +424,3 @@ private const val CURRENT_LOCATION_LABEL_ID = "current-location"
 private const val CLUSTER_RADIUS_DP = 72.0
 private const val ROUTE_CAMERA_PADDING_RATIO = 0.22f
 private const val ROUTE_CAMERA_ANIMATION_MS = 500
-

@@ -10,5 +10,3 @@ internal object LocalPreferenceKeys {
     val PreferredBrandNames = stringSetPreferencesKey("preferred_brand_names")
     val LastAttendanceDate = androidx.datastore.preferences.core.stringPreferencesKey("last_attendance_date")
 }
-
-

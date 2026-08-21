@@ -29,6 +29,7 @@ data class MapUiState(
     val isLocationUnavailable: Boolean = false,
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
+    val searchQuery: String = "",
     val reloadKey: Int = 0,
     val myLocationTrigger: Long = 0L,
 ) {
@@ -105,7 +106,11 @@ class MapViewModel(
         fetchNearbyStores(currentCenter)
     }
 
-    fun searchByKeyword(query: String) {
+    fun onSearchQueryChange(query: String) {
+        _uiState.update { it.copy(searchQuery = query) }
+    }
+
+    fun searchByKeyword(query: String = _uiState.value.searchQuery) {
         if (query.isBlank()) return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
@@ -254,4 +259,3 @@ class MapViewModel(
             MapViewModel(mapRepository) as T
     }
 }
-

@@ -30,6 +30,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -157,7 +158,7 @@ internal fun ProfileHeaderSection(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .then(if (!isGuestMode) Modifier.clickable { onNameClick() } else Modifier)
+                    .clickable(enabled = !isGuestMode) { onNameClick() }
                     .padding(vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
@@ -702,6 +703,3 @@ internal fun FaqListCard(
         }
     }
 }
-
-
-

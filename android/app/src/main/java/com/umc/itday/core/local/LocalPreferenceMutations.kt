@@ -27,4 +27,3 @@ internal fun MutablePreferences.addPreferredBrandNamePreference(brandName: Strin
     val current = this[LocalPreferenceKeys.PreferredBrandNames].orEmpty()
     this[LocalPreferenceKeys.PreferredBrandNames] = current + brandName
 }
-

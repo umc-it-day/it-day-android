@@ -15,5 +15,3 @@ interface MapRepository {
         destLng: Double,
     ): ApiResult<List<MapCoordinate>>
 }
-
-

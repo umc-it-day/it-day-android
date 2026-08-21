@@ -89,5 +89,3 @@ data class KakaoRoadDto(
     val duration: Int = 0,
     val vertexes: List<Double> = emptyList(),
 )
-
-

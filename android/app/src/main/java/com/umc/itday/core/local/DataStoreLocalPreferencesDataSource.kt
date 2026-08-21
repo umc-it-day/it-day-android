@@ -110,4 +110,3 @@ class DataStoreLocalPreferencesDataSource(
                 }
             }.map { preferences -> preferences[key] ?: defaultValue }
 }
-

@@ -6,6 +6,9 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -41,12 +44,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -122,7 +128,9 @@ fun MapContent(
     myLocationTrigger: Long = 0L,
     onMyLocationClick: () -> Unit = {},
     onMapRetry: () -> Unit = {},
-    onSearchClick: () -> Unit = {},
+    searchQuery: String = "",
+    onSearchQueryChange: (String) -> Unit = {},
+    onSearchAction: () -> Unit = {},
     onResearchClick: () -> Unit = {},
     onCameraMoveEnd: (MapCoordinate) -> Unit = {},
     onMarkerClick: (List<String>) -> Unit = {},
@@ -190,7 +198,11 @@ fun MapContent(
                 myLocationTrigger = myLocationTrigger,
                 modifier = Modifier.fillMaxSize(),
             )
-            SearchBar(onClick = onSearchClick)
+            SearchBar(
+                query = searchQuery,
+                onQueryChange = onSearchQueryChange,
+                onSearch = onSearchAction,
+            )
             if (showResearchButton && routePoints.isEmpty()) {
                 ResearchButton(
                     modifier = Modifier.align(Alignment.TopCenter).padding(top = 76.dp),
@@ -314,7 +326,11 @@ private fun SheetDragHandle() {
 }
 
 @Composable
-private fun SearchBar(onClick: () -> Unit) {
+private fun SearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onSearch: () -> Unit,
+) {
     Row(
         modifier =
             Modifier
@@ -322,16 +338,54 @@ private fun SearchBar(onClick: () -> Unit) {
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(24.dp))
                 .background(Color.White)
-                .clickable(onClick = onClick)
-                .padding(horizontal = 18.dp, vertical = 13.dp),
+                .padding(horizontal = 18.dp, vertical = 11.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(text = "⌕", style = MaterialTheme.typography.titleLarge)
         Text(
-            text = stringResource(R.string.map_search_hint),
-            modifier = Modifier.padding(start = 10.dp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            text = "⌕",
+            style = MaterialTheme.typography.titleLarge,
+            color = if (query.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MapPrimary,
         )
+        Box(
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .padding(start = 10.dp),
+            contentAlignment = Alignment.CenterStart,
+        ) {
+            if (query.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.map_search_hint),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            BasicTextField(
+                value = query,
+                onValueChange = onQueryChange,
+                modifier = Modifier.fillMaxWidth(),
+                textStyle =
+                    TextStyle(
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    ),
+                singleLine = true,
+                cursorBrush = SolidColor(MapPrimary),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = { onSearch() }),
+            )
+        }
+        if (query.isNotEmpty()) {
+            Text(
+                text = "x",
+                modifier =
+                    Modifier
+                        .clip(CircleShape)
+                        .clickable { onQueryChange("") }
+                        .padding(4.dp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 16.sp,
+            )
+        }
     }
 }
 
@@ -840,5 +894,3 @@ private val MapHandle = Color(0xFFD7D9DC)
 private val MapPlaceholder = Color(0xFFF1F1F1)
 private val MapPrimary = Color(0xFF637CF6)
 private val MapDiscountBackground = Color(0xFFEEF2FF)
-
-

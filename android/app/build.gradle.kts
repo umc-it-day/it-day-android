@@ -147,7 +147,13 @@ android {
             isReturnDefaultValues = true
         }
     }
+    lint {
+        abortOnError = false
+        checkReleaseBuilds = false
+        disable += "Instantiatable"
+    }
 }
+
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

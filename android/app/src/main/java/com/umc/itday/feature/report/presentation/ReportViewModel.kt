@@ -74,8 +74,7 @@ class ReportViewModel(
             when (val result = repository.checkAttendance()) {
                 is ApiResult.Success -> {
                     val attendance = result.data
-                    val today = getTodayDateString()
-                    localPreferencesDataSource?.setLastAttendanceDate(today)
+                    localPreferencesDataSource?.setLastAttendanceDate(attendance.attendanceDate.ifBlank { getTodayDateString() })
                     _uiState.update {
                         it.copy(
                             isAttendanceSubmitting = false,

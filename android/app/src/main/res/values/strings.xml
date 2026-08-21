@@ -20,6 +20,7 @@
     <string name="map_store_empty">주변 매장 정보를 불러올 예정입니다.</string>
     <string name="map_directions">길찾기</string>
     <string name="map_directions_cancel">길찾기 취소</string>
+    <string name="map_research_here">이 지역 재검색</string>
     <string name="map_value_unknown">미확인</string>
     <string name="map_distance_unknown">거리 미확인</string>
     <string name="map_discount_unknown">할인 미확인</string>
@@ -29,8 +30,7 @@
     <string name="map_monthly_here">이번 달 여기서</string>
     <string name="map_store_information">매장정보</string>
     <string name="map_mini_map_placeholder">매장 위치</string>
-    <string name="map_research_here">이 지역 재검색</string>
-
+    <string name="map_loading_stores">주변 매장을 찾는 중입니다...</string>
     <string name="report_guest_title">월간 사용 리포트</string>
     <string name="report_guest_members_only">회원 전용 기능</string>
     <string name="report_guest_preview">리포트 미리보기</string>

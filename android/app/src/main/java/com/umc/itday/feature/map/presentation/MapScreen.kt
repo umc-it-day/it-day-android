@@ -3,7 +3,6 @@ package com.umc.itday.feature.map.presentation
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -12,7 +11,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.umc.itday.R
+import com.umc.itday.ui.component.ItDayLoadingOverlay
 import com.umc.itday.core.di.appContainer
 
 @Composable
@@ -70,6 +72,9 @@ fun MapScreen(
             myLocationTrigger = uiState.myLocationTrigger,
             onMyLocationClick = viewModel::moveToMyLocation,
             onMapRetry = viewModel::retryMap,
+            searchQuery = uiState.searchQuery,
+            onSearchQueryChange = viewModel::onSearchQueryChange,
+            onSearchAction = { viewModel.searchByKeyword() },
             onResearchClick = viewModel::searchCurrentLocation,
             onCameraMoveEnd = viewModel::onCameraMoved,
             onMarkerClick = viewModel::selectCluster,
@@ -84,13 +89,7 @@ fun MapScreen(
 
 
         if (uiState.isLoading) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
+            ItDayLoadingOverlay(message = stringResource(R.string.map_loading_stores))
         }
     }
 }
-
